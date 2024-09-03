@@ -1,0 +1,9 @@
+# Ignore everything:
+/*
+!Src
+!Tests
+!.editorconfig
+!composer.json
+!phpstan.neon
+!phpcs.xml
+!phpunit.xml

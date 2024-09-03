@@ -1,0 +1,20 @@
+{
+  "name": "thewebsolver/payment-card",
+  "description": "PHP library to validate Payment Card (Debit/Credit)",
+  "type": "library",
+  "license": "GPL-3.0-or-later",
+  "autoload": {
+    "psr-4": {
+      "TheWebSolver\\Codegarage\\PaymentCard\\": "Src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Shesh Ghimire",
+      "email": "sheshgh@outlook.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {}
+}
