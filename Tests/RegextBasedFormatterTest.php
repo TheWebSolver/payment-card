@@ -25,6 +25,7 @@ class RegexBasedFormatterTest extends TestCase {
 
 		$test1->setGap( ...$gaps );
 
+		$this->assertSame( expected: array_map( intval( ... ), $gaps ), actual: $test1->getGap() );
 		$this->assertSame( $expected, actual: $test1->format( $number ) );
 	}
 }
