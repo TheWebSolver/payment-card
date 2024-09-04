@@ -18,18 +18,26 @@ trait RegexGenerator {
 	 * @throws OutOfBoundsException When Payment Card length is less than CardInterface::GAP_CHECKSUM.
 	 */
 	private function getDefaultRegex( int $size ): array {
-		$checksum = self::ensureMinimumSizeProvided( $size );
-		$pattern  = CardInterface::GAP_DEFAULT_PATTERN;
+		$checksum  = self::ensureMinimumSizeProvided( $size );
+		$pattern   = CardInterface::GAP_DEFAULT_PATTERN;
+		$nextRange = array(
+			'start' => 13,
+			'end'   => 16,
+		);
 
 		if ( $size === $checksum ) {
 			return array( "/$pattern/", CardInterface::GAP_HOLDERS );
 		}
 
-		$additional = $size - CardInterface::GAP_CHECKSUM;
-
-		return in_array( $size, haystack: range( 13, 16 ), strict: true )
-			? array( "/{$pattern}(\d{{$additional}})/", CardInterface::GAP_HOLDERS . ' $4' )
-			: array( "/{$pattern}(\d{4})(\d{{$additional}})/", CardInterface::GAP_HOLDERS . ' $4 $5' );
+		return in_array( $size, haystack: range( ...$nextRange ), strict: true )
+			? array(
+				'/' . $pattern . '(\d{' . ( $size - CardInterface::GAP_CHECKSUM ) . '})/',
+				CardInterface::GAP_HOLDERS . ' $4',
+			)
+			: array(
+				'/' . $pattern . '(\d{4})(\d{' . ( $size - $nextRange['end'] ) . '})/',
+				CardInterface::GAP_HOLDERS . ' $4 $5',
+			);
 	}
 
 	/**
@@ -40,7 +48,7 @@ trait RegexGenerator {
 		self::ensureMinimumSizeProvided( $size );
 
 		return array(
-			sprintf( '/' . CardInterface::GAP_ALT_PATTERN . '/', $size % 10 ),
+			sprintf( '/' . CardInterface::GAP_ALT_PATTERN . '/', $size - 10 ),
 			CardInterface::GAP_HOLDERS,
 		);
 	}
