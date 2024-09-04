@@ -1,17 +1,18 @@
 <?php
 /**
- * Regex based formatter Test.
+ * Queue based formatter Test.
  *
  * @package TheWebSolver\Codegarage\Test
  */
 
 declare( strict_types = 1 );
 
-use PHPUnit\Framework\TestCase;
-use TheWebSolver\Codegarage\FormatterDataProvider;
-use TheWebSolver\Codegarage\PaymentCard\Traits\RegexBasedFormatter;
+namespace TheWebSolver\Codegarage;
 
-class RegexBasedFormatterTest extends TestCase {
+use PHPUnit\Framework\TestCase;
+use TheWebSolver\Codegarage\PaymentCard\Traits\QueueBasedFormatter;
+
+class QueueBasedFormatterTest extends TestCase {
 	use FormatterDataProvider;
 
 	/**
@@ -20,11 +21,12 @@ class RegexBasedFormatterTest extends TestCase {
 	 */
 	public function testNumberFormattingBasedOnGap( array $gaps, string|int $number, string $expected ): void {
 		$test1 = new class() {
-			use RegexBasedFormatter;
+			use QueueBasedFormatter;
 		};
 
 		$test1->setGap( ...$gaps );
 
+		$this->assertSame( expected: array_map( intval( ... ), $gaps ), actual: $test1->getGap() );
 		$this->assertSame( $expected, actual: $test1->format( $number ) );
 	}
 }

@@ -10,9 +10,9 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use SplQueue;
-use TheWebSolver\Codegarage\PaymentCard\Card;
+use TheWebSolver\Codegarage\PaymentCard\CardHandler;
 
-trait Formatter {
+trait QueueBasedFormatter {
 	/** @var int[] */
 	public array $gap;
 
@@ -22,10 +22,10 @@ trait Formatter {
 	}
 
 	public function setGap( string|int $gap, string|int ...$gaps ): static {
-		Card::isProcessing( name: 'gap' );
+		CardHandler::isProcessing( name: 'gap' );
 
 		$this->gap = array_map(
-			callback: static fn( mixed $size ): int => Card::assertSingleSize( $size ),
+			callback: static fn( mixed $size ): int => CardHandler::assertSingleSize( $size ),
 			array: array( $gap, ...$gaps )
 		);
 
