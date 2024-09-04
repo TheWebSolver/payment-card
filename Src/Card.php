@@ -29,8 +29,22 @@ class Card {
 	private static string $attribute;
 	private static string $cardType;
 
-	public function setCardType( string $name ): void {
+	public function setType( string $name ): void {
 		self::$cardType ??= $name;
+	}
+
+	/**
+	 * @param mixed[] $value
+	 * @return (int|int[])[]
+	 */
+	public function resolveSizeWith( array $value, string $forType ) {
+		self::assertNotEmpty( $value );
+		self::isProcessing( $forType );
+
+		array_walk( array: $value, callback: self::assertHasSize( ... ) );
+
+		/** @var (int|int[])[] */
+		return $value;
 	}
 
 	public static function isProcessing( string $name ): void {
@@ -43,47 +57,6 @@ class Card {
 
 	public static function parsePropNameFrom( string $getterSetter ): string {
 		return lcfirst( string: substr( string: $getterSetter, /* set/get */ offset: 3 ) );
-	}
-
-	/**
-	 * @param mixed[] $gaps
-	 * @return array{pattern:string,replacement:string,valid:int[],checksum:int}
-	 */
-	public static function parseGap( array $gaps ): array {
-		assert( assertion: ! empty( $gaps ), description: 'Gaps must not be empty.' );
-
-		$pattern = $replacement = '';
-		$total   = $valid = array();
-		$first   = array_key_first( $gaps );
-
-		foreach ( $gaps as $step => &$checksum ) {
-			$valid[]      = $checksum = self::assertSingleSize( $checksum );
-			$pattern     .= '(\d{' . ( $first === $step ? $checksum : $checksum - $gaps[ $step - 1 ] ) . '})';
-			$replacement .= $first === $step ? '$1' : ' $' . ( $step + 1 );
-		}
-
-		return compact( 'pattern', 'replacement', 'valid', 'checksum' );
-	}
-
-	/**
-	 * @param string|int                                                        $cardNumber
-	 * @param array{pattern:string,replacement:string,valid:int[],checksum:int} $gap
-	 * @throws RuntimeException When given Card Number could not be formatted with provided gap.
-	 */
-	public static function format( string|int $cardNumber, array $gap ): string {
-		[ 'pattern'     => $pattern,
-			'replacement' => $replacement,
-			'valid'       => $validGaps,
-			'checksum'    => $checksum ] = $gap;
-
-		if ( $checksum < ( $length = strlen( (string) $cardNumber ) ) ) {
-			$remaining    = $length - $checksum;
-			$pattern     .= "(\d{{$remaining}})";
-			$replacement .= ' $' . ( count( $validGaps ) + 1 );
-		}
-
-		return preg_replace( "/{$pattern}/", $replacement, (string) $cardNumber )
-			?? self::formattingFailed( (string) $cardNumber );
 	}
 
 	/**

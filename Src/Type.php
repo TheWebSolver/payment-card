@@ -11,9 +11,10 @@ namespace TheWebSolver\Codegarage\PaymentCard;
 
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
 use TheWebSolver\Codegarage\PaymentCard\Traits\Asserter;
+use TheWebSolver\Codegarage\PaymentCard\Traits\RegexBasedFormatter;
 
 abstract class Type implements PaymentCardType {
-	use Asserter;
+	use Asserter, RegexBasedFormatter;
 
 	private string $name;
 	private string $alias;
@@ -24,17 +25,14 @@ abstract class Type implements PaymentCardType {
 	/** @var (int|(int)[])[] */
 	private array $length;
 
-	/** @var array{pattern:string,replacement:string,valid:int[],checksum:int} */
-	public array $gap;
-
 	/** @var (int|(int)[])[] */
 	private array $pattern;
 
 	public function __construct( private readonly Card $card = new Card() ) {
-		$card->setCardType( name: $this->getCardType() );
+		$card->setType( name: $this->getType() );
 	}
 
-	abstract protected function getCardType(): string;
+	abstract protected function getType(): string;
 
 	public function getName(): string {
 		return $this->name;
@@ -42,10 +40,6 @@ abstract class Type implements PaymentCardType {
 
 	public function getAlias(): string {
 		return $this->alias;
-	}
-
-	public function getGap(): array {
-		return $this->gap['valid'];
 	}
 
 	public function getLength(): array {
@@ -72,40 +66,20 @@ abstract class Type implements PaymentCardType {
 		return $this;
 	}
 
-	public function setGap( string|int $gap, string|int ...$gaps ): static {
-		$this->card->isProcessing( name: 'gap' );
-
-		$this->gap = $this->card->parseGap( array( $gap, ...$gaps ) );
-
-		return $this;
-	}
-
-	public function setLength( array $value ): static {
-		return $this->setSizesFor( $value, setter: __FUNCTION__ );
-	}
-
 	public function setCode( string $name, int $size ): static {
 		$this->code = array( $name, $size );
 
 		return $this;
 	}
 
+	public function setLength( array $value ): static {
+		$this->length = $this->card->resolveSizeWith( $value, forType: 'length' );
+
+		return $this;
+	}
+
 	public function setPattern( array $value ): static {
-		return $this->setSizesFor( $value, setter: __FUNCTION__ );
-	}
-
-	public function format( string|int $cardNumber ): string {
-		return $this->card->format( $cardNumber, gap: $this->gap );
-	}
-
-	/** @param mixed[] $value */
-	private function setSizesFor( array $value, string $setter ): static {
-		$this->card->assertNotEmpty( $value );
-		$this->card->isProcessing( $name = $this->card->parsePropNameFrom( getterSetter: $setter ) );
-
-		array_walk( array: $value, callback: $this->card->assertHasSize( ... ) );
-
-		$this->{$name} = $value;
+		$this->pattern = $this->card->resolveSizeWith( $value, forType: 'pattern' );
 
 		return $this;
 	}

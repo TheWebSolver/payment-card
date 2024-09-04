@@ -10,10 +10,27 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use SplQueue;
+use TheWebSolver\Codegarage\PaymentCard\Card;
 
 trait Formatter {
+	/** @var int[] */
+	public array $gap;
+
 	/** @return int[] */
-	abstract public function getGap(): array;
+	public function getGap(): array {
+		return $this->gap;
+	}
+
+	public function setGap( string|int $gap, string|int ...$gaps ): static {
+		Card::isProcessing( name: 'gap' );
+
+		$this->gap = array_map(
+			callback: static fn( mixed $size ): int => Card::assertSingleSize( $size ),
+			array: array( $gap, ...$gaps )
+		);
+
+		return $this;
+	}
 
 	public function format( string|int $cardNumber ): string {
 		$cardNumber = (string) $cardNumber;
@@ -24,7 +41,7 @@ trait Formatter {
 
 		for ( $i = 0; $i < $cardLength; $i++ ) {
 			if ( $i === $expectedAt ) {
-				$formatted  .= ' ';
+				$formatted .= ' ';
 				$expectedAt = $gapStack->isEmpty() ? null : $gapStack->dequeue();
 			}
 

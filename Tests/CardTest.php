@@ -18,7 +18,7 @@ class CardTest extends TestCase {
 
 	public function testUsingCardType(): void {
 		$card = new Card();
-		$card->setCardType( Card::DEBIT );
+		$card->setType( Card::DEBIT );
 
 		$this->expectExceptionMessage( sprintf( Card::INVALID_FORMATTING, 'Debit Card', '123' ) );
 		Card::formattingFailed( '123' );
