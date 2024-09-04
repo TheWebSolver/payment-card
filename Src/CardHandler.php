@@ -13,8 +13,9 @@ use RuntimeException;
 use InvalidArgumentException;
 
 class CardHandler {
-	public const CREDIT = 'Credit Card';
-	public const DEBIT  = 'Debit Card';
+	public const CREDIT  = 'Credit Card';
+	public const DEBIT   = 'Debit Card';
+	public const DEFAULT = 'Payment Card';
 
 	public const ALLOWED_PATTERN = '/[^0-9]/';
 
@@ -26,20 +27,25 @@ class CardHandler {
 
 	public const INVALID_FORMATTING = '%1$s "%2$s" could not be formatted according to the provided gap.';
 
-	private static string $attribute;
-	private static string $cardType;
+	private static ?string $attribute;
+	private static ?string $cardType;
 
 	public function setType( string $name ): void {
 		self::$cardType ??= $name;
 	}
 
+	public function __destruct() {
+		self::$cardType = self::$attribute = null;
+	}
+
 	/**
 	 * @param mixed[] $value
 	 * @return (int|int[])[]
+	 * @throws InvalidArgumentException When given value can't be casted to int.
 	 */
-	public function resolveSizeWith( array $value, string $forType ) {
-		self::assertNotEmpty( $value );
+	public static function resolveSizeWith( array $value, string $forType ) {
 		self::isProcessing( $forType );
+		self::assertNotEmpty( $value );
 
 		array_walk( array: $value, callback: self::assertHasSize( ... ) );
 
@@ -110,13 +116,15 @@ class CardHandler {
 	 * @throws InvalidArgumentException With given msg.
 	 */
 	public static function assertionFailed( string $message, string|int ...$args ): never {
-		throw new InvalidArgumentException( sprintf( $message, self::$cardType, self::$attribute, ...$args ) );
+		throw new InvalidArgumentException(
+			sprintf( $message, self::$cardType ?? self::DEFAULT, self::$attribute, ...$args )
+		);
 	}
 
 	/** @throws RuntimeException When formatting fails. */
 	public static function formattingFailed( string $cardNumber ): never {
 		throw new RuntimeException(
-			sprintf( self::INVALID_FORMATTING, self::$cardType ?? 'Payment Card', $cardNumber )
+			sprintf( self::INVALID_FORMATTING, self::$cardType ?? self::DEFAULT, $cardNumber )
 		);
 	}
 }
