@@ -8,19 +8,19 @@
 declare( strict_types = 1 );
 
 use PHPUnit\Framework\TestCase;
-use TheWebSolver\Codegarage\PaymentCard\Card;
+use TheWebSolver\Codegarage\PaymentCard\CardHandler;
 
 class CardTest extends TestCase {
 	public function testWithoutUsingCardType(): void {
-		$this->expectExceptionMessage( sprintf( Card::INVALID_FORMATTING, 'Payment Card', '123' ) );
-		Card::formattingFailed( '123' );
+		$this->expectExceptionMessage( sprintf( CardHandler::INVALID_FORMATTING, 'Payment Card', '123' ) );
+		CardHandler::formattingFailed( '123' );
 	}
 
 	public function testUsingCardType(): void {
-		$card = new Card();
-		$card->setType( Card::DEBIT );
+		$card = new CardHandler();
+		$card->setType( CardHandler::DEBIT );
 
-		$this->expectExceptionMessage( sprintf( Card::INVALID_FORMATTING, 'Debit Card', '123' ) );
-		Card::formattingFailed( '123' );
+		$this->expectExceptionMessage( sprintf( CardHandler::INVALID_FORMATTING, 'Debit Card', '123' ) );
+		CardHandler::formattingFailed( '123' );
 	}
 }

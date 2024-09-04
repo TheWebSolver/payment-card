@@ -1,6 +1,6 @@
 <?php
 /**
- * The Payment Card helper.
+ * The Payment Card handler.
  *
  * @package TheWebSolver\Codegarage\Validation
  */
@@ -12,7 +12,7 @@ namespace TheWebSolver\Codegarage\PaymentCard;
 use RuntimeException;
 use InvalidArgumentException;
 
-class Card {
+class CardHandler {
 	public const CREDIT = 'Credit Card';
 	public const DEBIT  = 'Debit Card';
 

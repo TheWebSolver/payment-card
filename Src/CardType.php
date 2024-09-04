@@ -9,11 +9,11 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
 
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
+use TheWebSolver\Codegarage\PaymentCard\CardInterface;
 use TheWebSolver\Codegarage\PaymentCard\Traits\Asserter;
 use TheWebSolver\Codegarage\PaymentCard\Traits\RegexBasedFormatter;
 
-abstract class Type implements PaymentCardType {
+abstract class CardType implements CardInterface {
 	use Asserter, RegexBasedFormatter;
 
 	private string $name;
@@ -28,7 +28,7 @@ abstract class Type implements PaymentCardType {
 	/** @var (int|(int)[])[] */
 	private array $pattern;
 
-	public function __construct( private readonly Card $card = new Card() ) {
+	public function __construct( private readonly CardHandler $card = new CardHandler() ) {
 		$card->setType( name: $this->getType() );
 	}
 

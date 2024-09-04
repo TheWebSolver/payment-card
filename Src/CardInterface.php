@@ -12,7 +12,7 @@ namespace TheWebSolver\Codegarage\PaymentCard;
 use RuntimeException;
 use InvalidArgumentException;
 
-interface PaymentCardType {
+interface CardInterface {
 	public const GAP_CHECKSUM        = 12;
 	public const GAP_HOLDERS         = '$1 $2 $3';
 	public const GAP_DEFAULT_PATTERN = '(\d{4})(\d{4})(\d{4})';

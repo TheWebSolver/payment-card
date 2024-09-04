@@ -9,11 +9,11 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
-use TheWebSolver\Codegarage\PaymentCard\Card;
+use TheWebSolver\Codegarage\PaymentCard\CardHandler;
 
 /**
  * This is intended to only be used inside concrete that implements
- * `TheWebSolver\Codegarage\Validator\Interfaces\PaymentCardType`
+ * `TheWebSolver\Codegarage\PaymentCard\CardInterface`
  */
 trait Asserter {
 
@@ -22,7 +22,7 @@ trait Asserter {
 	abstract public function getCode(): array;
 
 	public function isNumberValid( mixed $subject, bool $withLuhnAlgorithm = true ): bool {
-		if ( ! is_scalar( $subject ) || ! $subject = Card::normalize( (string) $subject ) ) {
+		if ( ! is_scalar( $subject ) || ! $subject = CardHandler::normalize( (string) $subject ) ) {
 			return false;
 		}
 

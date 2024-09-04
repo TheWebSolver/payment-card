@@ -10,15 +10,15 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use LogicException;
-use TheWebSolver\Codegarage\PaymentCard\Card;
+use TheWebSolver\Codegarage\PaymentCard\CardHandler;
 
 /**
  * -----------------------------------------------------------------------------------------------
- * PaymentCardType Interface Stubs for Setter Methods.
+ * CardInterface Interface Stubs for Setter Methods.
  * -----------------------------------------------------------------------------------------------
  *
 	 * This is intended to be used only inside an Enum because Setter methods are redundant.
-	 * Enum must implement `TheWebSolver\Codegarage\Validator\Interfaces\PaymentCardType`.
+	 * Enum must implement `TheWebSolver\Codegarage\PaymentCard\CardInterface`.
 	 *
 	 * Values are calculated based on the PaymentCard case used. There are no properties for
 	 * setting values for these setter methods. However, these must be implemented.
@@ -58,7 +58,7 @@ trait ForbidSetters {
 
 	/** @throws LogicException Setter is forbidden for Payment Card Enum cases. */
 	private function setterIsForbidden( string $setter ): never {
-		$propName = Card::parsePropNameFrom( getterSetter: $setter );
+		$propName = CardHandler::parsePropNameFrom( getterSetter: $setter );
 
 		throw new LogicException( sprintf( 'Cannot set "%1$s" for enum case "%2$s".', $propName, $this->getName() ) );
 	}

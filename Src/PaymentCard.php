@@ -12,12 +12,12 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
 
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
+use TheWebSolver\Codegarage\PaymentCard\CardInterface;
 use TheWebSolver\Codegarage\PaymentCard\Traits\Asserter;
 use TheWebSolver\Codegarage\PaymentCard\Traits\ForbidSetters;
 use TheWebSolver\Codegarage\PaymentCard\Traits\RegexGenerator;
 
-enum PaymentCard: string implements PaymentCardType {
+enum PaymentCard: string implements CardInterface {
 	use Asserter, ForbidSetters, RegexGenerator;
 
 	case AmericanExpress = 'american-express';
@@ -118,7 +118,7 @@ enum PaymentCard: string implements PaymentCardType {
 		[ $pattern, $replacement ] = $this->getGapRegex( $length );
 
 		return preg_replace( $pattern, $replacement, (string) $cardNumber )
-			?? Card::formattingFailed( (string) $cardNumber );
+			?? CardHandler::formattingFailed( (string) $cardNumber );
 		;
 	}
 
