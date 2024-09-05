@@ -66,7 +66,7 @@ class ValidatorTest extends TestCase {
 		array $pattern,
 		mixed $subject,
 		bool $status,
-		bool $withLuhnAlgorithm = true
+		bool $withLuhnAlgorithm = false
 	): void {
 		$class = new class( $length, $pattern ) {
 			use Validator;
