@@ -1,6 +1,6 @@
 <?php
 /**
- * Payment Card Assertion methods.
+ * Payment Card Validation methods.
  *
  * @package TheWebSolver\Codegarage\Validation
  */
@@ -15,7 +15,7 @@ use TheWebSolver\Codegarage\PaymentCard\CardHandler;
  * This is intended to only be used inside concrete that implements
  * `TheWebSolver\Codegarage\PaymentCard\CardInterface`
  */
-trait Asserter {
+trait Validator {
 
 	abstract public function getLength(): array;
 	abstract public function getPattern(): array;

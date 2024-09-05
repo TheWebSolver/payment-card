@@ -10,11 +10,11 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard;
 
 use TheWebSolver\Codegarage\PaymentCard\CardInterface;
-use TheWebSolver\Codegarage\PaymentCard\Traits\Asserter;
+use TheWebSolver\Codegarage\PaymentCard\Traits\Validator;
 use TheWebSolver\Codegarage\PaymentCard\Traits\RegexBasedFormatter;
 
 abstract class CardType implements CardInterface {
-	use Asserter, RegexBasedFormatter;
+	use Validator, RegexBasedFormatter;
 
 	private string $name;
 	private string $alias;

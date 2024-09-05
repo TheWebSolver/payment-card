@@ -13,12 +13,12 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard;
 
 use TheWebSolver\Codegarage\PaymentCard\CardInterface;
-use TheWebSolver\Codegarage\PaymentCard\Traits\Asserter;
+use TheWebSolver\Codegarage\PaymentCard\Traits\Validator;
 use TheWebSolver\Codegarage\PaymentCard\Traits\ForbidSetters;
 use TheWebSolver\Codegarage\PaymentCard\Traits\RegexGenerator;
 
 enum PaymentCard: string implements CardInterface {
-	use Asserter, ForbidSetters, RegexGenerator;
+	use Validator, ForbidSetters, RegexGenerator;
 
 	case AmericanExpress = 'american-express';
 	case DinersClub      = 'diners-club';
