@@ -63,14 +63,4 @@ class AsserterTest extends TestCase {
 		$this->assertSame( expected: 'some', actual: Asserter::parsePropNameFrom( 'setSome' ) );
 		$this->assertSame( expected: 'ome', actual: Asserter::parsePropNameFrom( 'doSome' ) );
 	}
-
-	public function testSome(): void {
-		// Asserter::isProcessing( 'test1' );
-		Asserter::isProcessing( 'test3' );
-
-		$a = ( new Asserter() );
-		$a->assertSizeWith( array( array( 11, 1 ) ), 'test2' );
-
-		Asserter::assertionFailed( Asserter::NEEDS_ONE_ELEMENT );
-	}
 }
