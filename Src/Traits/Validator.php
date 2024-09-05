@@ -59,20 +59,25 @@ trait Validator {
 		return false;
 	}
 
-	/** @param string|int|string[]|int[] $pattern */
-	private function matchesPattern( string|int|array $pattern, string $subject ): bool {
+	private function matchesPattern( mixed $pattern, string $subject ): bool {
+		try {
+			$pattern = Asserter::assertHasSize( $pattern );
+		} catch ( InvalidArgumentException ) {
+			return false;
+		}
+
 		return is_array( $pattern )
-		? $this->matchesBetween( $subject, ...$pattern )
-		: $this->matchesExact( $subject, $pattern );
+			? $this->matchesBetween( $subject, ...$pattern )
+			: $this->matchesExact( $subject, $pattern );
 	}
 
-	private function matchesBetween( string $subject, string|int $min, string|int $max ): bool {
+	private function matchesBetween( string $subject, int $min, int $max ): bool {
 		$count = $this->subjectPart( $subject, (string) $min, (string) $max );
 
-		return $count >= (int) $min && $count <= (int) $max;
+		return $count >= $min && $count <= $max;
 	}
 
-	private function matchesExact( string $subject, string|int $pattern ): bool {
+	private function matchesExact( string $subject, int $pattern ): bool {
 		$CardPart    = substr( $subject, offset: 0, length: strlen( (string) $pattern ) );
 		$patternPart = substr( (string) $pattern, offset: 0, length: strlen( $subject ) );
 

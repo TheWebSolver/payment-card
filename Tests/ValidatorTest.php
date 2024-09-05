@@ -103,6 +103,8 @@ class ValidatorTest extends TestCase {
 	public function provideNumbers(): array {
 		return array(
 			array( array( 12, 14 ), array( 432 ), 432187659876, true ),
+			array( array( 12, 14 ), array( true ), 432187659876, false ),
+			array( array( true, 14 ), array( 432 ), 432187659876, false ),
 			array( array( 12, 14 ), array( 432 ), fn() => 432187659876, false ),
 			array( array( 12, 14 ), array( 432 ), '43218765987699', true ),
 			array( array( 12, 14 ), array( 432 ), 43218765987, false ),
