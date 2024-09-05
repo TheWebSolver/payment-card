@@ -60,6 +60,8 @@ trait ForbidSetters {
 	private function setterIsForbidden( string $setter ): never {
 		$propName = Asserter::parsePropNameFrom( getterSetter: $setter );
 
-		throw new LogicException( sprintf( 'Cannot set "%1$s" for enum case "%2$s".', $propName, $this->getName() ) );
+		throw new LogicException(
+			sprintf( 'Cannot set property "%1$s" for the "%2$s" card.', $propName, $this->getName() )
+		);
 	}
 }
