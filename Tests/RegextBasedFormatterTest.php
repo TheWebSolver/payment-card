@@ -14,18 +14,9 @@ use TheWebSolver\Codegarage\PaymentCard\Traits\RegexBasedFormatter;
 class RegexBasedFormatterTest extends TestCase {
 	use FormatterDataProvider;
 
-	/**
-	 * @param (string|int)[] $gaps
-	 * @dataProvider provideVariousNumbersAndGaps
-	 */
-	public function testNumberFormattingBasedOnGap( array $gaps, string|int $number, string $expected ): void {
-		$test1 = new class() {
+	protected function classWithTrait(): object {
+		return new class() {
 			use RegexBasedFormatter;
 		};
-
-		$test1->setGap( ...$gaps );
-
-		$this->assertSame( expected: array_map( intval( ... ), $gaps ), actual: $test1->getGap() );
-		$this->assertSame( $expected, actual: $test1->format( $number ) );
 	}
 }

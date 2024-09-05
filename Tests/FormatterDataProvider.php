@@ -10,15 +10,18 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage;
 
 trait FormatterDataProvider {
+	abstract protected function classWithTrait(): object;
+
 	/**
 	 * @param (string|int)[] $gaps
 	 * @dataProvider provideVariousNumbersAndGaps
 	 */
-	abstract public function testNumberFormattingBasedOnGap(
-		array $gaps,
-		string|int $number,
-		string $expected
-	): void;
+	public function testNumberFormattingBasedOnGap( array $gaps, string|int $number, string $expected ): void {
+		$class = $this->classWithTrait()->setGap( ...$gaps ); // @phpstan-ignore-line
+
+		$this->assertSame( expected: array_map( intval( ... ), $gaps ), actual: $class->getGap() );
+		$this->assertSame( $expected, actual: $class->format( $number ) );
+	}
 
 	/** @return array<mixed[]> */
 	public function provideVariousNumbersAndGaps(): array {
