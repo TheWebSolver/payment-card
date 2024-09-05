@@ -4,7 +4,6 @@
  *
  * @package TheWebSolver\Codegarage\Validation
  *
- * @phpcs:disable Squiz.Commenting.FunctionComment.WrongStyle -- Redundant complain.
  * @phpcs:disable WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
  */
 
@@ -17,6 +16,7 @@ use TheWebSolver\Codegarage\PaymentCard\Traits\Validator;
 use TheWebSolver\Codegarage\PaymentCard\Traits\ForbidSetters;
 use TheWebSolver\Codegarage\PaymentCard\Traits\RegexGenerator;
 
+/** @link https://en.wikipedia.org/wiki/Payment_card_number#Issuer_identification_number_(IIN) */
 enum PaymentCard: string implements CardInterface {
 	use Validator, ForbidSetters, RegexGenerator;
 
@@ -85,7 +85,6 @@ enum PaymentCard: string implements CardInterface {
 		};
 	}
 
-	/** @link https://en.wikipedia.org/wiki/Payment_card_number#Issuer_identification_number_(IIN) */
 	public function getPattern(): array {
 		return match ( $this ) {
 			self::Jcb             => array( array( 3528, 3589 ) ),
