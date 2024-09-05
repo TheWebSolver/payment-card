@@ -1,5 +1,8 @@
 parameters:
-    level: max
-    excludePaths:
-        analyseAndScan:
-            - vendor/
+	level: max
+	paths:
+		- Src
+		- Tests
+	excludePaths:
+		analyseAndScan:
+			- vendor/
