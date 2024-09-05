@@ -28,8 +28,8 @@ abstract class CardType implements CardInterface {
 	/** @var (int|(int)[])[] */
 	private array $pattern;
 
-	public function __construct( private readonly CardHandler $card = new CardHandler() ) {
-		$card->setType( name: $this->getType() );
+	public function __construct( private readonly Asserter $asserter = new Asserter() ) {
+		$asserter->setType( name: $this->getType() );
 	}
 
 	abstract protected function getType(): string;
@@ -73,13 +73,13 @@ abstract class CardType implements CardInterface {
 	}
 
 	public function setLength( array $value ): static {
-		$this->length = $this->card->resolveSizeWith( $value, forType: 'length' );
+		$this->length = $this->asserter->assertSizeWith( $value, forType: 'length' );
 
 		return $this;
 	}
 
 	public function setPattern( array $value ): static {
-		$this->pattern = $this->card->resolveSizeWith( $value, forType: 'pattern' );
+		$this->pattern = $this->asserter->assertSizeWith( $value, forType: 'pattern' );
 
 		return $this;
 	}

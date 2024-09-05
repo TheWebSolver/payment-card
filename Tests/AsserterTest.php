@@ -10,20 +10,20 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage;
 
 use PHPUnit\Framework\TestCase;
-use TheWebSolver\Codegarage\PaymentCard\CardHandler;
+use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
-class CardHandlerTest extends TestCase {
+class AsserterTest extends TestCase {
 	public function testWithoutUsingCardType(): void {
-		$this->expectExceptionMessage( sprintf( CardHandler::INVALID_FORMATTING, 'Payment Card', '123' ) );
-		CardHandler::formattingFailed( '123' );
+		$this->expectExceptionMessage( sprintf( Asserter::INVALID_FORMATTING, 'Payment Card', '123' ) );
+		Asserter::formattingFailed( '123' );
 	}
 
 	public function testUsingCardType(): void {
-		$card = new CardHandler();
-		$card->setType( CardHandler::DEBIT );
+		$card = new Asserter();
+		$card->setType( Asserter::DEBIT );
 
-		$this->expectExceptionMessage( sprintf( CardHandler::INVALID_FORMATTING, 'Debit Card', '123' ) );
-		CardHandler::formattingFailed( '123' );
+		$this->expectExceptionMessage( sprintf( Asserter::INVALID_FORMATTING, 'Debit Card', '123' ) );
+		Asserter::formattingFailed( '123' );
 	}
 
 	/**
@@ -36,7 +36,7 @@ class CardHandlerTest extends TestCase {
 			$this->expectExceptionMessage( $errorMsg );
 		}
 
-		$this->assertSame( $expected, actual: CardHandler::resolveSizeWith( $value, $type ) );
+		$this->assertSame( $expected, actual: ( new Asserter() )->assertSizeWith( $value, $type ) );
 	}
 
 	/** @return mixed[] */
@@ -55,12 +55,22 @@ class CardHandlerTest extends TestCase {
 	}
 
 	public function testNormalize(): void {
-		$this->assertSame( '12345', CardHandler::normalize( 'Invalid-123@45.but#normal!ed' ) );
+		$this->assertSame( '12345', Asserter::normalize( 'Invalid-123@45.but#normal!ed' ) );
 	}
 
 	public function testParseName(): void {
-		$this->assertSame( expected: 'some', actual: CardHandler::parsePropNameFrom( 'getSome' ) );
-		$this->assertSame( expected: 'some', actual: CardHandler::parsePropNameFrom( 'setSome' ) );
-		$this->assertSame( expected: 'ome', actual: CardHandler::parsePropNameFrom( 'doSome' ) );
+		$this->assertSame( expected: 'some', actual: Asserter::parsePropNameFrom( 'getSome' ) );
+		$this->assertSame( expected: 'some', actual: Asserter::parsePropNameFrom( 'setSome' ) );
+		$this->assertSame( expected: 'ome', actual: Asserter::parsePropNameFrom( 'doSome' ) );
+	}
+
+	public function testSome(): void {
+		// Asserter::isProcessing( 'test1' );
+		Asserter::isProcessing( 'test3' );
+
+		$a = ( new Asserter() );
+		$a->assertSizeWith( array( array( 11, 1 ) ), 'test2' );
+
+		Asserter::assertionFailed( Asserter::NEEDS_ONE_ELEMENT );
 	}
 }

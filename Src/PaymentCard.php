@@ -117,7 +117,7 @@ enum PaymentCard: string implements CardInterface {
 		[ $pattern, $replacement ] = $this->getGapRegex( $length );
 
 		return preg_replace( $pattern, $replacement, (string) $cardNumber )
-			?? CardHandler::formattingFailed( (string) $cardNumber );
+			?? Asserter::formattingFailed( (string) $cardNumber );
 		;
 	}
 

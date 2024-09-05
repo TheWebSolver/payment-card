@@ -10,7 +10,7 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use LogicException;
-use TheWebSolver\Codegarage\PaymentCard\CardHandler;
+use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
 /**
  * -----------------------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ trait ForbidSetters {
 
 	/** @throws LogicException Setter is forbidden for Payment Card Enum cases. */
 	private function setterIsForbidden( string $setter ): never {
-		$propName = CardHandler::parsePropNameFrom( getterSetter: $setter );
+		$propName = Asserter::parsePropNameFrom( getterSetter: $setter );
 
 		throw new LogicException( sprintf( 'Cannot set "%1$s" for enum case "%2$s".', $propName, $this->getName() ) );
 	}

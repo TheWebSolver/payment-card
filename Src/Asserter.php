@@ -1,6 +1,6 @@
 <?php
 /**
- * The Payment Card handler.
+ * The Payment Card property assertions.
  *
  * @package TheWebSolver\Codegarage\Validation
  */
@@ -12,7 +12,7 @@ namespace TheWebSolver\Codegarage\PaymentCard;
 use RuntimeException;
 use InvalidArgumentException;
 
-class CardHandler {
+class Asserter {
 	public const CREDIT  = 'Credit Card';
 	public const DEBIT   = 'Debit Card';
 	public const DEFAULT = 'Payment Card';
@@ -27,7 +27,7 @@ class CardHandler {
 
 	public const INVALID_FORMATTING = '%1$s "%2$s" could not be formatted according to the provided gap.';
 
-	private static ?string $attribute;
+	private static ?string $processing;
 	private static ?string $cardType;
 
 	public function setType( string $name ): void {
@@ -35,26 +35,31 @@ class CardHandler {
 	}
 
 	public function __destruct() {
-		self::$cardType = self::$attribute = null;
+		self::$cardType = null;
 	}
 
 	/**
 	 * @param mixed[] $value
 	 * @return (int|int[])[]
-	 * @throws InvalidArgumentException When given value can't be casted to int.
+	 * @throws InvalidArgumentException When array values are neither a string nor a positive int, or
+	 *                                  if value contains array values, min is not less than max.
 	 */
-	public static function resolveSizeWith( array $value, string $forType ) {
-		self::isProcessing( $forType );
+	public function assertSizeWith( array $value, string $forType ) {
+		$previouslyProcessing = self::$processing ?? null;
+		self::$processing     = $forType;
+
 		self::assertNotEmpty( $value );
 
 		array_walk( array: $value, callback: self::assertHasSize( ... ) );
+
+		self::$processing = $previouslyProcessing;
 
 		/** @var (int|int[])[] */
 		return $value;
 	}
 
 	public static function isProcessing( string $name ): void {
-		self::$attribute = $name;
+		self::$processing = $name;
 	}
 
 	public static function normalize( string $cardNumber ): string {
@@ -117,7 +122,7 @@ class CardHandler {
 	 */
 	public static function assertionFailed( string $message, string|int ...$args ): never {
 		throw new InvalidArgumentException(
-			sprintf( $message, self::$cardType ?? self::DEFAULT, self::$attribute, ...$args )
+			sprintf( $message, self::$cardType ?? self::DEFAULT, self::$processing ?? '', ...$args )
 		);
 	}
 

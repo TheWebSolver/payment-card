@@ -9,7 +9,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
-use TheWebSolver\Codegarage\PaymentCard\CardHandler;
+use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
 trait RegexBasedFormatter {
 	/** @var array{pattern:string,replacement:string,valid:int[],checksum:int} */
@@ -21,7 +21,7 @@ trait RegexBasedFormatter {
 	}
 
 	public function setGap( string|int $gap, string|int ...$gaps ): static {
-		CardHandler::isProcessing( name: 'gap' );
+		Asserter::isProcessing( name: 'gap' );
 
 		$pattern = $replacement = '';
 		$total   = $valid = array();
@@ -29,7 +29,7 @@ trait RegexBasedFormatter {
 		$first   = array_key_first( $gaps );
 
 		foreach ( $gaps as $step => &$checksum ) {
-			$valid[]      = $checksum = CardHandler::assertSingleSize( $checksum );
+			$valid[]      = $checksum = Asserter::assertSingleSize( $checksum );
 			$count        = $first === $step ? $checksum : $checksum - (int) $gaps[ (int) $step - 1 ];
 			$replacement .= $first === $step ? '$1' : ' $' . ( (int) $step + 1 );
 			$pattern     .= '(\d{' . $count . '})';
@@ -53,6 +53,6 @@ trait RegexBasedFormatter {
 		}
 
 		return preg_replace( "/{$pattern}/", $replacement, (string) $cardNumber )
-			?? CardHandler::formattingFailed( (string) $cardNumber );
+			?? Asserter::formattingFailed( (string) $cardNumber );
 	}
 }

@@ -10,7 +10,7 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use SplQueue;
-use TheWebSolver\Codegarage\PaymentCard\CardHandler;
+use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
 trait QueueBasedFormatter {
 	/** @var int[] */
@@ -22,9 +22,9 @@ trait QueueBasedFormatter {
 	}
 
 	public function setGap( string|int $gap, string|int ...$gaps ): static {
-		CardHandler::isProcessing( name: 'gap' );
+		Asserter::isProcessing( name: 'gap' );
 
-		$this->gap = array_map( CardHandler::assertSingleSize( ... ), array: array( $gap, ...$gaps ) );
+		$this->gap = array_map( Asserter::assertSingleSize( ... ), array: array( $gap, ...$gaps ) );
 
 		return $this;
 	}
