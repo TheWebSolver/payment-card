@@ -24,10 +24,7 @@ trait QueueBasedFormatter {
 	public function setGap( string|int $gap, string|int ...$gaps ): static {
 		CardHandler::isProcessing( name: 'gap' );
 
-		$this->gap = array_map(
-			callback: static fn( mixed $size ): int => CardHandler::assertSingleSize( $size ),
-			array: array( $gap, ...$gaps )
-		);
+		$this->gap = array_map( CardHandler::assertSingleSize( ... ), array: array( $gap, ...$gaps ) );
 
 		return $this;
 	}
