@@ -14,15 +14,15 @@ use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
 class AsserterTest extends TestCase {
 	public function testWithoutUsingCardType(): void {
-		$this->expectExceptionMessage( sprintf( Asserter::INVALID_FORMATTING, 'Payment Card', '123' ) );
+		$this->expectExceptionMessage( 'Payment Card "123"' );
 		Asserter::formattingFailed( '123' );
 	}
 
 	public function testUsingCardType(): void {
 		$card = new Asserter();
-		$card->setType( Asserter::DEBIT );
+		$card->setType( Asserter::DEBIT_CARD );
 
-		$this->expectExceptionMessage( sprintf( Asserter::INVALID_FORMATTING, 'Debit Card', '123' ) );
+		$this->expectExceptionMessage( 'Debit Card "123"' );
 		Asserter::formattingFailed( '123' );
 	}
 
