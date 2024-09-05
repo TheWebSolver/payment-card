@@ -26,7 +26,7 @@ trait RegexGenerator {
 		);
 
 		if ( $size === $checksum ) {
-			return array( "/$pattern/", CardInterface::GAP_HOLDERS );
+			return array( '/' . $pattern . '/', CardInterface::GAP_HOLDERS );
 		}
 
 		return in_array( $size, haystack: range( ...$nextRange ), strict: true )

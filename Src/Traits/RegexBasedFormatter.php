@@ -48,11 +48,11 @@ trait RegexBasedFormatter {
 
 		if ( $checksum < ( $length = strlen( (string) $cardNumber ) ) ) {
 			$remaining    = $length - $checksum;
-			$pattern     .= "(\d{{$remaining}})";
+			$pattern     .= '(\d{' . $remaining . '})';
 			$replacement .= ' $' . ( count( $validGaps ) + 1 );
 		}
 
-		return preg_replace( "/{$pattern}/", $replacement, (string) $cardNumber )
+		return preg_replace( '/' . $pattern . '/', $replacement, (string) $cardNumber )
 			?? Asserter::formattingFailed( (string) $cardNumber );
 	}
 }
