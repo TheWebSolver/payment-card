@@ -11,23 +11,23 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
 
-use TheWebSolver\Codegarage\PaymentCard\CardInterface;
 use TheWebSolver\Codegarage\PaymentCard\Traits\Validator;
 use TheWebSolver\Codegarage\PaymentCard\Traits\ForbidSetters;
+use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 use TheWebSolver\Codegarage\PaymentCard\Traits\RegexGenerator;
 
 /** @link https://en.wikipedia.org/wiki/Payment_card_number#Issuer_identification_number_(IIN) */
-enum PaymentCard: string implements CardInterface {
+enum PaymentCard: string implements Card {
 	use Validator, ForbidSetters, RegexGenerator;
 
 	case AmericanExpress = 'american-express';
-	case DinersClub      = 'diners-club';
+	case DinersClub      = 'diners-club'; // ↓ Order matters. Can be resolved as Mastercard.
 	case Mastercard      = 'mastercard';
+	case Troy            = 'troy';        // ↓ Order matters. Can be resolved as Discover.
 	case Discover        = 'discover';
 	case UnionPay        = 'unionpay';
 	case Maestro         = 'maestro';
 	case Visa            = 'visa';
-	case Troy            = 'troy';
 	case Jcb             = 'jcb';
 	case Mir             = 'mir';
 
@@ -100,7 +100,7 @@ enum PaymentCard: string implements CardInterface {
 				/* UK */            6759, 676770, 676774,
 				/* International */ 5018, 5020, 5038, 5893, 6304, 6759, 6761, 6762, 6763,
 			),
-			self::Troy            =>array(
+			self::Troy            => array(
 				/* Discover: US */  65,
 				/* International */ 9792,
 			),
@@ -121,6 +121,20 @@ enum PaymentCard: string implements CardInterface {
 		;
 	}
 
+	/** @param int|int[] $range */
+	public static function getAltCardFrom( int|array $range, Card $card ): ?self {
+		if ( ! $card instanceof PaymentCard ) {
+			return null;
+		}
+
+		return match ( true ) {
+			default                                     => null,
+			self::DinersClub === $card && $range === 55 => self::Mastercard,
+			self::Troy === $card && $range === 65       => self::Discover,
+			self::discoverIsUnionPay( $range, $card )   => self::UnionPay,
+		};
+	}
+
 	/** @return string[] */
 	private function getBreakpointRegex( int $cardSize ): array {
 		return match ( $this ) {
@@ -128,5 +142,16 @@ enum PaymentCard: string implements CardInterface {
 			self::AmericanExpress => $this->getAltRegex( size: $cardSize ),
 			default               => $this->getDefaultRegex( size: $cardSize ),
 		};
+	}
+
+	/** @param int|int[] $range */
+	private static function discoverIsUnionPay( int|array $range, Card $card ): bool {
+		if ( self::Discover !== $card || ! is_array( $range ) ) {
+			return false;
+		}
+
+		$isValid = static fn( int $value ): bool => str_starts_with( (string) $value, needle: '62' );
+
+		return ! empty( array_filter( array: $range, callback: $isValid ) );
 	}
 }
