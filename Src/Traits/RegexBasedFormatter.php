@@ -12,16 +12,10 @@ namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
 trait RegexBasedFormatter {
-	/** @var int[] */
-	private array $breakpoint;
+	use BreakpointGetter;
 
 	/** @var array{0:string,1:string,2:int} */
 	private array $breakPointArgs;
-
-	/** @return int[] */
-	public function getBreakpoint(): array {
-		return $this->breakpoint;
-	}
 
 	public function setBreakpoint( string|int $number, string|int ...$numbers ): static {
 		Asserter::isProcessing( name: 'breakpoint' );

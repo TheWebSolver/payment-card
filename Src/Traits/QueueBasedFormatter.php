@@ -13,18 +13,12 @@ use SplQueue;
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
 trait QueueBasedFormatter {
-	/** @var int[] */
-	private array $breakpoints;
-
-	/** @return int[] */
-	public function getBreakpoint(): array {
-		return $this->breakpoints;
-	}
+	use BreakpointGetter;
 
 	public function setBreakpoint( string|int $number, string|int ...$numbers ): static {
 		Asserter::isProcessing( name: 'breakpoint' );
 
-		$this->breakpoints = array_map( Asserter::assertSingleSize( ... ), array: func_get_args() );
+		$this->breakpoint = array_map( Asserter::assertSingleSize( ... ), array: func_get_args() );
 
 		return $this;
 	}
