@@ -89,19 +89,19 @@ enum PaymentCard: string implements CardInterface {
 		return match ( $this ) {
 			self::Jcb             => array( array( 3528, 3589 ) ),
 			self::DinersClub      => array(
-				/* US & Canada */   55,
-				/* International */ 30, 36, 38, 39,
+				/* MasterCard: US & Canada */ 55,
+				/* International */           30, 36, 38, 39,
 			),
 			self::Discover        => array(
-				/* China UnionPay */ array( 622126, 622925 ),
-				/* International */  6011, array( 644, 649 ), 65,
+				/* UnionPay: China */ array( 622126, 622925 ),
+				/* International */   6011, array( 644, 649 ), 65,
 			),
 			self::Maestro         => array(
-				/* UK */             6759, 676770, 676774,
+				/* UK */            6759, 676770, 676774,
 				/* International */ 5018, 5020, 5038, 5893, 6304, 6759, 6761, 6762, 6763,
 			),
 			self::Troy            =>array(
-				/* Discover */      65,
+				/* Discover: US */  65,
 				/* International */ 9792,
 			),
 			self::Mir             => array( array( 2200, 2204 ) ),
