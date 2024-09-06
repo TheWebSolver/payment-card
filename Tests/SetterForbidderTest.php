@@ -38,9 +38,9 @@ class SetterForbidderTest extends TestCase {
 			array( array( '' ), 'setName', 'name' ),
 			array( array( '' ), 'setAlias', 'alias' ),
 			array( array( '', 0 ), 'setCode', 'code' ),
-			array( array( array( 0 ) ), 'setPattern', 'pattern' ),
+			array( array( array( 0 ) ), 'setIdRange', 'idRange' ),
 			array( array( array( 0 ) ), 'setLength', 'length' ),
-			array( array( 0 ), 'setGap', 'gap' ),
+			array( array( 0 ), 'setBreakpoint', 'breakpoint' ),
 		);
 	}
 }

@@ -13,13 +13,13 @@ use RuntimeException;
 use InvalidArgumentException;
 
 interface CardInterface {
-	public const GAP_CHECKSUM        = 12;
-	public const GAP_HOLDERS         = '$1 $2 $3';
-	public const GAP_DEFAULT_PATTERN = '(\d{4})(\d{4})(\d{4})';
-	public const GAP_ALT_PATTERN     = '(\d{4})(\d{6})(\d{%d})';
+	public const BREAKPOINT_CHECKSUM        = 12;
+	public const BREAKPOINT_HOLDERS         = '$1 $2 $3';
+	public const BREAKPOINT_DEFAULT_PATTERN = '(\d{4})(\d{4})(\d{4})';
+	public const BREAKPOINT_ALT_PATTERN     = '(\d{4})(\d{6})(\d{%d})';
 
 	/**
-	 * Gets the human readable card nice-name.
+	 * Gets the card human readable nice-name.
 	 */
 	public function getName(): string;
 
@@ -29,35 +29,35 @@ interface CardInterface {
 	public function getAlias(): string;
 
 	/**
-	 * Gets the values where to put white spaces when formatting card.
+	 * Gets the card breakpoint values.
 	 *
 	 * @return int[]
 	 */
-	public function getGap(): array;
+	public function getBreakpoint(): array;
 
 	/**
-	 * Gets the valid length for the card.
+	 * Gets the card valid length.
 	 *
 	 * @return (int|int[])[]
 	 */
 	public function getLength(): array;
 
 	/**
-	 * Gets the Security Code information and its valid length.
+	 * Gets the card Security Code information and its valid length.
 	 *
 	 * @return array{0:string,1:int}
 	 */
 	public function getCode(): array;
 
 	/**
-	 * Gets the valid pattern for the card.
+	 * Gets the card valid Identification Number range.
 	 *
 	 * @return (int|int[])[]
 	 */
-	public function getPattern(): array;
+	public function getIdRange(): array;
 
 	/**
-	 * Sets the human readable card nice-name.
+	 * Sets the card human readable nice-name.
 	 */
 	public function setName( string $name ): self;
 
@@ -67,12 +67,12 @@ interface CardInterface {
 	public function setAlias( string $alias ): self;
 
 	/**
-	 * Sets the values where to put white spaces when formatting card.
+	 * Sets the card breakpoint values.
 	 */
-	public function setGap( string|int $gap, string|int ...$gaps ): self;
+	public function setBreakpoint( string|int $number, string|int ...$numbers ): self;
 
 	/**
-	 * Sets the valid length for the card.
+	 * Sets the card valid length.
 	 *
 	 * @param (string|int|(string|int)[])[] $value
 	 * @throws InvalidArgumentException When $value is empty, or provided $value not as per expected type.
@@ -85,15 +85,15 @@ interface CardInterface {
 	public function setCode( string $name, int $size ): self;
 
 	/**
-	 * Sets the valid pattern for the card.
+	 * Sets the card valid Identification Number range.
 	 *
 	 * @param (string|int|(string|int)[])[] $value
 	 * @throws InvalidArgumentException When $value is empty, or provided $value not as per expected type.
 	 */
-	public function setPattern( array $value ): self;
+	public function setIdRange( array $value ): self;
 
 	/**
-	 * Formats given payment card number with gaps provided.
+	 * Formats given card number with breakpoints provided.
 	 *
 	 * @throws RuntimeException When given Card Number could not be formatted.
 	 */

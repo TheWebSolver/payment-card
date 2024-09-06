@@ -25,7 +25,7 @@ class Asserter {
 	public const NEEDS_MIN_LESS_THAN_MAX = '%1$s %2$s minimum value must be less than maximum value.';
 	public const NEEDS_STRING_OR_INT     = '%1$s %2$s must be between [0-9] as either a "string" or an "int" type. "%3$s" type given.';
 
-	public const INVALID_FORMATTING = '%1$s "%2$s" could not be formatted according to the provided gap.';
+	public const INVALID_FORMATTING = '%1$s "%2$s" could not be formatted according to the provided breakpoint.';
 
 	private static ?string $processing;
 	private static ?string $cardType;

@@ -26,7 +26,7 @@ abstract class CardType implements CardInterface {
 	private array $length;
 
 	/** @var (int|(int)[])[] */
-	private array $pattern;
+	private array $idRange;
 
 	public function __construct( private readonly Asserter $asserter = new Asserter() ) {
 		$asserter->setType( name: $this->getType() );
@@ -50,8 +50,8 @@ abstract class CardType implements CardInterface {
 		return $this->code;
 	}
 
-	public function getPattern(): array {
-		return $this->pattern;
+	public function getIdRange(): array {
+		return $this->idRange;
 	}
 
 	public function setName( string $name ): static {
@@ -78,8 +78,8 @@ abstract class CardType implements CardInterface {
 		return $this;
 	}
 
-	public function setPattern( array $value ): static {
-		$this->pattern = $this->asserter->assertSizeWith( $value, forType: 'pattern' );
+	public function setIdRange( array $value ): static {
+		$this->idRange = $this->asserter->assertSizeWith( $value, forType: 'idRange' );
 
 		return $this;
 	}

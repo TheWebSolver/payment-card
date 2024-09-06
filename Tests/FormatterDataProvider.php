@@ -13,18 +13,22 @@ trait FormatterDataProvider {
 	abstract protected function classWithTrait(): object;
 
 	/**
-	 * @param (string|int)[] $gaps
-	 * @dataProvider provideVariousNumbersAndGaps
+	 * @param (string|int)[] $numbers
+	 * @dataProvider provideVariousNumbersAndBreakpoints
 	 */
-	public function testNumberFormattingBasedOnGap( array $gaps, string|int $number, string $expected ): void {
-		$class = $this->classWithTrait()->setGap( ...$gaps ); // @phpstan-ignore-line
+	public function testNumberFormattingBasedOnBreakpoint(
+		array $numbers,
+		string|int $number,
+		string $expected
+	): void {
+		$class = $this->classWithTrait()->setBreakpoint( ...$numbers ); // @phpstan-ignore-line
 
-		$this->assertSame( expected: array_map( intval( ... ), $gaps ), actual: $class->getGap() );
+		$this->assertSame( expected: array_map( intval( ... ), $numbers ), actual: $class->getBreakpoint() );
 		$this->assertSame( $expected, actual: $class->format( $number ) );
 	}
 
 	/** @return array<mixed[]> */
-	public function provideVariousNumbersAndGaps(): array {
+	public function provideVariousNumbersAndBreakpoints(): array {
 		return array(
 			array( array( 5, 10, 13 ), 1234567891012345, '12345 67891 012 345' ),
 			array( array( 3, 9 ), '123456789101998', '123 456789 101998' ),

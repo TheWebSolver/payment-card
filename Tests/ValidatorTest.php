@@ -30,7 +30,7 @@ class ValidatorTest extends TestCase {
 			}
 
 			/** @return (string|int|(string|int)[])[] */
-			public function getPattern(): array {
+			public function getIdRange(): array {
 				return array();
 			}
 
@@ -58,24 +58,24 @@ class ValidatorTest extends TestCase {
 
 	/**
 	 * @param (string|int|(string|int)[])[] $length
-	 * @param (string|int|(string|int)[])[] $pattern
+	 * @param (string|int|(string|int)[])[] $ranges
 	 * @dataProvider provideNumbers
 	 */
 	public function testNumberIsValid(
 		array $length,
-		array $pattern,
+		array $ranges,
 		mixed $subject,
 		bool $status,
 		bool $withLuhnAlgorithm = false
 	): void {
-		$class = new class( $length, $pattern ) {
+		$class = new class( $length, $ranges ) {
 			use Validator;
 
 			/**
 			 * @param (string|int|(string|int)[])[] $length
-			 * @param (string|int|(string|int)[])[] $pattern
+			 * @param (string|int|(string|int)[])[] $ranges
 			 */
-			public function __construct( private array $length, private array $pattern ) {}
+			public function __construct( private array $length, private array $ranges ) {}
 
 			/** @return (string|int|(string|int)[])[] */
 			public function getLength(): array {
@@ -83,8 +83,8 @@ class ValidatorTest extends TestCase {
 			}
 
 			/** @return (string|int|(string|int)[])[] */
-			public function getPattern(): array {
-				return $this->pattern;
+			public function getIdRange(): array {
+				return $this->ranges;
 			}
 
 			/** @return mixed[] */

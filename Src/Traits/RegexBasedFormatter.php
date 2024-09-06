@@ -1,6 +1,6 @@
 <?php
 /**
- * Payment Card Formatter with Gaps based on Regex pattern.
+ * Payment Card Formatter with breakpoint based on Regex pattern.
  *
  * @package TheWebSolver\Codegarage\Validation
  */
@@ -12,44 +12,43 @@ namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
 trait RegexBasedFormatter {
-	/** @var array{pattern:string,replacement:string,valid:int[],checksum:int} */
-	public array $gap;
+	/** @var int[] */
+	private array $breakpoint;
+
+	/** @var array{0:string,1:string,2:int} */
+	private array $breakPointArgs;
 
 	/** @return int[] */
-	public function getGap(): array {
-		return $this->gap['valid'];
+	public function getBreakpoint(): array {
+		return $this->breakpoint;
 	}
 
-	public function setGap( string|int $gap, string|int ...$gaps ): static {
-		Asserter::isProcessing( name: 'gap' );
+	public function setBreakpoint( string|int $number, string|int ...$numbers ): static {
+		Asserter::isProcessing( name: 'breakpoint' );
 
 		$pattern = $replacement = '';
-		$total   = $valid = array();
-		$gaps    = array( $gap, ...$gaps );
-		$first   = array_key_first( $gaps );
+		$numbers = array( $number, ...$numbers );
+		$first   = array_key_first( $numbers );
 
-		foreach ( $gaps as $step => &$checksum ) {
-			$valid[]      = $checksum = Asserter::assertSingleSize( $checksum );
-			$count        = $first === $step ? $checksum : $checksum - (int) $gaps[ (int) $step - 1 ];
+		foreach ( $numbers as $step => &$checksum ) {
+			$checksum     = $this->breakpoint[] = Asserter::assertSingleSize( $checksum );
+			$count        = $first === $step ? $checksum : $checksum - (int) $numbers[ (int) $step - 1 ];
 			$replacement .= $first === $step ? '$1' : ' $' . ( (int) $step + 1 );
 			$pattern     .= '(\d{' . $count . '})';
 		}
 
-		$this->gap = compact( 'pattern', 'replacement', 'valid', 'checksum' );
+		$this->breakPointArgs = array( $pattern, $replacement, $checksum );
 
 		return $this;
 	}
 
 	public function format( string|int $cardNumber ): string {
-		[ 'pattern'     => $pattern,
-			'replacement' => $replacement,
-			'valid'       => $validGaps,
-			'checksum'    => $checksum ] = $this->gap;
+		[ $pattern, $replacement, $checksum ] = $this->breakPointArgs;
 
 		if ( $checksum < ( $length = strlen( (string) $cardNumber ) ) ) {
 			$remaining    = $length - $checksum;
 			$pattern     .= '(\d{' . $remaining . '})';
-			$replacement .= ' $' . ( count( $validGaps ) + 1 );
+			$replacement .= ' $' . ( count( $this->breakpoint ) + 1 );
 		}
 
 		return preg_replace( '/' . $pattern . '/', $replacement, (string) $cardNumber )

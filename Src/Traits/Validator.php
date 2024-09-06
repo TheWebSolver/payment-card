@@ -18,14 +18,14 @@ use TheWebSolver\Codegarage\PaymentCard\Asserter;
  */
 trait Validator {
 	abstract public function getLength(): array;
-	abstract public function getPattern(): array;
+	abstract public function getIdRange(): array;
 	abstract public function getCode(): array;
 
 	public function isNumberValid( mixed $subject, bool $withLuhnAlgorithm = true ): bool {
 		return $this->matchesType( $subject )
 			&& $this->matchesLengths( $subject )
 			&& $this->matchesLuhnAlgorithm( $subject, shouldRun: $withLuhnAlgorithm )
-			&& $this->matchesPatterns( $subject );
+			&& $this->matchesIdRanges( $subject );
 	}
 
 	public function isCodeValid( mixed $subject ): bool {
@@ -49,9 +49,9 @@ trait Validator {
 			: true;
 	}
 
-	protected function matchesPatterns( string $subject ): bool {
-		foreach ( $this->getPattern() as $pattern ) {
-			if ( $this->matchesPattern( $pattern, $subject ) ) {
+	protected function matchesIdRanges( string $subject ): bool {
+		foreach ( $this->getIdRange() as $range ) {
+			if ( $this->matchesIdRange( $range, $subject ) ) {
 				return true;
 			}
 		}
@@ -59,16 +59,16 @@ trait Validator {
 		return false;
 	}
 
-	private function matchesPattern( mixed $pattern, string $subject ): bool {
+	private function matchesIdRange( mixed $range, string $subject ): bool {
 		try {
-			$pattern = Asserter::assertHasSize( $pattern );
+			$range = Asserter::assertHasSize( $range );
 		} catch ( InvalidArgumentException ) {
 			return false;
 		}
 
-		return is_array( $pattern )
-			? $this->matchesBetween( $subject, ...$pattern )
-			: $this->matchesExact( $subject, $pattern );
+		return is_array( $range )
+			? $this->matchesBetween( $subject, ...$range )
+			: $this->matchesExact( $subject, $range );
 	}
 
 	private function matchesBetween( string $subject, int $min, int $max ): bool {
@@ -77,11 +77,11 @@ trait Validator {
 		return $count >= $min && $count <= $max;
 	}
 
-	private function matchesExact( string $subject, int $pattern ): bool {
-		$CardPart    = substr( $subject, offset: 0, length: strlen( (string) $pattern ) );
-		$patternPart = substr( (string) $pattern, offset: 0, length: strlen( $subject ) );
+	private function matchesExact( string $subject, int $range ): bool {
+		$CardPart    = substr( $subject, offset: 0, length: strlen( (string) $range ) );
+		$rangePart = substr( (string) $range, offset: 0, length: strlen( $subject ) );
 
-		return $patternPart === $CardPart;
+		return $rangePart === $CardPart;
 	}
 
 	private function matchesType( mixed &$subject ): bool {

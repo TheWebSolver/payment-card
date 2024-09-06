@@ -37,7 +37,7 @@ trait ForbidSetters {
 	}
 
 	/** @throws LogicException Setter is forbidden for Payment Card Enum cases. */
-	public function setGap( string|int $gap, string|int ...$gaps ): never {
+	public function setBreakpoint( string|int $number, string|int ...$numbers ): never {
 		$this->setterIsForbidden( setter: __FUNCTION__ );
 	}
 
@@ -52,7 +52,7 @@ trait ForbidSetters {
 	}
 
 	/** @throws LogicException Setter is forbidden for Payment Card Enum cases. */
-	public function setPattern( array $value ): never {
+	public function setIdRange( array $value ): never {
 		$this->setterIsForbidden( setter: __FUNCTION__ );
 	}
 

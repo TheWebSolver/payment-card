@@ -50,7 +50,7 @@ enum PaymentCard: string implements CardInterface {
 		return $this->value;
 	}
 
-	public function getGap(): array {
+	public function getBreakpoint(): array {
 		return match ( $this ) {
 			self::DinersClub,
 			self::AmericanExpress => array( 4, 10 ),
@@ -85,7 +85,7 @@ enum PaymentCard: string implements CardInterface {
 		};
 	}
 
-	public function getPattern(): array {
+	public function getIdRange(): array {
 		return match ( $this ) {
 			self::Jcb             => array( array( 3528, 3589 ) ),
 			self::DinersClub      => array(
@@ -114,7 +114,7 @@ enum PaymentCard: string implements CardInterface {
 
 	public function format( string|int $cardNumber ): string {
 		$length                    = strlen( (string) $cardNumber );
-		[ $pattern, $replacement ] = $this->getGapRegex( $length );
+		[ $pattern, $replacement ] = $this->getBreakpointRegex( cardSize: $length );
 
 		return preg_replace( $pattern, $replacement, (string) $cardNumber )
 			?? Asserter::formattingFailed( (string) $cardNumber );
@@ -122,7 +122,7 @@ enum PaymentCard: string implements CardInterface {
 	}
 
 	/** @return string[] */
-	private function getGapRegex( int $cardSize ): array {
+	private function getBreakpointRegex( int $cardSize ): array {
 		return match ( $this ) {
 			self::DinersClub,
 			self::AmericanExpress => $this->getAltRegex( size: $cardSize ),

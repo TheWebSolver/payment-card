@@ -1,6 +1,6 @@
 <?php
 /**
- * Payment Card Formatter.
+ * Payment Card Formatter with breakpoint based on splQueue.
  *
  * @package TheWebSolver\Codegarage\Validation
  */
@@ -14,17 +14,17 @@ use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
 trait QueueBasedFormatter {
 	/** @var int[] */
-	public array $gap;
+	private array $breakpoints;
 
 	/** @return int[] */
-	public function getGap(): array {
-		return $this->gap;
+	public function getBreakpoint(): array {
+		return $this->breakpoints;
 	}
 
-	public function setGap( string|int $gap, string|int ...$gaps ): static {
-		Asserter::isProcessing( name: 'gap' );
+	public function setBreakpoint( string|int $number, string|int ...$numbers ): static {
+		Asserter::isProcessing( name: 'breakpoint' );
 
-		$this->gap = array_map( Asserter::assertSingleSize( ... ), array: array( $gap, ...$gaps ) );
+		$this->breakpoints = array_map( Asserter::assertSingleSize( ... ), array: func_get_args() );
 
 		return $this;
 	}
@@ -32,14 +32,14 @@ trait QueueBasedFormatter {
 	public function format( string|int $cardNumber ): string {
 		$cardNumber = (string) $cardNumber;
 		$formatted  = '';
-		$gapStack   = $this->getGapStack();
-		$expectedAt = $gapStack->dequeue();
+		$stack      = $this->getBreakpointStack();
+		$expectedAt = $stack->dequeue();
 		$cardLength = strlen( $cardNumber );
 
 		for ( $i = 0; $i < $cardLength; $i++ ) {
 			if ( $i === $expectedAt ) {
 				$formatted .= ' ';
-				$expectedAt = $gapStack->isEmpty() ? null : $gapStack->dequeue();
+				$expectedAt = $stack->isEmpty() ? null : $stack->dequeue();
 			}
 
 			$formatted .= $cardNumber[ $i ];
@@ -49,12 +49,12 @@ trait QueueBasedFormatter {
 	}
 
 	/** @return SplQueue<int> */
-	private function getGapStack(): SplQueue {
+	private function getBreakpointStack(): SplQueue {
 		/** @var SplQueue<int> */
 		$queue = new SplQueue();
 
-		foreach ( $this->getGap() as $gap ) {
-			$queue->enqueue( $gap );
+		foreach ( $this->getBreakpoint() as $number ) {
+			$queue->enqueue( $number );
 		}
 
 		return $queue;
