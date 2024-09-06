@@ -9,13 +9,16 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage;
 
+use LogicException;
 use PHPUnit\Framework\TestCase;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCard as Card;
+use TheWebSolver\Codegarage\PaymentCard\Traits\CardResolver;
 
 class PaymentCardTest extends TestCase {
 	/** @dataProvider provideCreditCards */
 	public function testCreditCards( Card $card, string|int $number ): void {
-		$this->assertTrue( $card->isNumberValid( subject: $number ) );
+		$this->assertTrue( $card->isNumberValid( $number ) );
 	}
 
 	/**
@@ -76,5 +79,22 @@ class PaymentCardTest extends TestCase {
 			array( Card::Mir, '2201240328710764' ),
 			array( Card::Mir, 2203757216192209 ),
 		);
+	}
+
+	public function testCardResolver(): void {
+		$class = new class() {
+			use CardResolver;
+		};
+
+		$range = array( 62212678, 6229258 );
+		$card  = PaymentCard::getAltCardFrom( $range, Card::Discover );
+
+		$this->assertSame( PaymentCard::UnionPay->getName(), $card?->getName() );
+
+		// $card = $class->resolveCardFromNumber( 6500830000000002 );
+		// $this->assertSame( 'Troy', $class->resolveCardFromNumber( 6500830000000002 )?->getName() );
+
+		$this->expectException( LogicException::class );
+		$class->resolveCardFromNumber( 0, registeredOnly: true );
 	}
 }
