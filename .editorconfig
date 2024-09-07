@@ -10,6 +10,3 @@ indent_size = 2
 
 [{.jshintrc,*.json,*.yml}]
 indent_style = space
-
-[{*.txt,wp-config-sample.php}]
-end_of_line = crlf
