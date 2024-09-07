@@ -7,13 +7,13 @@
 
 declare( strict_types = 1 );
 
-namespace TheWebSolver\Codegarage\PaymentCard;
+namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use InvalidArgumentException;
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
-class Matcher {
-	public static function matchesType( mixed &$value ): bool {
+trait Matcher {
+	public static function matchesAllowedPattern( mixed &$value ): bool {
 		return is_scalar( $value ) && ( $value = Asserter::normalize( (string) $value ) );
 	}
 
@@ -25,8 +25,8 @@ class Matcher {
 
 	/** @param mixed[] $sizes */
 	public static function matchesLength( array $sizes, string $value ): bool {
-		foreach ( $sizes as $length ) {
-			if ( self::matchesLengthWith( $length, value: $value ) ) {
+		foreach ( $sizes as $size ) {
+			if ( self::matchesLengthWith( $size, $value ) ) {
 				return true;
 			}
 		}
@@ -44,7 +44,7 @@ class Matcher {
 		}
 
 		return ! is_array( $size )
-			? $count === $size
+			? $size && ( $count === $size )
 			: ( $size[0] ?? 0 ) && ( $size[1] ?? 0 ) && ( $count >= $size[0] && $count <= $size[1] );
 	}
 

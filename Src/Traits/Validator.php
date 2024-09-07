@@ -9,7 +9,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
-use TheWebSolver\Codegarage\PaymentCard\Matcher;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 
 /**
  * This is intended to only be used inside concrete that implements
@@ -21,10 +21,10 @@ trait Validator {
 	abstract public function getCode(): array;
 
 	public function isNumberValid( mixed $number, bool $withLuhnAlgorithm = true ): bool {
-		return Matcher::matchesType( $number )
-			&& Matcher::matchesLength( $this->getLength(), $number )
-			&& Matcher::matchesLuhnAlgorithm( $number, shouldRun: $withLuhnAlgorithm )
-			&& Matcher::matchesIdRange( $this->getIdRange(), $number );
+		return PaymentCard::matchesAllowedPattern( $number )
+			&& PaymentCard::matchesLength( $this->getLength(), $number )
+			&& PaymentCard::matchesLuhnAlgorithm( $number, shouldRun: $withLuhnAlgorithm )
+			&& PaymentCard::matchesIdRange( $this->getIdRange(), $number );
 	}
 
 	public function isCodeValid( mixed $code ): bool {

@@ -11,6 +11,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
 
+use TheWebSolver\Codegarage\PaymentCard\Traits\Matcher;
 use TheWebSolver\Codegarage\PaymentCard\Traits\Validator;
 use TheWebSolver\Codegarage\PaymentCard\Traits\ForbidSetters;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
@@ -18,7 +19,7 @@ use TheWebSolver\Codegarage\PaymentCard\Traits\RegexGenerator;
 
 /** @link https://en.wikipedia.org/wiki/Payment_card_number#Issuer_identification_number_(IIN) */
 enum PaymentCard: string implements Card {
-	use Validator, ForbidSetters, RegexGenerator;
+	use Validator, ForbidSetters, RegexGenerator, Matcher;
 
 	case AmericanExpress = 'american-express';
 	case DinersClub      = 'diners-club'; // ↓ Order matters. Can be resolved as Mastercard.
@@ -122,17 +123,18 @@ enum PaymentCard: string implements Card {
 	}
 
 	/** @param int|int[] $range */
-	public static function getAltCardFrom( int|array $range, Card $card ): ?self {
-		if ( ! $card instanceof PaymentCard ) {
-			return null;
-		}
-
-		return match ( true ) {
-			default                                     => null,
-			self::DinersClub === $card && $range === 55 => self::Mastercard,
-			self::Troy === $card && $range === 65       => self::Discover,
-			self::discoverIsUnionPay( $range, $card )   => self::UnionPay,
+	public function getPartneredCardFrom( int|array $range ): ?self {
+		return match ( $this ) {
+			default          => null,
+			self::DinersClub => 55 === $range ? self::Mastercard : null,
+			self::Troy       => 65 === $range ? self::Discover : null,
+			self::Discover   => $this->discoverIsUnionPay( $range ) ? self::UnionPay : null,
 		};
+	}
+
+	/** @param int|int[] $range */
+	public static function maybeGetPartneredCard( int|array $range, Card $card ): Card {
+		return ! $card instanceof self ? $card : ( $card->getPartneredCardFrom( $range ) ?? $card );
 	}
 
 	/** @return string[] */
@@ -145,13 +147,14 @@ enum PaymentCard: string implements Card {
 	}
 
 	/** @param int|int[] $range */
-	private static function discoverIsUnionPay( int|array $range, Card $card ): bool {
-		if ( self::Discover !== $card || ! is_array( $range ) ) {
+	private function discoverIsUnionPay( int|array $range ): bool {
+		if ( ! is_array( $range ) ) {
 			return false;
 		}
 
-		$isValid = static fn( int $value ): bool => str_starts_with( (string) $value, needle: '62' );
+		$idMatches = static fn( int $value ): bool => str_starts_with( (string) $value, needle: '622126' )
+			|| str_starts_with( (string) $value, needle: '622925' );
 
-		return ! empty( array_filter( array: $range, callback: $isValid ) );
+		return ! empty( array_filter( array: $range, callback: $idMatches ) );
 	}
 }

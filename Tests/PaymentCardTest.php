@@ -87,9 +87,9 @@ class PaymentCardTest extends TestCase {
 		};
 
 		$range = array( 62212678, 6229258 );
-		$card  = PaymentCard::getAltCardFrom( $range, Card::Discover );
+		$card  = PaymentCard::maybeGetPartneredCard( $range, Card::Discover );
 
-		$this->assertSame( PaymentCard::UnionPay->getName(), $card?->getName() );
+		$this->assertSame( PaymentCard::UnionPay, $card );
 
 		// $card = $class->resolveCardFromNumber( 6500830000000002 );
 		// $this->assertSame( 'Troy', $class->resolveCardFromNumber( 6500830000000002 )?->getName() );

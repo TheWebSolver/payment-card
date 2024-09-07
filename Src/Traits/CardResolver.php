@@ -10,7 +10,6 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use LogicException;
-use TheWebSolver\Codegarage\PaymentCard\Matcher;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
@@ -29,7 +28,7 @@ trait CardResolver {
 
 		if ( empty( $cards ) ) {
 			throw new LogicException(
-				sprintf( 'Payment Cards not registered to resolve from the given card number "%s".', $number )
+				sprintf( 'Payment Cards not registered. Impossible to resolve card number: "%s".', $number )
 			);
 		}
 
@@ -41,11 +40,11 @@ trait CardResolver {
 				continue;
 			}
 
-			[ $currentLength, $cardRange ] = $this->getMatchedIdRange( $card, (string) $number );
+			[ $currentLength, $currentRange ] = $this->getMatchedIdRange( $card, (string) $number );
 
 			if ( $maxLength < $currentLength ) {
 				$maxLength = $currentLength;
-				$resolved  = PaymentCard::getAltCardFrom( $cardRange, $card ) ?? $card;
+				$resolved  = PaymentCard::maybeGetPartneredCard( $currentRange, $card );
 			}
 		}
 
@@ -58,7 +57,7 @@ trait CardResolver {
 		$cardRange = 0;
 
 		foreach ( $card->getIdRange() as $range ) {
-			if ( ! Matcher::matchesIdRangeWith( $range, $number ) ) {
+			if ( ! PaymentCard::matchesIdRangeWith( $range, $number ) ) {
 				continue;
 			}
 
@@ -66,7 +65,7 @@ trait CardResolver {
 				? (int) min( strlen( (string) $range[0] ), strlen( (string) $range[1] ) )
 				: strlen( (string) $range );
 
-			if ( $currentLength > $maxLength ) {
+			if ( $maxLength < $currentLength ) {
 				$maxLength = $currentLength;
 				$cardRange = $range;
 			}
