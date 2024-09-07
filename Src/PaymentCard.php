@@ -128,7 +128,7 @@ enum PaymentCard: string implements Card {
 			default          => null,
 			self::DinersClub => 55 === $range ? self::Mastercard : null,
 			self::Troy       => 65 === $range ? self::Discover : null,
-			self::Discover   => $this->discoverIsUnionPay( $range ) ? self::UnionPay : null,
+			self::Discover   => $this->isUnionPay( $range ) ? self::UnionPay : null,
 		};
 	}
 
@@ -147,7 +147,7 @@ enum PaymentCard: string implements Card {
 	}
 
 	/** @param int|int[] $range */
-	private function discoverIsUnionPay( int|array $range ): bool {
+	private function isUnionPay( int|array $range ): bool {
 		if ( ! is_array( $range ) ) {
 			return false;
 		}
