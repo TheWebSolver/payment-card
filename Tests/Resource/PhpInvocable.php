@@ -1,7 +1,4 @@
 <?php
-
-use TheWebSolver\Codegarage\PaymentCard\CardFactory;
-
 /**
  * The Payment Cards from a Class.
  *
@@ -23,7 +20,7 @@ class CardList {
 			array(
 				'name'       => 'Gerbang Pembayaran Nasional',
 				'alias'      => 'gpn',
-				'type'       => CardFactory::DEBIT_CARD,
+				'type'       => 'Debit Card',
 				'breakpoint' => array( 4, 8, 12 ),
 				'code'       => array( 'CVC', 3 ),
 				'length'     => array( 16, 18, 19 ),
