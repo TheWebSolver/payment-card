@@ -14,4 +14,9 @@ parameters:
 			message: '#^Offset 1 on array\{string\, int\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			path: Src/Traits/Validator.php
+		-
+			path: Src/CardFactory.php
+			messages:
+				- '#^Property TheWebSolver\\Codegarage\\PaymentCard\\CardFactory\:\:\$path \(string\) does not accept mixed\.$#'
+				- '#^Parameter \#1 \$type of static method TheWebSolver\\Codegarage\\PaymentCard\\CardFactory\:\:shutdownFactoryForFile\(\) expects string\, mixed given\.$#'
 

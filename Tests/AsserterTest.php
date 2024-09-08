@@ -20,7 +20,7 @@ class AsserterTest extends TestCase {
 
 	public function testUsingCardType(): void {
 		$card = new Asserter();
-		$card->setType( Asserter::DEBIT_CARD );
+		$card->setType( 'Debit Card' );
 
 		$this->expectExceptionMessage( 'Debit Card "123"' );
 		Asserter::formattingFailed( '123' );

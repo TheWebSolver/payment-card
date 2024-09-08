@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Napas",
+    "alias": "napas",
+    "breakpoint": [4, 8, 12],
+    "code": ["CVC", 3],
+    "length": [16, 19],
+    "idRange": [9704]
+  },
+  {
+    "name": "Gerbang Pembayaran Nasional",
+    "type": "Debit Card",
+    "alias": "gpn",
+    "breakpoint": [4, 8, 12],
+    "code": ["CVC", 3],
+    "length": [16, 18, 19],
+    "idRange": [1946, 50, 56, 58, [60, 63]]
+  },
+  {
+    "name": "Humo",
+    "alias": "humo",
+    "breakpoint": [4, 8, 12],
+    "code": ["CVV", 3],
+    "length": [16],
+    "idRange": [9860]
+  }
+]

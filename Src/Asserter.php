@@ -13,10 +13,6 @@ use RuntimeException;
 use InvalidArgumentException;
 
 class Asserter {
-	public const CREDIT_CARD  = 'Credit Card';
-	public const DEBIT_CARD   = 'Debit Card';
-	public const DEFAULT_CARD = 'Payment Card';
-
 	public const ALLOWED_PATTERN = '/[^0-9]/';
 
 	public const NEEDS_ONE_ELEMENT       = '%1$s %2$s must have atleast one element.';
@@ -122,14 +118,14 @@ class Asserter {
 	 */
 	public static function assertionFailed( string $message, string|int ...$args ): never {
 		throw new InvalidArgumentException(
-			sprintf( $message, self::$cardType ?? self::DEFAULT_CARD, self::$processing ?? '', ...$args )
+			sprintf( $message, self::$cardType ?? CardFactory::DEFAULT_CARD, self::$processing ?? '', ...$args )
 		);
 	}
 
 	/** @throws RuntimeException When formatting fails. */
 	public static function formattingFailed( string $cardNumber ): never {
 		throw new RuntimeException(
-			sprintf( self::INVALID_FORMATTING, self::$cardType ?? self::DEFAULT_CARD, $cardNumber )
+			sprintf( self::INVALID_FORMATTING, self::$cardType ?? CardFactory::DEFAULT_CARD, $cardNumber )
 		);
 	}
 }
