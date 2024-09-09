@@ -40,6 +40,13 @@ class CardFactory {
 
 	private string $path = '';
 
+	/**
+	 * List of Payment Card instances for `PaymentCard` enums.
+	 *
+	 * @var Card[]
+	 */
+	private static array $cards;
+
 	public function __construct( mixed $data /* $fileType: for internal use only */ ) {
 		[ $content, $typeWithPath, $this->path ] = self::parseContentIfFile( $data );
 
@@ -57,7 +64,21 @@ class CardFactory {
 	}
 
 	/**
-	 * @return array<int,Card>
+	 * @param string  $index The JSON key.
+	 * @param mixed[] $args  Never used.
+	 * @throws TypeError When something went wrong.
+	 * @access private
+	 */
+	public static function __callStatic( string $index, array $args ): Card {
+		self::$cards ??= ( new self(
+			data: dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'Resource' . DIRECTORY_SEPARATOR . 'paymentCards.json'
+		) )->createCards();
+
+		return self::$cards[ $index ] ?? self::showdownForInvalidAlias( $index );
+	}
+
+	/**
+	 * @return array<string|int,Card>
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
 	public static function createFromPhpFile( string $path ): array {
@@ -65,7 +86,7 @@ class CardFactory {
 	}
 
 	/**
-	 * @return array<int,Card>
+	 * @return array<string|int,Card>
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
 	public static function createFromJsonFile( string $path ): array {
@@ -73,17 +94,17 @@ class CardFactory {
 	}
 
 	/**
-	 * @return array<int,Card>
+	 * @return array<string|int,Card>
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
 	public function createCards(): array {
-		/** @var array<int,Card> */
+		/** @var array<string|int,Card> */
 		return iterator_to_array( iterator: $this->yieldCard(), preserve_keys: true );
 	}
 
 	public function yieldCard(): Generator {
 		foreach ( $this->content as $index => $args ) {
-			yield $this->createCard( $index );
+			yield $index => $this->createCard( $index );
 		}
 	}
 
@@ -122,7 +143,7 @@ class CardFactory {
 			};
 	}
 
-	/** @return array<int,Card> */
+	/** @return array<string|int,Card> */
 	private static function createFrom( string $file ): array {
 		$factory       = new self( ...self::parseContentIfFile( $file ) );
 		$factory->path = $file;
@@ -196,5 +217,9 @@ class CardFactory {
 				/* %5 */ PHP_EOL,
 			)
 		);
+	}
+
+	private static function showdownForInvalidAlias( string $alias ): never {
+		throw new TypeError( sprintf( 'Impossible to find Card instance for alias: %s', $alias ) );
 	}
 }

@@ -11,13 +11,17 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
 
+use TypeError;
 use TheWebSolver\Codegarage\PaymentCard\Traits\Matcher;
 use TheWebSolver\Codegarage\PaymentCard\Traits\Validator;
 use TheWebSolver\Codegarage\PaymentCard\Traits\ForbidSetters;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 use TheWebSolver\Codegarage\PaymentCard\Traits\RegexGenerator;
 
-/** @link https://en.wikipedia.org/wiki/Payment_card_number#Issuer_identification_number_(IIN) */
+/**
+ * @link https://en.wikipedia.org/wiki/Payment_card_number#Issuer_identification_number_(IIN)
+ * @see ../Resource/paymentCards.json
+ */
 enum PaymentCard: string implements Card {
 	use Validator, ForbidSetters, RegexGenerator, Matcher;
 
@@ -32,89 +36,125 @@ enum PaymentCard: string implements Card {
 	case Jcb             = 'jcb';
 	case Mir             = 'mir';
 
+	public function jsonKey(): string {
+		return match ( $this ) {
+			default               => $this->value,
+			self::AmericanExpress => 'americanExpress',
+			self::DinersClub      => 'dinersClub',
+		};
+	}
+
 	public function getType(): string {
-		return CardFactory::CREDIT_CARD;
+		try {
+			return $this->fromFactory()->getType();
+		} catch ( TypeError ) {
+			return CardFactory::CREDIT_CARD;
+		}
 	}
 
 	public function getName(): string {
-		return match ( $this ) {
-			self::AmericanExpress => 'American Express',
-			self::DinersClub      => 'Diners Club',
-			self::Mastercard      => 'Mastercard',
-			self::Discover        => 'Discover',
-			self::UnionPay        => 'UnionPay',
-			self::Maestro         => 'Maestro',
-			self::Visa            => 'Visa',
-			self::Troy            => 'Troy',
-			self::Jcb             => 'JCB',
-			self::Mir             => 'Mir'
-		};
+		try {
+			return $this->fromFactory()->getName();
+		} catch ( TypeError ) {
+			return match ( $this ) {
+				self::AmericanExpress => 'American Express',
+				self::DinersClub      => 'Diners Club',
+				self::Mastercard      => 'Mastercard',
+				self::Discover        => 'Discover',
+				self::UnionPay        => 'UnionPay',
+				self::Maestro         => 'Maestro',
+				self::Visa            => 'Visa',
+				self::Troy            => 'Troy',
+				self::Jcb             => 'JCB',
+				self::Mir             => 'Mir'
+			};
+		}
 	}
 
 	public function getAlias(): string {
-		return $this->value;
+		try {
+			return $this->fromFactory()->getAlias();
+		} catch ( TypeError ) {
+			return $this->value;
+		}
 	}
 
 	public function getBreakpoint(): array {
-		return match ( $this ) {
-			self::DinersClub,
-			self::AmericanExpress => array( 4, 10 ),
-			default               => array( 4, 8, 12 ),
-		};
+		try {
+			return $this->fromFactory()->getBreakpoint();
+		} catch ( TypeError ) {
+			return match ( $this ) {
+				self::DinersClub,
+				self::AmericanExpress => array( 4, 10 ),
+				default               => array( 4, 8, 12 ),
+			};
+		}
 	}
 
 	public function getCode(): array {
-		return match ( $this ) {
-			self::Maestro,
-			self::Mastercard      => array( 'CVC', 3 ),
-			self::AmericanExpress => array( 'CID', 4 ),
-			self::Discover        => array( 'CID', 3 ),
-			self::UnionPay        => array( 'CVN', 3 ),
-			self::Mir             => array( 'CVP2', 3 ),
-			default               => array( 'CVV', 3 )
-		};
+		try {
+			return $this->fromFactory()->getCode();
+		} catch ( TypeError ) {
+			return match ( $this ) {
+				self::Maestro,
+				self::Mastercard      => array( 'CVC', 3 ),
+				self::AmericanExpress => array( 'CID', 4 ),
+				self::Discover        => array( 'CID', 3 ),
+				self::UnionPay        => array( 'CVN', 3 ),
+				self::Mir             => array( 'CVP2', 3 ),
+				default               => array( 'CVV', 3 )
+			};
+		}
 	}
 
 	public function getLength(): array {
-		return match ( $this ) {
-			self::Discover, self::Jcb,
-			self::Mir, self::UnionPay    => array( array( 16, 19 ) ),
-			self::Troy, self::Mastercard => array( 16 ),
-			self::AmericanExpress        => array( 15 ),
-			self::Maestro                => array( array( 12, 19 ) ),
-			self::Visa                   => array( 13, 16, 19 ),
-			self::DinersClub             => array(
-				/* US & Canada */   16,
-				/* International */ array( 14, 19 ),
-			),
-		};
+		try {
+			return $this->fromFactory()->getLength();
+		} catch ( TypeError ) {
+			return match ( $this ) {
+				self::Discover, self::Jcb,
+				self::Mir, self::UnionPay    => array( array( 16, 19 ) ),
+				self::Troy, self::Mastercard => array( 16 ),
+				self::AmericanExpress        => array( 15 ),
+				self::Maestro                => array( array( 12, 19 ) ),
+				self::Visa                   => array( 13, 16, 19 ),
+				self::DinersClub             => array(
+					/* US & Canada */   16,
+					/* International */ array( 14, 19 ),
+				),
+			};
+		}
 	}
 
 	public function getIdRange(): array {
-		return match ( $this ) {
-			self::Jcb             => array( array( 3528, 3589 ) ),
-			self::DinersClub      => array(
-				/* MasterCard: US & Canada */ 55,
-				/* International */           30, 36, 38, 39,
-			),
-			self::Discover        => array(
-				/* UnionPay: China */ array( 622126, 622925 ),
-				/* International */   6011, array( 644, 649 ), 65,
-			),
-			self::Maestro         => array(
-				/* UK */            6759, 676770, 676774,
+		try {
+			return $this->fromFactory()->getIdRange();
+		} catch ( TypeError ) {
+			return match ( $this ) {
+				self::Jcb             => array( array( 3528, 3589 ) ),
+				self::DinersClub      => array(
+					/* MasterCard: US & Canada */ 55,
+					/* International */           30, 36, 38, 39,
+				),
+				self::Discover        => array(
+					/* UnionPay: China */ array( 622126, 622925 ),
+					/* International */   6011, array( 644, 649 ), 65,
+				),
+				self::Maestro         => array(
+					/* UK */            6759, 676770, 676774,
 				/* International */ 5018, 5020, 5038, 5893, 6304, 6759, 6761, 6762, 6763,
-			),
-			self::Troy            => array(
-				/* Discover: US */  65,
-				/* International */ 9792,
-			),
-			self::Mir             => array( array( 2200, 2204 ) ),
-			self::AmericanExpress => array( 34, 37 ),
-			self::Visa            => array( 4 ),
-			self::Mastercard      => array( array( 51, 55 ), array( 2221, 2720 ) ),
-			self::UnionPay        => array( 62 ),
-		};//end match
+				),
+				self::Troy            => array(
+					/* Discover: US */  65,
+					/* International */ 9792,
+				),
+				self::Mir             => array( array( 2200, 2204 ) ),
+				self::AmericanExpress => array( 34, 37 ),
+				self::Visa            => array( 4 ),
+				self::Mastercard      => array( array( 51, 55 ), array( 2221, 2720 ) ),
+				self::UnionPay        => array( 62 ),
+			};//end match
+		}//end try
 	}
 
 	public function format( string|int $cardNumber ): string {
@@ -139,6 +179,10 @@ enum PaymentCard: string implements Card {
 	/** @param int|int[] $range */
 	public static function maybeGetPartneredCard( int|array $range, Card $card ): Card {
 		return ! $card instanceof self ? $card : ( $card->getPartneredCardFrom( $range ) ?? $card );
+	}
+
+	private function fromFactory(): Card {
+		return CardFactory::{$this->jsonKey()}();
 	}
 
 	/** @return string[] */

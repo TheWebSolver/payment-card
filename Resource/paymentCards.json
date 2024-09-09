@@ -1,0 +1,87 @@
+{
+  "americanExpress": {
+    "alias": "american-express",
+    "name": "American Express",
+    "breakpoint": [4, 10],
+    "code": ["CID", 4],
+    "length": [15],
+    "idRange": [34, 37]
+  },
+  "dinersClub": {
+    "alias": "diners-club",
+    "name": "Diners Club",
+    "breakpoint": [4, 10],
+    "code": ["CVV", 3],
+    "length": [16, [14, 19]],
+    "idRange": [55, 30, 36, 38, 39]
+  },
+  "mastercard": {
+    "alias": "mastercard",
+    "name": "Mastercard",
+    "breakpoint": [4, 8, 12],
+    "code": ["CVC", 3],
+    "length": [16],
+    "idRange": [
+      [51, 55],
+      [2221, 2720]
+    ]
+  },
+  "troy": {
+    "alias": "troy",
+    "name": "Troy",
+    "breakpoint": [4, 8, 12],
+    "code": ["CVV", 3],
+    "length": [16],
+    "idRange": [65, 9792]
+  },
+  "discover": {
+    "alias": "discover",
+    "name": "Discover",
+    "breakpoint": [4, 8, 12],
+    "code": ["CID", 3],
+    "length": [[16, 19]],
+    "idRange": [[622126, 622925], 6011, [644, 649], 65]
+  },
+  "unionpay": {
+    "alias": "unionpay",
+    "name": "UnionPay",
+    "breakpoint": [4, 8, 12],
+    "code": ["CVN", 3],
+    "length": [[16, 19]],
+    "idRange": [62]
+  },
+  "maestro": {
+    "alias": "maestro",
+    "name": "Maestro",
+    "breakpoint": [4, 8, 12],
+    "code": ["CVC", 3],
+    "length": [[12, 19]],
+    "idRange": [
+      6759, 676770, 676774, 5018, 5020, 5038, 5893, 6304, 6759, 6761, 6762, 6763
+    ]
+  },
+  "visa": {
+    "alias": "visa",
+    "name": "Visa",
+    "breakpoint": [4, 8, 12],
+    "code": ["CVV", 3],
+    "length": [13, 16, 19],
+    "idRange": [4]
+  },
+  "jcb": {
+    "alias": "jcb",
+    "name": "JCB",
+    "breakpoint": [4, 8, 12],
+    "code": ["CVV", 3],
+    "length": [[16, 19]],
+    "idRange": [[3528, 3589]]
+  },
+  "mir": {
+    "alias": "mir",
+    "name": "Mir",
+    "breakpoint": [4, 8, 12],
+    "code": ["CVP2", 3],
+    "length": [[16, 19]],
+    "idRange": [[2200, 2204]]
+  }
+}

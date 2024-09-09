@@ -124,8 +124,8 @@ class CardFactoryTest extends TestCase {
 	}
 
 	/**
-	 * @param array<int,Card> $cards
-	 * @param string[]        $aliases
+	 * @param array<string|int,Card> $cards
+	 * @param string[]               $aliases
 	 */
 	private function assertCreatedCardAliasesMatch( array $cards, array $aliases ): void {
 		foreach ( $aliases as $key => $alias ) {
@@ -133,7 +133,7 @@ class CardFactoryTest extends TestCase {
 		}
 	}
 
-	/** @param array<int,Card> $cards */
+	/** @param array<string|int,Card> $cards */
 	private function assertAllCardsAreRegistered( array $cards ): void {
 		foreach ( $cards as $card ) {
 			$reflection = new ReflectionClass( $card );
