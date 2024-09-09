@@ -17,6 +17,57 @@ use TheWebSolver\Codegarage\Test\Resource\NapasCard;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
 class CardFactoryTest extends TestCase {
+	public function testCardCreationFromArray(): void {
+		$napas = array(
+			'name'       => 'Napas',
+			'alias'      => 'napas',
+			'classname'  => NapasCard::class,
+			'breakpoint' => array( 4, 8, 12 ),
+			'code'       => array( 'CVC', 3 ),
+			'length'     => array( 16, 19 ),
+			'idRange'    => array( 9704 ),
+		);
+
+		$schema = array(
+			$napas,
+			array(
+				'name'       => 'Gerbang Pembayaran Nasional',
+				'alias'      => 'gpn',
+				'type'       => 'Debit Card',
+				'breakpoint' => array( 4, 8, 12 ),
+				'code'       => array( 'CVC', 3 ),
+				'length'     => array( 16, 18, 19 ),
+				'idRange'    => array( 1946, 50, 56, 58, array( 60, 63 ) ),
+			),
+			array(
+				'name'       => 'Humo',
+				'alias'      => 'humo',
+				'breakpoint' => array( 4, 8, 12 ),
+				'code'       => array( 'CVv', 3 ),
+				'length'     => array( 16 ),
+				'idRange'    => array( 9860 ),
+			),
+		);
+
+		$cards = ( new CardFactory( $schema ) )->createCards();
+
+		$this->assertSame( expected: array( 'napas', 'gpn', 'humo' ), actual: array_keys( $cards ) );
+
+		$this->assertCount(
+			expectedCount: 3,
+			haystack: array_filter( $cards, static fn( $c ) => $c instanceof Card )
+		);
+
+		$this->assertCount(
+			expectedCount: 2,
+			haystack: array_filter( $cards, static fn( $c ) => ( new ReflectionClass( $c ) )->isAnonymous() )
+		);
+
+		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $napas ) )->createCard() );
+		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $schema ) )->createCard() );
+		$this->assertSame( 'humo', actual: ( new CardFactory( $schema ) )->createCard( 2 )->getAlias() );
+	}
+
 	public function testCardCreationFromJsonFile(): void {
 		$cards = CardFactory::createFromJsonFile( path: __DIR__ . '/Resource/Cards.json' );
 
