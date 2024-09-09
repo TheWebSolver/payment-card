@@ -74,7 +74,7 @@ class CardFactory {
 			data: dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'Resource' . DIRECTORY_SEPARATOR . 'paymentCards.json'
 		) )->createCards();
 
-		return self::$cards[ $index ] ?? self::showdownForInvalidAlias( $index );
+		return self::$cards[ $index ] ?? self::shutdownForInvalidAlias( $index );
 	}
 
 	/**
@@ -219,7 +219,7 @@ class CardFactory {
 		);
 	}
 
-	private static function showdownForInvalidAlias( string $alias ): never {
+	private static function shutdownForInvalidAlias( string $alias ): never {
 		throw new TypeError( sprintf( 'Impossible to find Card instance for alias: %s', $alias ) );
 	}
 }
