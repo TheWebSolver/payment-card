@@ -7,13 +7,13 @@
 
 declare( strict_types = 1 );
 
-namespace TheWebSolver\Codegarage;
+namespace TheWebSolver\Codegarage\Test;
 
 use TypeError;
 use ReflectionClass;
 use PHPUnit\Framework\TestCase;
-use TheWebSolver\Codegarage\Resource\NapasCard;
 use TheWebSolver\Codegarage\PaymentCard\CardFactory;
+use TheWebSolver\Codegarage\Test\Resource\NapasCard;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
 class CardFactoryTest extends TestCase {

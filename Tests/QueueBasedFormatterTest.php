@@ -7,7 +7,7 @@
 
 declare( strict_types = 1 );
 
-namespace TheWebSolver\Codegarage;
+namespace TheWebSolver\Codegarage\Test;
 
 use PHPUnit\Framework\TestCase;
 use TheWebSolver\Codegarage\PaymentCard\Traits\QueueBasedFormatter;

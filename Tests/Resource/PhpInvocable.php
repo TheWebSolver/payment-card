@@ -5,7 +5,7 @@
  * @package TheWebSolver/Codegarage/Test
  */
 
- use TheWebSolver\Codegarage\Resource\NapasCard;
+ use TheWebSolver\Codegarage\Test\Resource\NapasCard;
 
 class CardList {
 	/** @return array<mixed[]> */

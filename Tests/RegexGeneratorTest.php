@@ -7,7 +7,7 @@
 
 declare( strict_types = 1 );
 
-namespace TheWebSolver\Codegarage;
+namespace TheWebSolver\Codegarage\Test;
 
 use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;

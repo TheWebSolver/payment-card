@@ -7,7 +7,7 @@
 
 declare( strict_types = 1 );
 
-namespace TheWebSolver\Codegarage;
+namespace TheWebSolver\Codegarage\Test;
 
 trait FormatterDataProvider {
 	abstract protected function classWithTrait(): object;
