@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 use TheWebSolver\Codegarage\Test\FormatterDataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Traits\RegexBasedFormatter;
 
-class RegextBasedFormatterTest extends TestCase {
+class RegexBasedFormatterTest extends TestCase {
 	use FormatterDataProvider;
 
 	protected function classWithTrait(): object {
