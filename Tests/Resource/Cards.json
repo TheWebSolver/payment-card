@@ -2,6 +2,7 @@
   {
     "name": "Napas",
     "alias": "napas",
+    "classname": "TheWebSolver\\Codegarage\\Resource\\NapasCard",
     "breakpoint": [4, 8, 12],
     "code": ["CVC", 3],
     "length": [16, 19],

@@ -1,6 +1,6 @@
 <?php
 /**
- * The Payment Card factory.
+ * Payment Card factory.
  *
  * @package TheWebSolver\Codegarage\Validation
  */
@@ -17,9 +17,15 @@ class CardFactory {
 	public const DEBIT_CARD   = 'Debit Card';
 	public const DEFAULT_CARD = 'Payment Card';
 
-	/** If `type` key not passed, Payment Card is treated as a Credit Card. */
+	/**
+	 * Possible array keys and their values' datatype Schema for a Payment Card.
+	 *
+	 * - If `type` key not passed, Payment Card is treated as a Credit Card.
+	 * - If `classname` key not passed, anonymous class is used.
+	 */
 	public const CARD_SCHEMA = array(
 		'type?'      => 'string',
+		'classname?' => 'string',
 		'name'       => 'string',
 		'alias'      => 'string',
 		'breakpoint' => 'int[]',
@@ -33,12 +39,8 @@ class CardFactory {
 
 	private string $path = '';
 
-	public function __construct( mixed $data /* $datatype: for internal use only */ ) {
-		[ $content, $type ] = self::maybeParseDataFromFile( $data );
-
-		if ( $type ) {
-			$this->path = $data;
-		}
+	public function __construct( mixed $data /* $fileType: for internal use only */ ) {
+		[ $content, $typeWithPath, $this->path ] = self::parseContentIfFile( $data );
 
 		if ( is_array( $content ) ) {
 			$this->content = $content;
@@ -46,11 +48,11 @@ class CardFactory {
 			return;
 		}
 
-		if ( 2 === func_num_args() && $datatype = func_get_arg( position: 1 ) ) {
-			$type = $datatype;
+		if ( 2 === func_num_args() && ( $fileType = func_get_arg( position: 1 ) ) && is_string( $fileType ) ) {
+			$typeWithPath = $fileType;
 		}
 
-		self::shutdownFactoryForFile( $type );
+		self::shutdownForInvalidFile( $typeWithPath );
 	}
 
 	/**
@@ -77,23 +79,23 @@ class CardFactory {
 		$cards = array();
 
 		foreach ( $this->content as $index => $args ) {
-			self::maybeShutdownFactoryForNonAssociativeArray( $args );
-
-			// @phpstan-ignore-next-line -- $args Type hint checked by setter methods.
-			$card                       = $this->createCard( $args, $index );
+			$card                       = $this->createCard( $index );
 			$cards[ $card->getAlias() ] = $card;
 		}
 
 		return $cards;
 	}
 
-	/**
-	 * @param array{name:string,alias:string,breakpoint:(string|int)[],code:array{0:string,1:int},length:(string|int|(string|int)[])[],idRange:(string|int|(string|int)[])[],type?:string} $args
-	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
-	 */
-	public function createCard( array $args, string|int|null $currentIndex = null ): Card {
+	/** @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`. */
+	public function createCard( string|int|null $currentIndex = null ): Card {
+		$args = $currentIndex
+			? $this->content[ $currentIndex ]
+			: ( array_is_list( $this->content ) ? reset( $this->content ) : $this->content );
+
+		self::shutdownIfNonAssociative( $args );
+
 		try {
-			return $this->getCardClass( forType: $args['type'] ?? self::CREDIT_CARD )
+			return $this->getCardInstance( $args )
 				->setName( $args['name'] )
 				->setAlias( $args['alias'] )
 				->setBreakpoint( ...$args['breakpoint'] )
@@ -101,68 +103,64 @@ class CardFactory {
 				->setLength( $args['length'] )
 				->setIdRange( $args['idRange'] );
 		} catch ( TypeError $e ) {
-			throw new TypeError(
-				previous: $e,
-				message: sprintf(
-					'Invalid Payment Card arguments given%1$s%2$s.%4$sGiven argument: %5$s%4$sError message: %3$s.',
-					null !== $currentIndex ? ' for array key [#' . func_get_arg( 1 ) . ']' : '',
-					$this->path ? ' in file "' . $this->path . '"' : '',
-					$e->getMessage(),
-					PHP_EOL,
-					json_encode( $args )
-				)
-			);
-		}//end try
+			$this->shutdownForInvalidSchema( $args, $currentIndex, $e );
+		}
 	}
 
-	private function getCardClass( string $forType ): Card {
-		return new class( $forType ) extends CardType {
-			public function __construct( private readonly string $cardType ) {
-				parent::__construct();
-			}
+	/** @param array<string,string> $args */
+	private function getCardInstance( array $args ): Card {
+		$cardType = $args['type'] ?? self::CREDIT_CARD;
+		$concrete = $args['classname'] ?? '';
 
-			protected function getType(): string {
-				return $this->cardType;
-			}
-		};
+		return $concrete && is_a( $concrete, Card::class, allow_string: true )
+			? new $concrete( $cardType )
+			: new class( $cardType ) extends CardType {
+				public function __construct( private readonly string $cardType ) {
+					parent::__construct();
+				}
+
+				protected function getType(): string {
+					return $this->cardType;
+				}
+			};
 	}
 
 	/** @return array<string,Card> */
-	private static function createFrom( string $filePath ): array {
-		$factory       = new self( ...self::maybeParseDataFromFile( $filePath ) );
-		$factory->path = $filePath;
+	private static function createFrom( string $file ): array {
+		$factory       = new self( ...self::parseContentIfFile( $file ) );
+		$factory->path = $file;
 
 		return $factory->createCards();
 	}
 
-	/** @return array{0:mixed,1:string} */
-	private static function maybeParseDataFromFile( mixed $data ): array {
-		if ( ! is_string( $data ) || ! is_readable( $data ) ) {
-			return array( $data, '' );
+	/** @return array{0:mixed,1:string,2:string} */
+	private static function parseContentIfFile( mixed $fileOrContent ): array {
+		if ( ! is_string( $fileOrContent ) || ! is_readable( $fileOrContent ) ) {
+			return array( $fileOrContent, 'file type', '' );
 		}
 
-		if ( substr( $data, offset: -4 ) === 'json' ) {
-			$type    = 'JSON file: ' . $data;
-			$content = file_get_contents( $data );
+		if ( substr( $fileOrContent, offset: -4 ) === 'json' ) {
+			$type    = 'JSON file: ' . $fileOrContent;
+			$content = file_get_contents( $fileOrContent );
 
 			if ( false === $content ) {
-				self::shutdownFactoryForFile( $type );
+				self::shutdownForInvalidFile( $type );
 			}
 
-			return array( json_decode( $content, associative: true ), $type );
+			return array( json_decode( $content, associative: true ), $type, $fileOrContent );
 		}
 
-		if ( substr( $data, offset: -3 ) === 'php' ) {
-			$content = require $data;
+		if ( substr( $fileOrContent, offset: -3 ) === 'php' ) {
+			$content = require $fileOrContent;
 			$content = is_callable( $content ) ? $content() : $content;
 
-			return array( $content, 'php file: ' . $data );
+			return array( $content, 'php file: ' . $fileOrContent, $fileOrContent );
 		}
 
-		return array( '', 'file: ' . $data );
+		return array( '', 'file: ' . $fileOrContent, $fileOrContent );
 	}
 
-	private static function maybeShutdownFactoryForNonAssociativeArray( mixed $args ): void {
+	private static function shutdownIfNonAssociative( mixed $args ): void {
 		if ( is_array( $args ) && ! array_is_list( $args ) ) {
 			return;
 		}
@@ -182,9 +180,24 @@ class CardFactory {
 		);
 	}
 
-	private static function shutdownFactoryForFile( string $type ): never {
+	private static function shutdownForInvalidFile( string $typeWithPath ): never {
 		throw new TypeError(
-			sprintf( 'Invalid %s provided for creating cards. File must return an array data.', $type ?: 'file type' )
+			sprintf( 'Invalid %s provided for creating cards. File must return an array data.', $typeWithPath )
+		);
+	}
+
+	/** @param mixed[] $args */
+	private function shutdownForInvalidSchema( array $args, string|int|null $index, TypeError $e ): never {
+		throw new TypeError(
+			previous: $e,
+			message: sprintf(
+				'Invalid Payment Card arguments given%1$s%2$s.%5$sGiven argument: %3$s%5$sError message: %4$s.',
+				/* %1 */ null !== $index ? ' for array key [#' . $index . ']' : '',
+				/* %2 */ $this->path ? ' in file "' . $this->path . '"' : '',
+				/* %3 */ json_encode( $args ),
+				/* %4 */ $e->getMessage(),
+				/* %5 */ PHP_EOL,
+			)
 		);
 	}
 }

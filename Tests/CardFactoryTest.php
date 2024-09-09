@@ -12,6 +12,7 @@ namespace TheWebSolver\Codegarage;
 use TypeError;
 use ReflectionClass;
 use PHPUnit\Framework\TestCase;
+use TheWebSolver\Codegarage\Resource\NapasCard;
 use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
@@ -60,6 +61,10 @@ class CardFactoryTest extends TestCase {
 		foreach ( $aliases as $alias ) {
 			$this->assertSame( expected: $alias, actual: $cards[ $alias ]->getAlias() );
 			$this->assertGpnCardIsADebitCard( card: $cards[ $alias ] );
+
+			if ( 'napas' === $alias ) {
+				$this->assertInstanceOf( NapasCard::class, actual: $cards['napas'] );
+			}
 		}
 	}
 

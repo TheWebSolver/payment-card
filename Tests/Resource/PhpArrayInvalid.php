@@ -5,10 +5,13 @@
  * @package TheWebSolver/Codegarage/Test
  */
 
+use TheWebSolver\Codegarage\Resource\NapasCard;
+
 return array(
 	array(
 		'name'       => 'Napas',
 		'alias'      => 'napas',
+		'classname'  => NapasCard::class,
 		'breakpoint' => array( 4, 8, 12 ),
 		'code'       => array( 'CVC', true ),
 		'length'     => array( 16, 19 ),

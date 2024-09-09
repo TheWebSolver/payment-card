@@ -5,6 +5,8 @@
  * @package TheWebSolver/Codegarage/Test
  */
 
+ use TheWebSolver\Codegarage\Resource\NapasCard;
+
 class CardList {
 	/** @return array<mixed[]> */
 	public function __invoke() {
@@ -12,6 +14,7 @@ class CardList {
 			array(
 				'name'       => 'Napas',
 				'alias'      => 'napas',
+				'classname'  => NapasCard::class,
 				'breakpoint' => array( 4, 8, 12 ),
 				'code'       => array( 'CVC', 3 ),
 				'length'     => array( 16, 19 ),
