@@ -22,6 +22,7 @@ class CardFactoryTest extends TestCase {
 
 		$this->assertCount( expectedCount: 3, haystack: $cards );
 		$this->assertAllCardsAreRegistered( $cards, aliases: array( 'napas', 'gpn', 'humo' ) );
+
 		$this->expectException( TypeError::class );
 		$this->expectExceptionMessage( $path = __DIR__ . '/Resource/CardsInvalid.json' );
 
@@ -59,25 +60,36 @@ class CardFactoryTest extends TestCase {
 	 */
 	private function assertAllCardsAreRegistered( array $cards, array $aliases ): void {
 		foreach ( $aliases as $alias ) {
-			$this->assertSame( expected: $alias, actual: $cards[ $alias ]->getAlias() );
-			$this->assertGpnCardIsADebitCard( card: $cards[ $alias ] );
+			$card       = $cards[ $alias ];
+			$reflection = new ReflectionClass( $card );
 
-			if ( 'napas' === $alias ) {
-				$this->assertInstanceOf( NapasCard::class, actual: $cards['napas'] );
-			}
+			$this->assertSame( expected: $alias, actual: $card->getAlias() );
+			$this->assertRegisteredCardType( $reflection, $card );
+			$this->assertInstanceIsConcreteOrAnonymous( $reflection, $card );
 		}
 	}
 
-	private function assertGpnCardIsADebitCard( Card $card ): void {
-		if ( 'gpn' !== $card->getAlias() ) {
-			return;
-		}
-
-		$reflection = new ReflectionClass( $card );
-		$method     = $reflection->getMethod( name: 'getType' );
+	/** @param ReflectionClass<Card> $reflection */
+	private function assertRegisteredCardType( ReflectionClass $reflection, Card $card ): void {
+		$method = $reflection->getMethod( name: 'getType' );
 
 		$method->setAccessible( true );
 
-		$this->assertSame( expected: 'Debit Card', actual: $method->invoke( $card ) );
+		$this->assertSame(
+			expected: ( 'gpn' === $card->getAlias() ? 'Debit' : 'Credit' ) . ' Card',
+			actual: $method->invoke( $card )
+		);
+	}
+
+	/** @param ReflectionClass<Card> $reflection */
+	private function assertInstanceIsConcreteOrAnonymous( ReflectionClass $reflection, Card $card ): void {
+		if ( 'napas' !== $card->getAlias() ) {
+			$this->assertTrue( $reflection->isAnonymous() );
+
+			return;
+		}
+
+		$this->assertFalse( $reflection->isAnonymous() );
+		$this->assertInstanceOf( NapasCard::class, actual: $card );
 	}
 }
