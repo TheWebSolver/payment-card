@@ -49,6 +49,17 @@ class CardFactoryTest extends TestCase {
 			),
 		);
 
+		$factory = new CardFactory( data: $schema );
+		$loader  = $factory->yieldCard();
+
+		$this->assertSame( expected: 'napas', actual: $loader->current()->getAlias() );
+		$loader->next();
+		$this->assertSame( expected: 'gpn', actual: $loader->current()->getAlias() );
+		$loader->next();
+		$this->assertSame( expected: 'humo', actual: $loader->current()->getAlias() );
+		$loader->next();
+		$this->assertNull( $loader->current() );
+
 		$cards = ( new CardFactory( $schema ) )->createCards();
 
 		$this->assertSame(

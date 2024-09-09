@@ -9,6 +9,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
 
+use Generator;
 use TypeError;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
@@ -76,19 +77,20 @@ class CardFactory {
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
 	public function createCards(): array {
-		$cards = array();
+		/** @var array<int,Card> */
+		return iterator_to_array( iterator: $this->yieldCard(), preserve_keys: true );
+	}
 
+	public function yieldCard(): Generator {
 		foreach ( $this->content as $index => $args ) {
-			$cards[] = $this->createCard( $index );
+			yield $this->createCard( $index );
 		}
-
-		return $cards;
 	}
 
 	/** @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`. */
-	public function createCard( string|int|null $currentIndex = null ): Card {
-		$args = $currentIndex
-			? $this->content[ $currentIndex ]
+	public function createCard( string|int|null $index = null ): Card {
+		$args = $index
+			? $this->content[ $index ]
 			: ( array_is_list( $this->content ) ? reset( $this->content ) : $this->content );
 
 		self::shutdownIfNonAssociative( $args );
@@ -102,7 +104,7 @@ class CardFactory {
 				->setLength( $args['length'] )
 				->setIdRange( $args['idRange'] );
 		} catch ( TypeError $e ) {
-			$this->shutdownForInvalidSchema( $args, $currentIndex, $e );
+			$this->shutdownForInvalidSchema( $args, $index, $e );
 		}
 	}
 
