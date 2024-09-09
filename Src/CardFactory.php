@@ -116,12 +116,8 @@ class CardFactory {
 		return $concrete && is_a( $concrete, Card::class, allow_string: true )
 			? new $concrete( $cardType )
 			: new class( $cardType ) extends CardType {
-				public function __construct( private readonly string $cardType ) {
-					parent::__construct();
-				}
-
-				protected function getType(): string {
-					return $this->cardType;
+				public function __construct( string $type ) {
+					parent::__construct( $type );
 				}
 			};
 	}

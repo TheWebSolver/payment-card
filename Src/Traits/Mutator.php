@@ -10,6 +10,7 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
+use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 
 trait Mutator {
 	use BreakpointGetter;
@@ -26,11 +27,16 @@ trait Mutator {
 	/** @var (int|(int)[])[] */
 	private array $idRange;
 
-	public function __construct( private readonly Asserter $asserter = new Asserter() ) {
+	public function __construct(
+		private readonly string $type = CardFactory::CREDIT_CARD,
+		private readonly Asserter $asserter = new Asserter()
+	) {
 		$asserter->setType( name: $this->getType() );
 	}
 
-	abstract protected function getType(): string;
+	public function getType(): string {
+		return $this->type;
+	}
 
 	public function getName(): string {
 		return $this->name;

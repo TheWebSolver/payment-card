@@ -11,12 +11,4 @@ namespace TheWebSolver\Codegarage\Test\Resource;
 
 use TheWebSolver\Codegarage\PaymentCard\CardType;
 
-class NapasCard extends CardType {
-	public function __construct( private readonly string $cardType ) {
-		parent::__construct();
-	}
-
-	protected function getType(): string {
-		return $this->cardType;
-	}
-}
+class NapasCard extends CardType {}

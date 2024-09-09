@@ -138,20 +138,15 @@ class CardFactoryTest extends TestCase {
 		foreach ( $cards as $card ) {
 			$reflection = new ReflectionClass( $card );
 
-			$this->assertRegisteredCardType( $reflection, $card );
+			$this->assertRegisteredCardType( $card );
 			$this->assertInstanceIsConcreteOrAnonymous( $reflection, $card );
 		}
 	}
 
-	/** @param ReflectionClass<Card> $reflection */
-	private function assertRegisteredCardType( ReflectionClass $reflection, Card $card ): void {
-		$method = $reflection->getMethod( name: 'getType' );
-
-		$method->setAccessible( true );
-
+	private function assertRegisteredCardType( Card $card ): void {
 		$this->assertSame(
 			expected: ( 'gpn' === $card->getAlias() ? 'Debit' : 'Credit' ) . ' Card',
-			actual: $method->invoke( $card )
+			actual: $card->getType()
 		);
 	}
 

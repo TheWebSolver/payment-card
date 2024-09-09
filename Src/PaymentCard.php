@@ -32,6 +32,10 @@ enum PaymentCard: string implements Card {
 	case Jcb             = 'jcb';
 	case Mir             = 'mir';
 
+	public function getType(): string {
+		return CardFactory::CREDIT_CARD;
+	}
+
 	public function getName(): string {
 		return match ( $this ) {
 			self::AmericanExpress => 'American Express',

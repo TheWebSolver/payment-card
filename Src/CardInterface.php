@@ -19,6 +19,11 @@ interface CardInterface {
 	public const BREAKPOINT_ALT_PATTERN     = '(\d{4})(\d{6})(\d{%d})';
 
 	/**
+	 * Gets the card type such as Debit Card, Credit Card, etc.
+	 */
+	public function getType(): string;
+
+	/**
 	 * Gets the card human readable nice-name.
 	 */
 	public function getName(): string;
