@@ -51,7 +51,10 @@ class CardFactoryTest extends TestCase {
 
 		$cards = ( new CardFactory( $schema ) )->createCards();
 
-		$this->assertSame( expected: array( 'napas', 'gpn', 'humo' ), actual: array_keys( $cards ) );
+		$this->assertSame(
+			expected: array( 'napas', 'gpn', 'humo' ),
+			actual: array_map( static fn( $c ) => $c->getAlias(), array: $cards )
+		);
 
 		$this->assertCount(
 			expectedCount: 3,
@@ -72,7 +75,8 @@ class CardFactoryTest extends TestCase {
 		$cards = CardFactory::createFromJsonFile( path: __DIR__ . '/Resource/Cards.json' );
 
 		$this->assertCount( expectedCount: 3, haystack: $cards );
-		$this->assertAllCardsAreRegistered( $cards, aliases: array( 'napas', 'gpn', 'humo' ) );
+		$this->assertCreatedCardAliasesMatch( $cards, aliases: array( 'napas', 'gpn', 'humo' ) );
+		$this->assertAllCardsAreRegistered( $cards );
 
 		$this->expectException( TypeError::class );
 		$this->expectExceptionMessage( $path = __DIR__ . '/Resource/CardsInvalid.json' );
@@ -92,7 +96,10 @@ class CardFactoryTest extends TestCase {
 			$this->expectExceptionMessage( $path );
 		}
 
-		$this->assertAllCardsAreRegistered( CardFactory::createFromPhpFile( $path ), $aliases );
+		$cards = CardFactory::createFromPhpFile( $path );
+
+		$this->assertCreatedCardAliasesMatch( $cards, $aliases );
+		$this->assertAllCardsAreRegistered( $cards );
 	}
 
 	/** @return mixed[] */
@@ -106,15 +113,20 @@ class CardFactoryTest extends TestCase {
 	}
 
 	/**
-	 * @param array<string,Card> $cards
-	 * @param string[]           $aliases
+	 * @param array<int,Card> $cards
+	 * @param string[]        $aliases
 	 */
-	private function assertAllCardsAreRegistered( array $cards, array $aliases ): void {
-		foreach ( $aliases as $alias ) {
-			$card       = $cards[ $alias ];
+	private function assertCreatedCardAliasesMatch( array $cards, array $aliases ): void {
+		foreach ( $aliases as $key => $alias ) {
+			$this->assertSame( $alias, actual: $cards[ $key ]->getAlias() );
+		}
+	}
+
+	/** @param array<int,Card> $cards */
+	private function assertAllCardsAreRegistered( array $cards ): void {
+		foreach ( $cards as $card ) {
 			$reflection = new ReflectionClass( $card );
 
-			$this->assertSame( expected: $alias, actual: $card->getAlias() );
 			$this->assertRegisteredCardType( $reflection, $card );
 			$this->assertInstanceIsConcreteOrAnonymous( $reflection, $card );
 		}

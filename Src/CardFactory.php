@@ -56,7 +56,7 @@ class CardFactory {
 	}
 
 	/**
-	 * @return array<string,Card>
+	 * @return array<int,Card>
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
 	public static function createFromPhpFile( string $path ): array {
@@ -64,7 +64,7 @@ class CardFactory {
 	}
 
 	/**
-	 * @return array<string,Card>
+	 * @return array<int,Card>
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
 	public static function createFromJsonFile( string $path ): array {
@@ -72,15 +72,14 @@ class CardFactory {
 	}
 
 	/**
-	 * @return array<string,Card>
+	 * @return array<int,Card>
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
 	public function createCards(): array {
 		$cards = array();
 
 		foreach ( $this->content as $index => $args ) {
-			$card                       = $this->createCard( $index );
-			$cards[ $card->getAlias() ] = $card;
+			$cards[] = $this->createCard( $index );
 		}
 
 		return $cards;
@@ -125,7 +124,7 @@ class CardFactory {
 			};
 	}
 
-	/** @return array<string,Card> */
+	/** @return array<int,Card> */
 	private static function createFrom( string $file ): array {
 		$factory       = new self( ...self::parseContentIfFile( $file ) );
 		$factory->path = $file;
