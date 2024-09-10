@@ -10,7 +10,9 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard;
 
 use Generator;
+use Throwable;
 use TypeError;
+use InvalidArgumentException;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
 class CardFactory {
@@ -124,7 +126,7 @@ class CardFactory {
 				->setCode( ...$args['code'] )
 				->setLength( $args['length'] )
 				->setIdRange( $args['idRange'] );
-		} catch ( TypeError $e ) {
+		} catch ( TypeError | InvalidArgumentException $e ) {
 			$this->shutdownForInvalidSchema( $args, $index, $e );
 		}
 	}
@@ -205,7 +207,7 @@ class CardFactory {
 	}
 
 	/** @param mixed[] $args */
-	private function shutdownForInvalidSchema( array $args, string|int|null $index, TypeError $e ): never {
+	private function shutdownForInvalidSchema( array $args, string|int|null $index, Throwable $e ): never {
 		throw new TypeError(
 			previous: $e,
 			message: sprintf(
