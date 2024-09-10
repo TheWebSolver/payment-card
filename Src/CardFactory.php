@@ -99,9 +99,9 @@ class CardFactory {
 	 * @return array<string|int,Card>
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
-	public function createCards(): array {
+	public function createCards( bool $preserveKeys = true ): array {
 		/** @var array<string|int,Card> */
-		return iterator_to_array( iterator: $this->yieldCard(), preserve_keys: true );
+		return iterator_to_array( iterator: $this->yieldCard(), preserve_keys: $preserveKeys );
 	}
 
 	public function yieldCard(): Generator {
