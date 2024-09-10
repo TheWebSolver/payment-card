@@ -26,12 +26,18 @@ class Asserter {
 	private static ?string $processing;
 	private static ?string $cardType;
 
-	public function setType( string $name ): void {
+	public function setType( string $name ): self {
 		self::$cardType ??= $name;
+
+		return $this;
+	}
+
+	public function resetType(): void {
+		self::$cardType = null;
 	}
 
 	public function __destruct() {
-		self::$cardType = null;
+		$this->resetType();
 	}
 
 	/**

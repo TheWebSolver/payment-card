@@ -30,9 +30,7 @@ trait Mutator {
 	public function __construct(
 		private readonly string $type = CardFactory::CREDIT_CARD,
 		private readonly Asserter $asserter = new Asserter()
-	) {
-		$asserter->setType( name: $this->getType() );
-	}
+	) {}
 
 	public function getType(): string {
 		return $this->type;
@@ -77,13 +75,20 @@ trait Mutator {
 	}
 
 	public function setLength( array $value ): static {
-		$this->length = $this->asserter->assertSizeWith( $value, forType: 'length' );
-
-		return $this;
+		return $this->setSize( $value, prop: 'length' );
 	}
 
 	public function setIdRange( array $value ): static {
-		$this->idRange = $this->asserter->assertSizeWith( $value, forType: 'idRange' );
+		return $this->setSize( $value, prop: 'idRange' );
+	}
+
+	/** @param mixed[] $value */
+	private function setSize( array $value, string $prop ): static {
+		$this->{$prop} = $this->asserter
+			->setType( name: $this->getType() )
+			->assertSizeWith( $value, forType: $prop );
+
+		$this->asserter->resetType();
 
 		return $this;
 	}
