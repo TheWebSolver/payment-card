@@ -15,6 +15,18 @@ use TypeError;
 use InvalidArgumentException;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
+/**
+ * @phpstan-type CardSchema array{
+ * type?:string,
+ * classname?:string,
+ * checkLuhn?:bool,
+ * name:string,alias:string,
+ * breakpoint:(string|int)[],
+ * code:array{0:string,1:int},
+ * length:(string|int|(string|int)[])[],
+ * idRange:(string|int|(string|int)[])[],
+ * }
+ */
 class CardFactory {
 	public const CREDIT_CARD  = 'Credit Card';
 	public const DEBIT_CARD   = 'Debit Card';
@@ -29,6 +41,7 @@ class CardFactory {
 	public const CARD_SCHEMA = array(
 		'type?'      => 'string',
 		'classname?' => 'string',
+		'checkLuhn?' => 'bool',
 		'name'       => 'string',
 		'alias'      => 'string',
 		'breakpoint' => 'int[]',
@@ -49,20 +62,21 @@ class CardFactory {
 	 */
 	private static array $cards;
 
-	public function __construct( mixed $data /* $fileType: for internal use only */ ) {
-		[ $content, $typeWithPath, $this->path ] = self::parseContentIfFile( $data );
+	public function __construct( mixed $data = null /* $fileType: for internal use only */ ) {
+		if ( null !== $data ) {
+			if ( 2 === func_num_args() && ( $fileType = func_get_arg( position: 1 ) ) && is_string( $fileType ) ) {
+				$type = $fileType;
+			}
 
-		if ( is_array( $content ) ) {
-			$this->content = $content;
-
-			return;
+			$this->resolvePayloadContent( $data, $type ?? '' );
 		}
+	}
 
-		if ( 2 === func_num_args() && ( $fileType = func_get_arg( position: 1 ) ) && is_string( $fileType ) ) {
-			$typeWithPath = $fileType;
-		}
+	/** @param string|mixed[] $data */
+	public function withPayload( string|array $data ): self {
+		$this->resolvePayloadContent( $data );
 
-		self::shutdownForInvalidFile( $typeWithPath );
+		return $this;
 	}
 
 	/**
@@ -72,27 +86,60 @@ class CardFactory {
 	 * @access private
 	 */
 	public static function __callStatic( string $index, array $args ): Card {
-		self::$cards ??= ( new self(
-			data: dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'Resource' . DIRECTORY_SEPARATOR . 'paymentCards.json'
-		) )->createCards();
+		$slash         = DIRECTORY_SEPARATOR;
+		self::$cards ??= ( new self() )
+			->withPayload( data: dirname( __DIR__ ) . $slash . 'Resource' . $slash . 'paymentCards.json' )
+			->createCards();
 
 		return self::$cards[ $index ] ?? self::shutdownForInvalidJsonKey( $index );
 	}
 
 	/**
-	 * @return array<string|int,Card>
+	 * @return array<string|int,Card>|Generator
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
+	 * @phpstan-return ($lazyload is true ? Generator : array<string|int,Card>)
 	 */
-	public static function createFromPhpFile( string $path ): array {
-		return self::createFrom( $path );
+	public static function createFromPhpFile(
+		string $path,
+		bool $preserveKeys = true,
+		bool $lazyload = false
+	): array|Generator {
+		$factory       = ( new self( ...self::getPhpContent( $path ) ) );
+		$factory->path = $path;
+
+		return $lazyload ? $factory->yieldCard( $preserveKeys ) : $factory->createCards( $preserveKeys );
+	}
+
+	/**
+	 * @return array<string|int,Card>|Generator
+	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
+	 * @phpstan-return ($lazyload is true ? Generator : array<string|int,Card>)
+	 */
+	public static function createFromJsonFile(
+		string $path,
+		bool $preserveKeys = true,
+		bool $lazyload = false
+	): array|Generator {
+		$factory       = ( new self( ...self::getJsonContent( $path ) ) );
+		$factory->path = $path;
+
+		return $lazyload ? $factory->yieldCard( $preserveKeys ) : $factory->createCards( $preserveKeys );
 	}
 
 	/**
 	 * @return array<string|int,Card>
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
+	 * @phpstan-return ($lazyload is true ? Generator : array<string|int,Card>)
 	 */
-	public static function createFromJsonFile( string $path ): array {
-		return self::createFrom( $path );
+	public static function createFromFile(
+		string $file,
+		bool $preserveKeys = true,
+		bool $lazyload = false
+	): array|Generator {
+		$factory       = new self( ...self::parseContentIfFile( $file ) );
+		$factory->path = $file;
+
+		return $lazyload ? $factory->yieldCard( $preserveKeys ) : $factory->createCards( $preserveKeys );
 	}
 
 	/**
@@ -101,12 +148,16 @@ class CardFactory {
 	 */
 	public function createCards( bool $preserveKeys = true ): array {
 		/** @var array<string|int,Card> */
-		return iterator_to_array( iterator: $this->yieldCard(), preserve_keys: $preserveKeys );
+		return iterator_to_array( iterator: $this->yieldCard( $preserveKeys ), preserve_keys: $preserveKeys );
 	}
 
-	public function yieldCard(): Generator {
+	public function yieldCard( bool $preserveKeys = true ): Generator {
 		foreach ( $this->content as $index => $args ) {
-			yield $index => $this->createCard( $index );
+			if ( $preserveKeys ) {
+				yield $index => $this->createCard( $index );
+			} else {
+				yield $this->createCard( $index );
+			}
 		}
 	}
 
@@ -131,53 +182,76 @@ class CardFactory {
 		}
 	}
 
-	/** @param array<string,string> $args */
-	private function getCardInstance( array $args ): Card {
-		$cardType = $args['type'] ?? self::CREDIT_CARD;
-		$concrete = $args['classname'] ?? '';
+	private function resolvePayloadContent( mixed $data, string $type = '' ): void {
+		if ( $this->content ?? false ) {
+			return;
+		}
 
-		return $concrete && is_a( $concrete, Card::class, allow_string: true )
-			? new $concrete( $cardType )
-			: new class( $cardType ) extends CardType {
-				public function __construct( string $type ) {
-					parent::__construct( $type );
+		[ $content, $typeWithPath, $this->path ] = self::parseContentIfFile( $data );
+
+		if ( is_array( $content ) ) {
+			$this->content = $content;
+
+			return;
+		}
+
+		if ( $type ) {
+			$typeWithPath = $type;
+		}
+
+		self::shutdownForInvalidFile( $typeWithPath );
+	}
+
+	/** @param array<string,mixed> $args */
+	private function getCardInstance( array $args ): Card {
+		$cardType = isset( $args['type'] ) && is_string( $card = $args['type'] ) ? $card : self::CREDIT_CARD;
+		$concrete = $args['classname'] ?? '';
+		$checkLuhn = isset( $args['checkLuhn'] ) && is_bool( $luhn = $args['checkLuhn'] ) ? $luhn : true;
+
+		return $concrete && is_string( $concrete ) && is_a( $concrete, Card::class, allow_string: true )
+			? new $concrete( $cardType, $checkLuhn )
+			: new class( $cardType, $checkLuhn ) extends CardType {
+				public function __construct( string $type, bool $checkLuhn ) {
+					parent::__construct( $type, $checkLuhn );
 				}
 			};
 	}
 
-	/** @return array<string|int,Card> */
-	private static function createFrom( string $file ): array {
-		$factory       = new self( ...self::parseContentIfFile( $file ) );
-		$factory->path = $file;
+	/** @return array{0:mixed,1:string,2:string} */
+	private static function parseContentIfFile( mixed $payload ): array {
+		if ( ! is_string( $payload ) || ! is_readable( $payload ) ) {
+			return array( $payload, 'file type', '' );
+		}
 
-		return $factory->createCards();
+		return match ( true ) {
+			default                              => array( '', 'file: ' . $payload, $payload ),
+			self::isFileType( $payload, 'json' ) => self::getJsonContent( $payload ),
+			self::isFileType( $payload, 'php' )  => self::getPhpContent( $payload )
+		};
+	}
+
+	private static function isFileType( string $file, string $ext ): bool {
+		return substr( $file, offset: - strlen( $ext ) ) === $ext;
 	}
 
 	/** @return array{0:mixed,1:string,2:string} */
-	private static function parseContentIfFile( mixed $fileOrContent ): array {
-		if ( ! is_string( $fileOrContent ) || ! is_readable( $fileOrContent ) ) {
-			return array( $fileOrContent, 'file type', '' );
+	private static function getPhpContent( string $file ): array {
+		$content = require $file;
+		$content = is_callable( $content ) ? $content() : $content;
+
+		return array( $content, 'php file: ' . $file, $file );
+	}
+
+	/** @return array{0:mixed,1:string,2:string} */
+	private static function getJsonContent( string $file ): mixed {
+		$type    = 'JSON file: ' . $file;
+		$content = file_get_contents( $file );
+
+		if ( false === $content ) {
+			self::shutdownForInvalidFile( $type );
 		}
 
-		if ( substr( $fileOrContent, offset: -4 ) === 'json' ) {
-			$type    = 'JSON file: ' . $fileOrContent;
-			$content = file_get_contents( $fileOrContent );
-
-			if ( false === $content ) {
-				self::shutdownForInvalidFile( $type );
-			}
-
-			return array( json_decode( $content, associative: true ), $type, $fileOrContent );
-		}
-
-		if ( substr( $fileOrContent, offset: -3 ) === 'php' ) {
-			$content = require $fileOrContent;
-			$content = is_callable( $content ) ? $content() : $content;
-
-			return array( $content, 'php file: ' . $fileOrContent, $fileOrContent );
-		}
-
-		return array( '', 'file: ' . $fileOrContent, $fileOrContent );
+		return array( json_decode( $content, associative: true ), $type, $file );
 	}
 
 	private static function shutdownIfNonAssociative( mixed $args ): void {
