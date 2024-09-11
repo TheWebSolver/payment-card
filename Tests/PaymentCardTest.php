@@ -84,7 +84,8 @@ class PaymentCardTest extends TestCase {
 	public function testCardResolver(): void {
 		$class = new class() {
 			use CardResolver {
-				CardResolver::resolveCardFromNumber as public;
+				resolveCardFromNumber as public;
+				withoutDefaults as public;
 			}
 		};
 
@@ -97,6 +98,6 @@ class PaymentCardTest extends TestCase {
 		// $this->assertSame( 'Troy', $class->resolveCardFromNumber( 6500830000000002 )?->getName() );
 
 		$this->expectException( LogicException::class );
-		$class->resolveCardFromNumber( 0, registeredOnly: true );
+		$class->withoutDefaults()->resolveCardFromNumber( 0 );
 	}
 }
