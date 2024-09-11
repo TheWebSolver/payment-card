@@ -132,12 +132,12 @@ class CardFactory {
 	 * @phpstan-return ($lazyload is true ? Generator : array<string|int,Card>)
 	 */
 	public static function createFromFile(
-		string $file,
+		string $path,
 		bool $preserveKeys = true,
 		bool $lazyload = false
 	): array|Generator {
-		$factory       = new self( ...self::parseContentIfFile( $file ) );
-		$factory->path = $file;
+		$factory       = new self( ...self::parseContentIfFile( $path ) );
+		$factory->path = $path;
 
 		return $lazyload ? $factory->yieldCard( $preserveKeys ) : $factory->createCards( $preserveKeys );
 	}

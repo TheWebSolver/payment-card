@@ -9,6 +9,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;
 
+use Generator;
 use TypeError;
 use ReflectionClass;
 use PHPUnit\Framework\TestCase;
@@ -83,11 +84,26 @@ class CardFactoryTest extends TestCase {
 	}
 
 	public function testCardCreationFromJsonFile(): void {
-		$cards = CardFactory::createFromJsonFile( path: __DIR__ . '/Resource/Cards.json' );
+		$path    = __DIR__ . '/Resource/Cards.json';
+		$cards   = CardFactory::createFromJsonFile( $path );
+		$aliases = array( 'napas', 'gpn', 'humo' );
 
 		$this->assertCount( expectedCount: 3, haystack: $cards );
-		$this->assertCreatedCardAliasesMatch( $cards, aliases: array( 'napas', 'gpn', 'humo' ) );
-		$this->assertAllCardsAreRegistered( $cards );
+		$this->assertCreatedCardAliasesMatch( (array) $cards, $aliases );
+		$this->assertAllCardsAreRegistered( (array) $cards );
+
+		$altCards = CardFactory::createFromFile( $path );
+
+		foreach ( $cards as $index => $card ) {
+			$this->assertTrue( $altCards[ $index ]->getName() === $card->getName() );
+		}
+
+		$cards = CardFactory::createFromJsonFile( $path, lazyload: true );
+
+		while ( $cards->valid() ) {
+			$this->assertSame( expected: $aliases[ $cards->key() ], actual: $cards->current()->getAlias() );
+			$cards->next();
+		}
 
 		$this->expectException( TypeError::class );
 		$this->expectExceptionMessage( $path = __DIR__ . '/Resource/CardsInvalid.json' );
@@ -99,7 +115,12 @@ class CardFactoryTest extends TestCase {
 	 * @param string[] $aliases
 	 * @dataProvider providePhpFiles
 	 */
-	public function testCardCreationFromPhpFile( array $aliases, string $filename, bool $throws = false ): void {
+	public function testCardCreationFromPhpFile(
+		array $aliases,
+		string $filename,
+		bool $aliasAsKey = false,
+		bool $throws = false
+	): void {
 		$path = __DIR__ . "/Resource/$filename.php";
 
 		if ( $throws ) {
@@ -109,8 +130,37 @@ class CardFactoryTest extends TestCase {
 
 		$cards = CardFactory::createFromPhpFile( $path );
 
-		$this->assertCreatedCardAliasesMatch( $cards, $aliases );
-		$this->assertAllCardsAreRegistered( $cards );
+		$this->assertCreatedCardAliasesMatch( (array) $cards, $aliases, $aliasAsKey );
+		$this->assertAllCardsAreRegistered( (array) $cards );
+	}
+
+	/**
+	 * @param string[] $aliases
+	 * @dataProvider providePhpFiles
+	 */
+	public function testLazyCardCreationFromPhpFile(
+		array $aliases,
+		string $filename,
+		bool $aliasAsKey = false,
+		bool $throws = false
+	): void {
+		$path = __DIR__ . "/Resource/$filename.php";
+
+		if ( $throws ) {
+			$this->expectException( TypeError::class );
+			$this->expectExceptionMessage( $path );
+		}
+
+		$cards = CardFactory::createFromPhpFile( $path, lazyload: true );
+
+		while ( $cards->valid() ) {
+			$alias = $cards->current()->getAlias();
+			$key   = $aliasAsKey ? array_search( $cards->key(), $aliases ) : $cards->key();
+
+			$this->assertSame( expected: $aliases[ $key ], actual: $alias );
+
+			$cards->next();
+		}
 	}
 
 	/** @return mixed[] */
@@ -118,8 +168,8 @@ class CardFactoryTest extends TestCase {
 		return array(
 			array( array( 'napas' ), 'PhpArray' ),
 			array( array( 'napas', 'humo' ), 'PhpCallable' ),
-			array( array( 'napas', 'gpn', 'humo' ), 'PhpInvocable' ),
-			array( array(), 'PhpArrayInvalid', true ),
+			array( array( 'napas', 'gpn', 'humo' ), 'PhpInvocable', true ),
+			array( array(), 'PhpArrayInvalid', false, true ),
 		);
 	}
 
@@ -127,9 +177,9 @@ class CardFactoryTest extends TestCase {
 	 * @param array<string|int,Card> $cards
 	 * @param string[]               $aliases
 	 */
-	private function assertCreatedCardAliasesMatch( array $cards, array $aliases ): void {
+	private function assertCreatedCardAliasesMatch( array $cards, array $aliases, bool $asKey = false ): void {
 		foreach ( $aliases as $key => $alias ) {
-			$this->assertSame( $alias, actual: $cards[ $key ]->getAlias() );
+			$this->assertSame( $alias, actual: $cards[ $asKey ? $alias : $key ]->getAlias() );
 		}
 	}
 

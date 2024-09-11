@@ -17,5 +17,4 @@ parameters:
 		-
 			identifier: method.nonObject
 			path: Tests/CardFactoryTest.php
-			count: 3
 
