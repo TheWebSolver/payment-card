@@ -38,6 +38,7 @@ class CardFactory {
 	 *
 	 * - If `type` key not passed, Payment Card is treated as a Credit Card.
 	 * - If `classname` key not passed, anonymous class is used.
+	 * - If `checkLuhn` key not passed, Luhn algorithm is always checked.
 	 */
 	public const CARD_SCHEMA = array(
 		'type?'      => 'string',
@@ -105,7 +106,7 @@ class CardFactory {
 		bool $preserveKeys = true,
 		bool $lazyload = false
 	): array|Generator {
-		$factory       = ( new self( ...self::getPhpContent( $path ) ) );
+		$factory       = ( new self( ...self::parsePhpContent( $path ) ) );
 		$factory->path = $path;
 
 		return $lazyload ? $factory->lazyLoadCards( $preserveKeys ) : $factory->createCards( $preserveKeys );
@@ -121,7 +122,7 @@ class CardFactory {
 		bool $preserveKeys = true,
 		bool $lazyload = false
 	): array|Generator {
-		$factory       = ( new self( ...self::getJsonContent( $path ) ) );
+		$factory       = ( new self( ...self::parseJsonContent( $path ) ) );
 		$factory->path = $path;
 
 		return $lazyload ? $factory->lazyLoadCards( $preserveKeys ) : $factory->createCards( $preserveKeys );
@@ -205,17 +206,27 @@ class CardFactory {
 
 	/** @param array<string,mixed> $args */
 	private function getCardInstance( array $args ): Card {
-		$cardType = isset( $args['type'] ) && is_string( $card = $args['type'] ) ? $card : self::CREDIT_CARD;
-		$concrete = $args['classname'] ?? '';
-		$checkLuhn = isset( $args['checkLuhn'] ) && is_bool( $luhn = $args['checkLuhn'] ) ? $luhn : true;
+		[ $type, $classname, $checkLuhn ] = $this->polyfillOptional( $args );
 
-		return $concrete && is_string( $concrete ) && is_a( $concrete, Card::class, allow_string: true )
-			? new $concrete( $cardType, $checkLuhn )
-			: new class( $cardType, $checkLuhn ) extends CardType {
+		return is_a( $classname, Card::class, allow_string: true )
+			? new $classname( $type, $checkLuhn )
+			: new class( $type, $checkLuhn ) extends CardType {
 				public function __construct( string $type, bool $checkLuhn ) {
 					parent::__construct( $type, $checkLuhn );
 				}
 			};
+	}
+
+	/**
+	 * @param array<string,mixed> $args
+	 * @return array{0:string,1:string,2:bool}
+	 */
+	private function polyfillOptional( array $args ): array {
+		$type  = is_string( $card = ( $args['type'] ?? null ) ) ? $card : self::CREDIT_CARD;
+		$class = is_string( $class = ( $args['classname'] ?? null ) ) ? $class : '';
+		$luhn  = is_bool( $luhn = ( $args['checkLuhn'] ?? null ) ) ? $luhn : true;
+
+		return array( $type, $class, $luhn );
 	}
 
 	/** @return array{0:mixed,1:string,2:string} */
@@ -226,8 +237,8 @@ class CardFactory {
 
 		return match ( true ) {
 			default                              => array( '', 'file: ' . $payload, $payload ),
-			self::isFileType( $payload, 'json' ) => self::getJsonContent( $payload ),
-			self::isFileType( $payload, 'php' )  => self::getPhpContent( $payload )
+			self::isFileType( $payload, 'json' ) => self::parseJsonContent( $payload ),
+			self::isFileType( $payload, 'php' )  => self::parsePhpContent( $payload )
 		};
 	}
 
@@ -236,7 +247,7 @@ class CardFactory {
 	}
 
 	/** @return array{0:mixed,1:string,2:string} */
-	private static function getPhpContent( string $file ): array {
+	private static function parsePhpContent( string $file ): array {
 		$content = require $file;
 		$content = is_callable( $content ) ? $content() : $content;
 
@@ -244,7 +255,7 @@ class CardFactory {
 	}
 
 	/** @return array{0:mixed,1:string,2:string} */
-	private static function getJsonContent( string $file ): mixed {
+	private static function parseJsonContent( string $file ): mixed {
 		$type    = 'JSON file: ' . $file;
 		$content = file_get_contents( $file );
 
@@ -264,13 +275,17 @@ class CardFactory {
 		$isLast = array_key_last( self::CARD_SCHEMA );
 
 		foreach ( self::CARD_SCHEMA as $key => $type ) {
+			if ( str_ends_with( haystack: $key, needle: '?' ) ) {
+				continue;
+			}
+
 			$schema .= $key . ':' . $type . ( $isLast === $key ? '' : ', ' );
 		}
 
 		throw new TypeError(
 			sprintf(
-				'Invalid data provided for creating card. The data must be an associative array with schema: %s',
-				'array{' . $schema . '}'
+				'Invalid data provided for creating card. It must be an associative array with schema: array{%s}',
+				$schema
 			)
 		);
 	}
