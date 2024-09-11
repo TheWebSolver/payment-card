@@ -83,7 +83,9 @@ class PaymentCardTest extends TestCase {
 
 	public function testCardResolver(): void {
 		$class = new class() {
-			use CardResolver;
+			use CardResolver {
+				CardResolver::resolveCardFromNumber as public;
+			}
 		};
 
 		$range = array( 62212678, 6229258 );

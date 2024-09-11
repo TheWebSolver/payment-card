@@ -9,24 +9,63 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
+use TypeError;
 use LogicException;
+use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
+/** @phpstan-import-type CardSchema from CardFactory */
 trait CardResolver {
 	/** @var Card[] */
 	private array $registeredCards;
 
-	public function setCardTypes( Card $card, Card ...$cards ): void {
+	private function setCards( Card $card, Card ...$cards ): void {
 		$this->registeredCards = array( $card, ...$cards );
 	}
 
-	/** @throws LogicException When cards not registered and `$registeredOnly` is `true`. */
-	public function resolveCardFromNumber( string|int $number, bool $registeredOnly = false ): ?Card {
-		$registered = $this->registeredCards ?? array();
-		$cards      = $registeredOnly ? $registered : array( ...PaymentCard::cases(), ...$registered );
+	/**
+	 * @param string|CardSchema $payload
+	 * @throws TypeError When content resolved from $payload does not match the `CardSchema`.
+	 */
+	private function setCardsFromContent( string|array $payload ): void {
+		$this->registeredCards = ( new CardFactory() )
+			->withPayload( data: $payload )
+			->createCards( preserveKeys: false );
+	}
 
-		if ( empty( $cards ) ) {
+	/** @return Card[] */
+	private function getCards( bool $registeredOnly = false ): array {
+		$registered = $this->registeredCards ?? array();
+
+		return $registeredOnly ? $registered : array( ...PaymentCard::cases(), ...$registered );
+	}
+
+	/** @return CardSchema[] */
+	private function getCardsContent( bool $registeredOnly = false ): array {
+		return array_map( array: $this->getCards( $registeredOnly ), callback: $this->getCardContent( ... ) );
+	}
+
+	/** @return CardSchema */
+	private function getCardContent( Card $card ): array {
+		$data = array();
+
+		foreach ( CardFactory::CARD_SCHEMA as $key => $schema ) {
+			if ( str_ends_with( haystack: $key, needle: '?' ) ) {
+				continue;
+			}
+
+			$getterMethod = 'get' . ucwords( $key );
+			$data[ $key ] = $card->{$getterMethod}();
+		}
+
+		/** @var CardSchema */
+		return $data;
+	}
+
+	/** @throws LogicException When cards not registered and `$registeredOnly` is `true`. */
+	private function resolveCardFromNumber( string|int $number, bool $registeredOnly = false ): ?Card {
+		if ( empty( $cards = $this->getCards( registeredOnly: $registeredOnly ) ) ) {
 			throw new LogicException(
 				sprintf( 'Payment Cards not registered. Impossible to resolve card number: "%s".', $number )
 			);
@@ -36,7 +75,7 @@ trait CardResolver {
 		$resolved  = null;
 
 		foreach ( $cards as $card ) {
-			if ( ! $card->isNumberValid( $number, withLuhnAlgorithm: true ) ) {
+			if ( ! $card->isNumberValid( $number ) ) {
 				continue;
 			}
 
