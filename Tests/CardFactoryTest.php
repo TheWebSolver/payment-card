@@ -51,7 +51,7 @@ class CardFactoryTest extends TestCase {
 		);
 
 		$factory = new CardFactory( data: $schema );
-		$loader  = $factory->yieldCard();
+		$loader  = $factory->lazyLoadCards();
 
 		$this->assertSame( expected: 'napas', actual: $loader->current()->getAlias() );
 		$loader->next();

@@ -17,14 +17,15 @@ use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
 /**
  * @phpstan-type CardSchema array{
- * type?:string,
- * classname?:string,
- * checkLuhn?:bool,
- * name:string,alias:string,
- * breakpoint:(string|int)[],
- * code:array{0:string,1:int},
- * length:(string|int|(string|int)[])[],
- * idRange:(string|int|(string|int)[])[],
+ *  type?:      string,
+ *  classname?: string,
+ *  checkLuhn?: bool,
+ *  name:       string,
+ *  alias:      string,
+ *  breakpoint: (string|int)[],
+ *  code:       array{0:string, 1:int},
+ *  length:     array<int,string|int|array<int,string|int>>,
+ *  idRange:    array<int,string|int|array<int,string|int>>,
  * }
  */
 class CardFactory {
@@ -107,7 +108,7 @@ class CardFactory {
 		$factory       = ( new self( ...self::getPhpContent( $path ) ) );
 		$factory->path = $path;
 
-		return $lazyload ? $factory->yieldCard( $preserveKeys ) : $factory->createCards( $preserveKeys );
+		return $lazyload ? $factory->lazyLoadCards( $preserveKeys ) : $factory->createCards( $preserveKeys );
 	}
 
 	/**
@@ -123,7 +124,7 @@ class CardFactory {
 		$factory       = ( new self( ...self::getJsonContent( $path ) ) );
 		$factory->path = $path;
 
-		return $lazyload ? $factory->yieldCard( $preserveKeys ) : $factory->createCards( $preserveKeys );
+		return $lazyload ? $factory->lazyLoadCards( $preserveKeys ) : $factory->createCards( $preserveKeys );
 	}
 
 	/**
@@ -139,7 +140,7 @@ class CardFactory {
 		$factory       = new self( ...self::parseContentIfFile( $path ) );
 		$factory->path = $path;
 
-		return $lazyload ? $factory->yieldCard( $preserveKeys ) : $factory->createCards( $preserveKeys );
+		return $lazyload ? $factory->lazyLoadCards( $preserveKeys ) : $factory->createCards( $preserveKeys );
 	}
 
 	/**
@@ -148,10 +149,10 @@ class CardFactory {
 	 */
 	public function createCards( bool $preserveKeys = true ): array {
 		/** @var array<string|int,Card> */
-		return iterator_to_array( iterator: $this->yieldCard( $preserveKeys ), preserve_keys: $preserveKeys );
+		return iterator_to_array( $this->lazyLoadCards( $preserveKeys ), $preserveKeys );
 	}
 
-	public function yieldCard( bool $preserveKeys = true ): Generator {
+	public function lazyLoadCards( bool $preserveKeys = true ): Generator {
 		foreach ( $this->content as $index => $args ) {
 			if ( $preserveKeys ) {
 				yield $index => $this->createCard( $index );
