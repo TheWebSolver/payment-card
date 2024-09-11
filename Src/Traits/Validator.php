@@ -9,22 +9,23 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
-use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
-
 /**
  * This is intended to only be used inside concrete that implements
  * `TheWebSolver\Codegarage\PaymentCard\CardInterface`
  */
 trait Validator {
-	abstract public function getLength(): array;
+	use Matcher;
+
+	abstract public function needsLuhnCheck(): bool;
 	abstract public function getIdRange(): array;
+	abstract public function getLength(): array;
 	abstract public function getCode(): array;
 
-	public function isNumberValid( mixed $number, bool $withLuhnAlgorithm = true ): bool {
-		return PaymentCard::matchesAllowedPattern( $number )
-			&& PaymentCard::matchesLength( $this->getLength(), $number )
-			&& PaymentCard::matchesLuhnAlgorithm( $number, shouldRun: $withLuhnAlgorithm )
-			&& PaymentCard::matchesIdRange( $this->getIdRange(), $number );
+	public function isNumberValid( mixed $number ): bool {
+		return self::matchesAllowedPattern( $number )
+			&& self::matchesLength( $this->getLength(), $number )
+			&& self::matchesLuhnAlgorithm( $number, shouldRun: $this->needsLuhnCheck() )
+			&& self::matchesIdRange( $this->getIdRange(), $number );
 	}
 
 	public function isCodeValid( mixed $code ): bool {

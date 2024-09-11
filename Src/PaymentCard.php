@@ -52,6 +52,14 @@ enum PaymentCard: string implements Card {
 		}
 	}
 
+	public function needsLuhnCheck(): bool {
+		try {
+			return $this->fromFactory()->needsLuhnCheck();
+		} catch ( TypeError ) {
+			return true;
+		}
+	}
+
 	public function getName(): string {
 		try {
 			return $this->fromFactory()->getName();

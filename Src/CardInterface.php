@@ -106,16 +106,21 @@ interface CardInterface {
 
 	/**
 	 * Validates the given card number.
-	 *
-	 * For validation with Luhn Algorithm, that package must be installed. If it is not installed,
-	 * there is no actual validation being performed and thus Luhn validation will always pass.
-	 *
-	 * @link https://github.com/thewebsolver/luhn-algorithm
 	 */
-	public function isNumberValid( mixed $subject, bool $withLuhnAlgorithm ): bool;
+	public function isNumberValid( mixed $subject ): bool;
 
 	/**
 	 * Validates the given card security code.
 	 */
 	public function isCodeValid( mixed $subject ): bool;
+
+	/**
+	 * Whether the given card needs Luhn Algorithm check.
+	 *
+	 * For validation with Luhn Algorithm, that package must be installed. If it is not installed,
+	 * there is no actual validation being performed and thus Luhn validation will be skipped.
+	 *
+	 * @link https://github.com/thewebsolver/luhn-algorithm
+	 */
+	public function needsLuhnCheck(): bool;
 }

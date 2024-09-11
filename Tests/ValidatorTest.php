@@ -24,6 +24,10 @@ class ValidatorTest extends TestCase {
 			/** @param mixed[] $code */
 			public function __construct( private readonly array $code ) {}
 
+			public function needsLuhnCheck(): bool {
+				return true;
+			}
+
 			/** @return (string|int|(string|int)[])[] */
 			public function getLength(): array {
 				return array();
@@ -68,14 +72,18 @@ class ValidatorTest extends TestCase {
 		bool $status,
 		bool $withLuhnAlgorithm = false
 	): void {
-		$class = new class( $length, $ranges ) {
+		$class = new class( $length, $ranges, $withLuhnAlgorithm ) {
 			use Validator;
 
 			/**
 			 * @param (string|int|(string|int)[])[] $length
 			 * @param (string|int|(string|int)[])[] $ranges
 			 */
-			public function __construct( private array $length, private array $ranges ) {}
+			public function __construct( private array $length, private array $ranges, private bool $luhn ) {}
+
+			public function needsLuhnCheck(): bool {
+				return $this->luhn;
+			}
 
 			/** @return (string|int|(string|int)[])[] */
 			public function getLength(): array {
@@ -95,7 +103,7 @@ class ValidatorTest extends TestCase {
 
 		$this->assertSame(
 			expected: $status,
-			actual: $class->isNumberValid( $subject, $withLuhnAlgorithm )
+			actual: $class->isNumberValid( $subject )
 		);
 	}
 

@@ -29,8 +29,13 @@ trait Mutator {
 
 	public function __construct(
 		private readonly string $type = CardFactory::CREDIT_CARD,
+		private readonly bool $checkLuhn = true,
 		private readonly Asserter $asserter = new Asserter()
 	) {}
+
+	public function needsLuhnCheck(): bool {
+		return $this->checkLuhn;
+	}
 
 	public function getType(): string {
 		return $this->type;
