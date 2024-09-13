@@ -50,14 +50,14 @@ class CustomValidatorTest extends TestCase {
 	}
 
 	public function testWithAllowedCards(): void {
-		$payload      = self::$cardPayload;
 		$allowedCards = array( 'americanExpress', 'dinersClub', 'visa' );
-		$class        = new class( $payload, $allowedCards) {
+		$payload      = self::$cardPayload;
+		$class        = new class( $payload, $allowedCards ) {
 			use CardResolver {
 				getCards as public;
 			}
 
-			/** @param string[] $allowedCards */
+			/** @param ?string[] $allowedCards */
 			public function __construct( string $payload, ?array $allowedCards = null, Factory $factory = new Factory() ) {
 				if ( empty( $allowedCards ) ) {
 					return;
@@ -69,10 +69,11 @@ class CustomValidatorTest extends TestCase {
 			}
 
 			public function validate( string|int $cardNumber ): bool {
-				return $this->resolveCardFromNumber( (string) $cardNumber ) instanceof Card;
+				return $this->resolveCardFromNumber( $cardNumber ) instanceof Card;
 			}
 		};
 
+		$this->assertCount( expectedCount: 3, haystack: $class->getCards() );
 		$this->assertTrue( $class->validate( cardNumber: 378282246310005 ) );   // American Express.
 		$this->assertFalse( $class->validate( cardNumber: 5105105105105100 ) ); // Master Card
 	}
