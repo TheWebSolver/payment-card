@@ -166,12 +166,16 @@ enum PaymentCard: string implements Card {
 	}
 
 	public function format( string|int $cardNumber ): string {
-		$length                    = strlen( (string) $cardNumber );
-		[ $pattern, $replacement ] = $this->getBreakpointRegex( cardSize: $length );
+		try {
+			return $this->fromFactory()->format( $cardNumber );
+		} catch ( TypeError ) {
+			$length                    = strlen( (string) $cardNumber );
+			[ $pattern, $replacement ] = $this->getBreakpointRegex( cardSize: $length );
 
-		return preg_replace( $pattern, $replacement, (string) $cardNumber )
-			?? Asserter::formattingFailed( (string) $cardNumber );
-		;
+			return preg_replace( $pattern, $replacement, (string) $cardNumber )
+				?? Asserter::formattingFailed( (string) $cardNumber );
+			;
+		}
 	}
 
 	/** @param int|int[] $range */
