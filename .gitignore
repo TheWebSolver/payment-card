@@ -8,3 +8,5 @@
 !phpstan.neon
 !phpcs.xml
 !phpunit.xml
+!LICENSE
+!README.md

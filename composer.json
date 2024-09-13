@@ -1,7 +1,17 @@
 {
   "name": "thewebsolver/payment-card",
-  "description": "PHP library to validate Payment Card (Debit/Credit)",
+  "description": "PHP library to validate Payment Cards (Debit/Credit and more)",
   "type": "library",
+  "keywords": [
+    "luhn",
+    "card-validation",
+    "validator",
+    "validation",
+    "payment-card",
+    "credit-card",
+    "credit-card-validation",
+    "bank-card"
+  ],
   "license": "GPL-3.0-or-later",
   "autoload": {
     "psr-4": {
@@ -21,5 +31,11 @@
   ],
   "minimum-stability": "dev",
   "prefer-stable": true,
-  "require": {}
+  "require": {
+    "php": ">=8.2.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.6",
+    "phpstan/phpstan": "^1.11"
+  }
 }
