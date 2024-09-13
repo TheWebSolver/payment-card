@@ -2,4 +2,4 @@
 
 ✨ For Luhn validation, [Luhn Algorithm](https://github.com/thewebsolver/luhn-algorithm) library may be installed.
 
-To learn more, visit [wiki page](../wiki).
+To learn more, visit [wiki page](https://github.com/TheWebSolver/payment-card/wiki).
