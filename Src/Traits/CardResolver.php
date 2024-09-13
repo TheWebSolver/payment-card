@@ -84,37 +84,14 @@ trait CardResolver {
 				continue;
 			}
 
-			[ $currentLength, $currentRange ] = $this->getMatchedIdRange( $card, (string) $number );
+			[ 'length' => $length, 'range' => $range ] = PaymentCard::getMatchedIdRange( $card, (string) $number );
 
-			if ( $maxLength < $currentLength ) {
-				$maxLength = $currentLength;
-				$resolved  = PaymentCard::maybeGetPartneredCard( $currentRange, $card );
+			if ( $maxLength < $length ) {
+				$maxLength = $length;
+				$resolved  = PaymentCard::maybeGetPartneredCard( $range, $card );
 			}
 		}
 
 		return $resolved;
-	}
-
-	/** @return array{0:int,1:int|int[]} */
-	private function getMatchedIdRange( Card $card, string $number ): array {
-		$maxLength = 0;
-		$cardRange = 0;
-
-		foreach ( $card->getIdRange() as $range ) {
-			if ( ! PaymentCard::matchesIdRangeWith( $range, $number ) ) {
-				continue;
-			}
-
-			$currentLength = is_array( $range )
-				? (int) min( strlen( (string) $range[0] ), strlen( (string) $range[1] ) )
-				: strlen( (string) $range );
-
-			if ( $maxLength < $currentLength ) {
-				$maxLength = $currentLength;
-				$cardRange = $range;
-			}
-		}
-
-		return array( $maxLength, $cardRange );
 	}
 }
