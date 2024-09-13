@@ -22,10 +22,10 @@ trait Validator {
 	abstract public function getCode(): array;
 
 	public function isNumberValid( mixed $number ): bool {
-		return self::matchesAllowedPattern( $number )
-			&& self::matchesLength( $this->getLength(), $number )
-			&& self::matchesLuhnAlgorithm( $number, shouldRun: $this->needsLuhnCheck() )
-			&& self::matchesIdRange( $this->getIdRange(), $number );
+		return static::matchesAllowedPattern( $number )
+			&& static::matchesLength( $this->getLength(), $number )
+			&& static::matchesLuhnAlgorithm( $number, shouldRun: $this->needsLuhnCheck() )
+			&& static::matchesIdRange( $this->getIdRange(), $number );
 	}
 
 	public function isCodeValid( mixed $code ): bool {
