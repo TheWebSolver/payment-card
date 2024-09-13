@@ -63,16 +63,9 @@ class CustomValidatorTest extends TestCase {
 					return;
 				}
 
-				$this->withoutDefaults();
-
-				$factory = $factory->withPayload( $payload );
-				$cards   = array();
-
-				foreach ( $allowedCards as $key ) {
-					$cards[] = $factory->createCard( index: $key );
-				}
-
-				$this->setCards( ...$cards );
+				$this->withoutDefaults()->setCards(
+					...array_map( $factory->withPayload( $payload )->createCard( ... ), $allowedCards )
+				);
 			}
 
 			public function validate( string|int $cardNumber ): bool {
