@@ -64,6 +64,9 @@ class CardFactory {
 	 */
 	private static array $cards;
 
+	/** @var ?class-string<Card> */
+	private static ?string $defaultCardClass;
+
 	public function __construct( mixed $data = null /* $fileType: for internal use only */ ) {
 		if ( null !== $data ) {
 			if ( 2 === func_num_args() && ( $fileType = func_get_arg( position: 1 ) ) && is_string( $fileType ) ) {
@@ -72,6 +75,15 @@ class CardFactory {
 
 			$this->resolvePayloadContent( $data, $type ?? '' );
 		}
+	}
+
+	/** @param class-string<Card> $classname */
+	public static function setGlobalCardClass( string $classname ): void {
+		self::$defaultCardClass ??= $classname;
+	}
+
+	public static function resetGlobalCardClass(): void {
+		self::$defaultCardClass = null;
 	}
 
 	/** @param string|mixed[] $data */
@@ -207,8 +219,9 @@ class CardFactory {
 	/** @param array<string,mixed> $args */
 	private function getCardInstance( array $args ): Card {
 		[ $type, $classname, $checkLuhn ] = $this->polyfillOptional( $args );
+		$classname                        = $classname ?: ( self::$defaultCardClass ?? '' );
 
-		return is_a( $classname, Card::class, allow_string: true )
+		return $classname && is_a( $classname, Card::class, allow_string: true )
 			? new $classname( $type, $checkLuhn )
 			: new class( $type, $checkLuhn ) extends CardType {
 				public function __construct( string $type, bool $checkLuhn ) {

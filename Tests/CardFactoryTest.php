@@ -9,7 +9,6 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;
 
-use Generator;
 use TypeError;
 use ReflectionClass;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +17,35 @@ use TheWebSolver\Codegarage\Test\Resource\NapasCard;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
 class CardFactoryTest extends TestCase {
+	public function testGlobalCardClassSetterResetter(): void {
+		CardFactory::setGlobalCardClass( NapasCard::class );
+
+		$payload = array(
+			array(
+				'name'       => 'Test Card',
+				'alias'      => 'test-card',
+				'breakpoint' => array( 4, 8, 12 ),
+				'code'       => array( 'CVC', 3 ),
+				'length'     => array( 16, 19 ),
+				'idRange'    => array( 9704 ),
+			),
+			array(
+				'name'       => 'Another',
+				'alias'      => 'another',
+				'breakpoint' => array( 4, 8, 12 ),
+				'code'       => array( 'CVV', 3 ),
+				'length'     => array( 16 ),
+				'idRange'    => array( 9860 ),
+			),
+		);
+
+		foreach ( ( new CardFactory( $payload ) )->lazyLoadCards() as $card ) {
+			$this->assertInstanceOf( NapasCard::class, actual: $card );
+		}
+
+		CardFactory::resetGlobalCardClass();
+	}
+
 	public function testCardCreationFromArray(): void {
 		$napas = array(
 			'name'       => 'Napas',
@@ -29,7 +57,7 @@ class CardFactoryTest extends TestCase {
 			'idRange'    => array( 9704 ),
 		);
 
-		$schema = array(
+		$payload = array(
 			$napas,
 			array(
 				'name'       => 'Gerbang Pembayaran Nasional',
@@ -44,13 +72,13 @@ class CardFactoryTest extends TestCase {
 				'name'       => 'Humo',
 				'alias'      => 'humo',
 				'breakpoint' => array( 4, 8, 12 ),
-				'code'       => array( 'CVv', 3 ),
+				'code'       => array( 'CVV', 3 ),
 				'length'     => array( 16 ),
 				'idRange'    => array( 9860 ),
 			),
 		);
 
-		$factory = new CardFactory( data: $schema );
+		$factory = new CardFactory( data: $payload );
 		$loader  = $factory->lazyLoadCards();
 
 		$this->assertSame( expected: 'napas', actual: $loader->current()->getAlias() );
@@ -61,7 +89,7 @@ class CardFactoryTest extends TestCase {
 		$loader->next();
 		$this->assertNull( $loader->current() );
 
-		$cards = ( new CardFactory( $schema ) )->createCards();
+		$cards = ( new CardFactory( $payload ) )->createCards();
 
 		$this->assertSame(
 			expected: array( 'napas', 'gpn', 'humo' ),
@@ -79,8 +107,8 @@ class CardFactoryTest extends TestCase {
 		);
 
 		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $napas ) )->createCard() );
-		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $schema ) )->createCard() );
-		$this->assertSame( 'humo', actual: ( new CardFactory( $schema ) )->createCard( 2 )->getAlias() );
+		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $payload ) )->createCard() );
+		$this->assertSame( 'humo', actual: ( new CardFactory( $payload ) )->createCard( 2 )->getAlias() );
 	}
 
 	public function testCardCreationFromJsonFile(): void {
