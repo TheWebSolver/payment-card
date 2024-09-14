@@ -14,6 +14,6 @@ use TheWebSolver\Codegarage\PaymentCard\Traits\Mutator;
 use TheWebSolver\Codegarage\PaymentCard\Traits\Validator;
 use TheWebSolver\Codegarage\PaymentCard\Traits\RegexBasedFormatter;
 
-abstract class CardType implements CardInterface {
+class CardType implements CardInterface {
 	use Mutator, Validator, RegexBasedFormatter;
 }

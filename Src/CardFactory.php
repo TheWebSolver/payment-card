@@ -223,11 +223,7 @@ class CardFactory {
 
 		return $classname && is_a( $classname, Card::class, allow_string: true )
 			? new $classname( $type, $checkLuhn )
-			: new class( $type, $checkLuhn ) extends CardType {
-				public function __construct( string $type, bool $checkLuhn ) {
-					parent::__construct( $type, $checkLuhn );
-				}
-			};
+			: new CardType( $type, $checkLuhn );
 	}
 
 	/**
@@ -235,11 +231,11 @@ class CardFactory {
 	 * @return array{0:string,1:string,2:bool}
 	 */
 	private function polyfillOptional( array $args ): array {
-		$type  = is_string( $card = ( $args['type'] ?? null ) ) ? $card : self::CREDIT_CARD;
-		$class = is_string( $class = ( $args['classname'] ?? null ) ) ? $class : '';
-		$luhn  = is_bool( $luhn = ( $args['checkLuhn'] ?? null ) ) ? $luhn : true;
-
-		return array( $type, $class, $luhn );
+		return array(
+			is_string( $card = ( $args['type'] ?? null ) ) ? $card : self::CREDIT_CARD,
+			is_string( $class = ( $args['classname'] ?? null ) ) ? $class : '',
+			is_bool( $luhn = ( $args['checkLuhn'] ?? null ) ) ? $luhn : true,
+		);
 	}
 
 	/** @return array{0:mixed,1:string,2:string} */

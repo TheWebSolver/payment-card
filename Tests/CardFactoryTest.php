@@ -10,8 +10,8 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\Test;
 
 use TypeError;
-use ReflectionClass;
 use PHPUnit\Framework\TestCase;
+use TheWebSolver\Codegarage\PaymentCard\CardType;
 use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 use TheWebSolver\Codegarage\Test\Resource\NapasCard;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
@@ -94,16 +94,6 @@ class CardFactoryTest extends TestCase {
 		$this->assertSame(
 			expected: array( 'napas', 'gpn', 'humo' ),
 			actual: array_map( static fn( $c ) => $c->getAlias(), array: $cards )
-		);
-
-		$this->assertCount(
-			expectedCount: 3,
-			haystack: array_filter( $cards, static fn( $c ) => $c instanceof Card )
-		);
-
-		$this->assertCount(
-			expectedCount: 2,
-			haystack: array_filter( $cards, static fn( $c ) => ( new ReflectionClass( $c ) )->isAnonymous() )
 		);
 
 		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $napas ) )->createCard() );
@@ -214,10 +204,8 @@ class CardFactoryTest extends TestCase {
 	/** @param array<string|int,Card> $cards */
 	private function assertAllCardsAreRegistered( array $cards ): void {
 		foreach ( $cards as $card ) {
-			$reflection = new ReflectionClass( $card );
-
 			$this->assertRegisteredCardType( $card );
-			$this->assertInstanceIsConcreteOrAnonymous( $reflection, $card );
+			$this->assertInstanceIsProvidedOrDefault( $card );
 		}
 	}
 
@@ -228,15 +216,13 @@ class CardFactoryTest extends TestCase {
 		);
 	}
 
-	/** @param ReflectionClass<Card> $reflection */
-	private function assertInstanceIsConcreteOrAnonymous( ReflectionClass $reflection, Card $card ): void {
+	private function assertInstanceIsProvidedOrDefault( Card $card ): void {
 		if ( 'napas' !== $card->getAlias() ) {
-			$this->assertTrue( $reflection->isAnonymous() );
+			$this->assertInstanceOf( CardType::class, $card );
 
 			return;
 		}
 
-		$this->assertFalse( $reflection->isAnonymous() );
 		$this->assertInstanceOf( NapasCard::class, actual: $card );
 	}
 }
