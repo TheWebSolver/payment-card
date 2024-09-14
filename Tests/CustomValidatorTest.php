@@ -16,11 +16,11 @@ use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 use TheWebSolver\Codegarage\PaymentCard\CardFactory as Factory;
 
 class CustomValidatorTest extends TestCase {
-	private static string $cardPayload;
+	public static string $payload;
 
 	public static function setUpBeforeClass(): void {
-		$slash             = DIRECTORY_SEPARATOR;
-		self::$cardPayload = dirname( __DIR__ ) . $slash . 'Resource' . $slash . 'paymentCards.json';
+		$slash         = DIRECTORY_SEPARATOR;
+		self::$payload = dirname( __DIR__ ) . $slash . 'Resource' . $slash . 'paymentCards.json';
 	}
 
 	public function testWithCustomLuhn(): void {
@@ -51,20 +51,19 @@ class CustomValidatorTest extends TestCase {
 
 	public function testWithAllowedCards(): void {
 		$allowedCards = array( 'americanExpress', 'dinersClub', 'visa' );
-		$payload      = self::$cardPayload;
-		$class        = new class( $payload, $allowedCards ) {
+		$class        = new class( $allowedCards ) {
 			use CardResolver {
 				getCards as public;
 			}
 
 			/** @param ?string[] $allowedCards */
-			public function __construct( string $payload, ?array $allowedCards = null, Factory $factory = new Factory() ) {
+			public function __construct( ?array $allowedCards = null, Factory $factory = new Factory() ) {
 				if ( empty( $allowedCards ) ) {
 					return;
 				}
 
 				$this->withoutDefaults()->setCards(
-					...array_map( $factory->withPayload( $payload )->createCard( ... ), $allowedCards )
+					...array_map( $factory->withPayload( CustomValidatorTest::$payload )->createCard( ... ), $allowedCards )
 				);
 			}
 
