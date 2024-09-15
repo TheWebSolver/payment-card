@@ -122,4 +122,55 @@ class CustomValidatorTest extends TestCase {
 		$this->assertFalse( $validator->validate( 'invalid card number' ) );
 		$this->assertCount( expectedCount: 13, haystack: $validator->getCoveredCards() );
 	}
+
+	/**
+	 * @param string|mixed[]|null $allowedCards
+	 * @dataProvider provideAllowedOrBatchData
+	 */
+	public function testEitherAllowedOrBatch( string|array|null $allowedCards, int $number, int $count = 0 ): void {
+		$class = new class( $allowedCards ) {
+			use CardResolver, BatchResolver {
+				BatchResolver::getCoveredCards as public;
+			}
+
+			private bool $useBatch = false;
+
+			/** @param string|mixed[]|null $allowedCards */
+			public function __construct(
+				string|array|null $allowedCards,
+				private readonly Factory $factory = new Factory()
+			) {
+				if ( empty( $allowedCards ) ) {
+					return;
+				}
+
+				$this->useBatch = true;
+
+				$factory->withPayload( $allowedCards );
+			}
+
+			public function validate( string|int $cardNumber ): bool {
+				$card = ! $this->useBatch
+					? $this->resolveCardFromNumber( $cardNumber )
+					: $this->resolveCardFromNumberIn( batch: $this->factory->lazyLoadCards(), number: $cardNumber );
+
+				return $card instanceof Card;
+			}
+		};
+
+		$this->assertTrue( $class->validate( $number ) );
+		$this->assertCount( expectedCount: $count, haystack: $class->getCoveredCards() );
+	}
+
+	/** @return mixed[] */
+	public function provideAllowedOrBatchData(): array {
+		$slash   = DIRECTORY_SEPARATOR;
+		$payload = dirname( __DIR__ ) . $slash . 'Resource' . $slash . 'paymentCards.json';
+
+		return array(
+			array( null, 378282246310005 ),
+			array( $payload, 378282246310005, 1 ),
+			array( $payload, 5105105105105100, 3 ),
+		);
+	}
 }
