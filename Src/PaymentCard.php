@@ -193,13 +193,11 @@ enum PaymentCard: string implements Card {
 		return ! $card instanceof self ? $card : ( $card->getPartneredCardFrom( $range ) ?? $card );
 	}
 
-	/** @return array{length:int,range:int|int[]} */
-	public static function getMatchedIdRange( Card $card, string $number ): array {
-		$length = 0;
-		$range = 0;
+	public static function matchIdRange( Card $card, string|int $number, int &$length, ?Card &$matches ): void {
+		$maxLength = $range = 0;
 
 		foreach ( $card->getIdRange() as $ranges ) {
-			if ( ! PaymentCard::matchesIdRangeWith( $ranges, $number ) ) {
+			if ( ! self::matchesIdRangeWith( $ranges, (string) $number ) ) {
 				continue;
 			}
 
@@ -207,13 +205,16 @@ enum PaymentCard: string implements Card {
 				? (int) min( strlen( (string) $ranges[0] ), strlen( (string) $ranges[1] ) )
 				: strlen( (string) $ranges );
 
-			if ( $length < $currentLength ) {
-				$length = $currentLength;
+			if ( $maxLength < $currentLength ) {
+				$maxLength = $currentLength;
 				$range  = $ranges;
 			}
 		}
 
-		return compact( 'length', 'range' );
+		if ( $length < $maxLength ) {
+			$length  = $maxLength;
+			$matches = self::maybeGetPartneredCard( $range, $card );
+		}
 	}
 
 	private function fromFactory(): Card {

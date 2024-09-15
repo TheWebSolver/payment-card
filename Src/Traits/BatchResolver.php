@@ -16,7 +16,6 @@ use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 trait BatchResolver {
 	/** @var array<string,string> */
 	private array $coveredCards;
-	private ?Card $resolved = null;
 
 	/** @return array<string,string> */
 	private function getCoveredCards(): array {
@@ -29,37 +28,28 @@ trait BatchResolver {
 
 	private function resolveCardFromNumberIn( Generator $batch, string|int $number ): ?Card {
 		$shouldLoadNextCard = true;
+		$length             = 0;
+		$matches            = null;
 
 		do {
-				/** @var Card*/
-				$card                                    = $batch->current();
-				$this->coveredCards[ $card->getAlias() ] = 'invalid';
+			/** @var ?Card $card */
+			$card = $batch->current();
 
-			if ( $this->resolveCardRange( $card, $number ) ) {
-				$shouldLoadNextCard                      = false;
-				$this->coveredCards[ $card->getAlias() ] = 'valid';
+			if ( ! $card ) {
+				$shouldLoadNextCard = false;
+
+				continue;
 			}
+
+			PaymentCard::matchIdRange( $card, $number, $length, $matches );
+
+			$alias                        = $card->getAlias();
+			$shouldLoadNextCard           = ! $matches;
+			$this->coveredCards[ $alias ] = ( $matches ? '' : 'in' ) . 'valid';
 
 			$batch->next();
 		} while ( $shouldLoadNextCard && $batch->valid() );
 
-		$resolved = $this->resolved ?? null;
-
-		unset( $this->resolved );
-
-		return $resolved;
-	}
-
-	private function resolveCardRange( Card $card, string|int $number ): ?Card {
-		[ 'length' => $length, 'range' => $range ] = PaymentCard::getMatchedIdRange( $card, (string) $number );
-
-		$maxLength = 0;
-
-		if ( $maxLength < $length ) {
-			$maxLength       = $length;
-			$this->resolved  = PaymentCard::maybeGetPartneredCard( $range, $card );
-		}
-
-		return $this->resolved ?? null;
+		return $matches;
 	}
 }

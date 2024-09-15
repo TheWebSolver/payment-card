@@ -76,22 +76,15 @@ trait CardResolver {
 			);
 		}
 
-		$maxLength = 0;
-		$resolved  = null;
+		$length  = 0;
+		$matches = null;
 
 		foreach ( $cards as $card ) {
-			if ( ! $card->isNumberValid( $number ) ) {
-				continue;
-			}
-
-			[ 'length' => $length, 'range' => $range ] = PaymentCard::getMatchedIdRange( $card, (string) $number );
-
-			if ( $maxLength < $length ) {
-				$maxLength = $length;
-				$resolved  = PaymentCard::maybeGetPartneredCard( $range, $card );
+			if ( $card->isNumberValid( $number ) ) {
+				PaymentCard::matchIdRange( $card, $number, $length, $matches );
 			}
 		}
 
-		return $resolved;
+		return $matches;
 	}
 }
