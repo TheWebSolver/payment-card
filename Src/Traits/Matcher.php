@@ -35,13 +35,13 @@ trait Matcher {
 	}
 
 	public static function matchesLengthWith( mixed $size, string $value ): bool {
-		$count = strlen( $value );
-
 		try {
 			$size = Asserter::assertHasSize( $size );
 		} catch ( InvalidArgumentException ) {
-			$size = 0;
+			return false;
 		}
+
+		$count = strlen( $value );
 
 		return ! is_array( $size )
 			? $size && ( $count === $size )
@@ -68,23 +68,24 @@ trait Matcher {
 
 		return is_array( $size )
 			? self::matchesRangeInBetween( $value, ...$size )
-			: self::matchesRangeExactNumber( $value, $size );
+			: self::matchesRangeExactNumber( $value, range: (string) $size );
 	}
 
-	private static function matchesRangeInBetween( string $value, int $min, int $max ): bool {
-		$count = self::subjectPart( $value, (string) $min, (string) $max );
+	private static function matchesRangeInBetween( string $value, int $minRange, int $maxRange ): bool {
+		$beginningNumbers = self::getBeginningNumbers( $value, (string) $minRange, (string) $maxRange );
 
-		return $count >= $min && $count <= $max;
+		// Eg: $minRange: 98; $maxRange: 101, $beginningNumbers: 100. Number is within range.
+		return $beginningNumbers >= $minRange && $beginningNumbers <= $maxRange;
 	}
 
-	private static function matchesRangeExactNumber( string $value, int $range ): bool {
-		$CardPart  = substr( $value, offset: 0, length: strlen( (string) $range ) );
-		$rangePart = substr( (string) $range, offset: 0, length: strlen( $value ) );
+	private static function matchesRangeExactNumber( string $value, string $range ): bool {
+		$CardPart  = substr( $value, offset: 0, length: strlen( $range ) );
+		$rangePart = substr( $range, offset: 0, length: strlen( $value ) );
 
 		return $rangePart === $CardPart;
 	}
 
-	private static function subjectPart( string $value, string $min, string $max ): int {
+	private static function getBeginningNumbers( string $value, string $min, string $max ): int {
 		return (int) substr( $value, offset: 0, length: max( strlen( $min ), strlen( $max ) ) );
 	}
 }

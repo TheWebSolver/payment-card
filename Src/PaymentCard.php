@@ -207,7 +207,7 @@ enum PaymentCard: string implements Card {
 
 			if ( $maxLength < $currentLength ) {
 				$maxLength = $currentLength;
-				$range  = $ranges;
+				$range     = $ranges;
 			}
 		}
 

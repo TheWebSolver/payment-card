@@ -32,10 +32,7 @@ trait BatchResolver {
 		$matches            = null;
 
 		do {
-			/** @var ?Card $card */
-			$card = $batch->current();
-
-			if ( ! $card ) {
+			if ( ! ( $card = $batch->current() ) instanceof Card ) {
 				$shouldLoadNextCard = false;
 
 				continue;
@@ -43,9 +40,8 @@ trait BatchResolver {
 
 			PaymentCard::matchIdRange( $card, $number, $length, $matches );
 
-			$alias                        = $card->getAlias();
-			$shouldLoadNextCard           = ! $matches;
-			$this->coveredCards[ $alias ] = ( $matches ? '' : 'in' ) . 'valid';
+			$shouldLoadNextCard                      = ! $matches;
+			$this->coveredCards[ $card->getAlias() ] = ( $matches ? '' : 'in' ) . 'valid';
 
 			$batch->next();
 		} while ( $shouldLoadNextCard && $batch->valid() );
