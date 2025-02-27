@@ -1,9 +1,5 @@
 <?php
-/**
- * The Payment Cards from Closure.
- *
- * @package TheWebSolver/Codegarage/Test
- */
+declare( strict_types = 1 );
 
 use TheWebSolver\Codegarage\Test\Resource\NapasCard;
 

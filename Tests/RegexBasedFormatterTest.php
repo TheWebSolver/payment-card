@@ -1,10 +1,4 @@
 <?php
-/**
- * Regex based formatter Test.
- *
- * @package TheWebSolver\Codegarage\Test
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;

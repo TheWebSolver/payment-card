@@ -1,16 +1,11 @@
 <?php
-/**
- * Regex generator test.
- *
- * @package TheWebSolver\Codegarage\Test
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;
 
 use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Traits\RegexGenerator;
 
 class RegexGeneratorTest extends TestCase {
@@ -23,7 +18,7 @@ class RegexGeneratorTest extends TestCase {
 
 			/** @return string[] */
 			public function generate(): array {
-				return $this->type !== 'alt' ? $this->getDefaultRegex( $this->size ) : $this->getAltRegex( $this->size );
+				return 'alt' !== $this->type ? $this->getDefaultRegex( $this->size ) : $this->getAltRegex( $this->size );
 			}
 		};
 
@@ -34,16 +29,12 @@ class RegexGeneratorTest extends TestCase {
 		$this->assertSame( $expected, actual: $class->generate() );
 	}
 
-	/**
-	 * @param string[] $expected
-	 * @dataProvider provideDefaultSizesAndRespectiveGeneration
-	 */
+	#[DataProvider( 'provideDefaultSizesAndRespectiveGeneration' )]
 	public function testGeneratingDefaultRegex( array $expected, int $size, bool $throws = false ): void {
 		$this->performTest( $expected, $size, $throws, 'default' );
 	}
 
-	/** @return mixed[] */
-	public function provideDefaultSizesAndRespectiveGeneration(): array {
+	public static function provideDefaultSizesAndRespectiveGeneration(): array {
 		$holder = '$1 $2 $3';
 
 		return array(
@@ -54,16 +45,12 @@ class RegexGeneratorTest extends TestCase {
 		);
 	}
 
-	/**
-	 * @param string[] $expected
-	 * @dataProvider provideAltSizesAndRespectiveGeneration
-	 */
+	#[DataProvider( 'provideAltSizesAndRespectiveGeneration' )]
 	public function testGeneratingAltRegex( array $expected, int $size, bool $throws = false ): void {
 		$this->performTest( $expected, $size, $throws, 'alt' );
 	}
 
-	/** @return mixed[] */
-	public function provideAltSizesAndRespectiveGeneration(): array {
+	public static function provideAltSizesAndRespectiveGeneration(): array {
 		$holder = '$1 $2 $3';
 
 		return array(

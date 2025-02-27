@@ -1,10 +1,4 @@
 <?php
-/**
- * Payment Card Validation methods.
- *
- * @package TheWebSolver\Codegarage\Validation
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
@@ -23,6 +17,7 @@ trait Validator {
 
 	public function isNumberValid( mixed $number ): bool {
 		return static::matchesAllowedPattern( $number )
+			&& is_string( $number )
 			&& static::matchesLength( $this->getLength(), $number )
 			&& static::matchesLuhnAlgorithm( $number, shouldRun: $this->needsLuhnCheck() )
 			&& static::matchesIdRange( $this->getIdRange(), $number );

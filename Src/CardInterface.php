@@ -1,10 +1,4 @@
 <?php
-/**
- * Interface to define and validate Payment Card.
- *
- * @package TheWebSolver\Codegarage\Validation
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;

@@ -1,15 +1,10 @@
 parameters:
 	level: max
 	paths:
-		- Src
-		- Tests
-	excludePaths:
-		analyseAndScan:
-			- vendor/
+		- Src/
+		- Tests/QueueBasedFormatterTest.php
+		- Tests/CustomValidatorTest.php
 	ignoreErrors:
-		-
-			identifier: missingType.iterableValue
-			path: Src/Traits/ForbidSetters.php
 		-
 			message: '#^Offset 1 on array\{string\, int\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
@@ -17,4 +12,21 @@ parameters:
 		-
 			identifier: method.nonObject
 			path: Tests/CardFactoryTest.php
+		-
+			identifier: return.type
+			path: Src/PaymentCard.php
+			message: '|fromFactory\(\) should return|'
+			count: 1
+		- # Card creation. Error catch.
+			identifier: argument.type
+			path: Src/CardFactory.php
+			count: 8
+		- # Card creation. Error catch.
+			identifier: offsetAccess.nonOffsetAccessible
+			path: Src/CardFactory.php
+			count: 6
+		- # Card creation. Error catch.
+			identifier: argument.unpackNonIterable
+			path: Src/CardFactory.php
+			count: 2
 

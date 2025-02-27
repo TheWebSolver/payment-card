@@ -1,22 +1,14 @@
 <?php
-/**
- * Validator Test.
- *
- * @package TheWebSolver\Codegarage\Test
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Traits\Validator;
 
 class ValidatorTest extends TestCase {
-	/**
-	 * @param mixed[] $code
-	 * @dataProvider provideCodes
-	 */
+	#[DataProvider( 'provideCodes' )]
 	public function testCodeIsValid( array $code, mixed $subject, bool $expected ): void {
 		$class = new class( $code ) {
 			use Validator;
@@ -47,8 +39,7 @@ class ValidatorTest extends TestCase {
 		$this->assertSame( $expected, $class->isCodeValid( $subject ) );
 	}
 
-	/** @return mixed[] */
-	public function provideCodes(): array {
+	public static function provideCodes(): array {
 		return array(
 			array( array( 'Test', 1 ), 5, true ),
 			array( array( 'Test', 2 ), '55', true ),
@@ -63,8 +54,8 @@ class ValidatorTest extends TestCase {
 	/**
 	 * @param (string|int|(string|int)[])[] $length
 	 * @param (string|int|(string|int)[])[] $ranges
-	 * @dataProvider provideNumbers
 	 */
+	#[DataProvider( 'provideNumbers' )]
 	public function testNumberIsValid(
 		array $length,
 		array $ranges,
@@ -107,8 +98,7 @@ class ValidatorTest extends TestCase {
 		);
 	}
 
-	/** @return mixed[] */
-	public function provideNumbers(): array {
+	public static function provideNumbers(): array {
 		return array(
 			array( array( 12, 14 ), array( 432 ), 432187659876, true ),
 			array( array( 12, 14 ), array( true ), 432187659876, false ),

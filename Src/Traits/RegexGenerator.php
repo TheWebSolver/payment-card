@@ -1,10 +1,4 @@
 <?php
-/**
- * Generates regex based on Payment Card number length.
- *
- * @package TheWebSolver\Codegarage\Validation
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;

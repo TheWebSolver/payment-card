@@ -1,10 +1,4 @@
 <?php
-/**
- * Payment Card factory.
- *
- * @package TheWebSolver\Codegarage\Validation
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
@@ -305,7 +299,10 @@ class CardFactory {
 		);
 	}
 
-	/** @param mixed[] $args */
+	/**
+	 * @param mixed[] $args
+	 * @throws TypeError When invalid card args given.
+	 */
 	private function shutdownForInvalidSchema( array $args, string|int|null $index, Throwable $e ): never {
 		throw new TypeError(
 			previous: $e,

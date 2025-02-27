@@ -1,15 +1,10 @@
 <?php
-/**
- * Card Test.
- *
- * @package TheWebSolver\Codegarage\Test
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
 class AsserterTest extends TestCase {
@@ -26,11 +21,7 @@ class AsserterTest extends TestCase {
 		Asserter::formattingFailed( '123' );
 	}
 
-	/**
-	 * @param mixed[] $expected
-	 * @param mixed[] $value
-	 * @dataProvider provideResolvingSizes
-	 */
+	#[DataProvider( 'provideResolvingSizes' )]
 	public function testResolveSize( array $expected, array $value, string $type, string $errorMsg = '' ): void {
 		if ( $errorMsg ) {
 			$this->expectExceptionMessage( $errorMsg );
@@ -39,8 +30,7 @@ class AsserterTest extends TestCase {
 		$this->assertSame( $expected, actual: ( new Asserter() )->assertSizeWith( $value, $type ) );
 	}
 
-	/** @return mixed[] */
-	public function provideResolvingSizes(): array {
+	public static function provideResolvingSizes(): array {
 		return array(
 			array( array( 1 ), array( '1' ), 'Test' ),
 			array( array( 1, 5 ), array( 1, 5 ), 'Test' ),

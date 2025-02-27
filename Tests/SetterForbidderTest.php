@@ -1,23 +1,15 @@
 <?php
-/**
- * Setter methods Forbidden Test.
- *
- * @package TheWebSolver\Codegarage\Test
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Traits\ForbidSetters;
 
 class SetterForbidderTest extends TestCase {
-	/**
-	 * @param mixed[] $args
-	 * @dataProvider provideForbiddenSetterMethods
-	 */
+	#[DataProvider( 'provideForbiddenSetterMethods' )]
 	public function testForbidden( array $args, string $methodName, string $propName ): void {
 		$class = new class() {
 			use ForbidSetters;
@@ -32,8 +24,7 @@ class SetterForbidderTest extends TestCase {
 		$class->{$methodName}( ...$args );
 	}
 
-	/** @return mixed[] */
-	public function provideForbiddenSetterMethods(): array {
+	public static function provideForbiddenSetterMethods(): array {
 		return array(
 			array( array( '' ), 'setName', 'name' ),
 			array( array( '' ), 'setAlias', 'alias' ),

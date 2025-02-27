@@ -1,22 +1,17 @@
 <?php
-/**
- * Payment Card enum Test.
- *
- * @package TheWebSolver\Codegarage\Test
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCard as Card;
 use TheWebSolver\Codegarage\PaymentCard\Traits\CardResolver;
 
 class PaymentCardTest extends TestCase {
-	/** @dataProvider provideCreditCards */
+	#[DataProvider( 'provideCreditCards' )]
 	public function testCreditCards( Card $card, string|int $number ): void {
 		$this->assertTrue( $card->isNumberValid( $number ) );
 	}
@@ -24,7 +19,6 @@ class PaymentCardTest extends TestCase {
 	/**
 	 * Only valid ones are selected from different sources. Links provided below.
 	 *
-	 * @return array<array{0:Card,1:string|int}>
 	 * @link https://www.paypalobjects.com/en_GB/vhelp/paypalmanager_help/credit_card_numbers.htm
 	 * @link https://developer.paypal.com/braintree/docs/guides/unionpay/testing
 	 * @link http://support.worldpay.com/support/kb/bg/testandgolive/tgl5103.html
@@ -33,7 +27,7 @@ class PaymentCardTest extends TestCase {
 	 * @link https://developer.craftgate.io/en/test-cards/all-successful-test-cards/
 	 * @link https://cardguru.io/credit-card-generator
 	 */
-	public function provideCreditCards(): array {
+	public static function provideCreditCards(): array {
 		return array(
 			array( Card::AmericanExpress, 378282246310005 ),
 			array( Card::AmericanExpress, '371449635398431' ),

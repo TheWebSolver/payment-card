@@ -1,10 +1,4 @@
 <?php
-/**
- * Payment Card Formatter with breakpoint based on Regex pattern.
- *
- * @package TheWebSolver\Codegarage\Validation
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;

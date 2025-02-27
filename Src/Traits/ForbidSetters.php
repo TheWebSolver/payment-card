@@ -1,10 +1,4 @@
-<?php
-/**
- * Forbids Enum where setter methods are redundant.
- *
- * @package TheWebSolver\Codegarage\Validation
- */
-
+<?php // phpcs:disable Generic.CodeAnalysis.UnusedFunctionParameter.Found
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;

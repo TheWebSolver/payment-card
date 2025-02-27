@@ -1,16 +1,11 @@
 <?php
-/**
- * Card Factory test.
- *
- * @package TheWebSolver\Codegarage\Test
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;
 
 use TypeError;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\CardType;
 use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 use TheWebSolver\Codegarage\Test\Resource\NapasCard;
@@ -129,10 +124,7 @@ class CardFactoryTest extends TestCase {
 		CardFactory::createFromJsonFile( $path );
 	}
 
-	/**
-	 * @param string[] $aliases
-	 * @dataProvider providePhpFiles
-	 */
+	#[DataProvider( 'providePhpFiles' )]
 	public function testCardCreationFromPhpFile(
 		array $aliases,
 		string $filename,
@@ -152,10 +144,7 @@ class CardFactoryTest extends TestCase {
 		$this->assertAllCardsAreRegistered( (array) $cards );
 	}
 
-	/**
-	 * @param string[] $aliases
-	 * @dataProvider providePhpFiles
-	 */
+	#[DataProvider( 'providePhpFiles' )]
 	public function testLazyCardCreationFromPhpFile(
 		array $aliases,
 		string $filename,
@@ -173,7 +162,7 @@ class CardFactoryTest extends TestCase {
 
 		while ( $cards->valid() ) {
 			$alias = $cards->current()->getAlias();
-			$key   = $aliasAsKey ? array_search( $cards->key(), $aliases ) : $cards->key();
+			$key   = $aliasAsKey ? array_search( $cards->key(), $aliases, true ) : $cards->key();
 
 			$this->assertSame( expected: $aliases[ $key ], actual: $alias );
 
@@ -181,8 +170,7 @@ class CardFactoryTest extends TestCase {
 		}
 	}
 
-	/** @return mixed[] */
-	public function providePhpFiles(): array {
+	public static function providePhpFiles(): array {
 		return array(
 			array( array( 'napas' ), 'PhpArray' ),
 			array( array( 'napas', 'humo' ), 'PhpCallable' ),

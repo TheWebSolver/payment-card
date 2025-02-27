@@ -1,10 +1,4 @@
 <?php
-/**
- * The Payment Card property assertions.
- *
- * @package TheWebSolver\Codegarage\Validation
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
@@ -89,7 +83,7 @@ class Asserter {
 			default              => self::assertionFailed( self::NEEDS_TWO_ELEMENTS ),
 			! is_array( $size )  => $size = self::assertSingleSize( $size ),
 			count( $size ) === 2 => self::assertPositiveAndValid(
-				$size = array_map( callback: self::assertSingleSize( ... ), array: $size )
+				$size                     = array_map( callback: self::assertSingleSize( ... ), array: $size )
 			),
 		};
 	}

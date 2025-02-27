@@ -1,10 +1,4 @@
 <?php
-/**
- * Resolves payment card type in a batch.
- *
- * @package TheWebSolver\Codegarage\Validation
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;

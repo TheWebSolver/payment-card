@@ -1,21 +1,14 @@
 <?php
-/**
- * Formatter Data Provider.
- *
- * @package TheWebSolver\Codegarage\Test
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 trait FormatterDataProvider {
 	abstract protected function classWithTrait(): object;
 
-	/**
-	 * @param (string|int)[] $numbers
-	 * @dataProvider provideVariousNumbersAndBreakpoints
-	 */
+	#[DataProvider( 'provideVariousNumbersAndBreakpoints' )]
 	public function testNumberFormattingBasedOnBreakpoint(
 		array $numbers,
 		string|int $number,
@@ -27,8 +20,7 @@ trait FormatterDataProvider {
 		$this->assertSame( $expected, actual: $class->format( $number ) );
 	}
 
-	/** @return array<mixed[]> */
-	public function provideVariousNumbersAndBreakpoints(): array {
+	public static function provideVariousNumbersAndBreakpoints(): array {
 		return array(
 			array( array( 5, 10, 13 ), 1234567891012345, '12345 67891 012 345' ),
 			array( array( 3, 9 ), '123456789101998', '123 456789 101998' ),

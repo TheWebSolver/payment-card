@@ -1,10 +1,4 @@
 <?php
-/**
- * Card Interface setter methods.
- *
- * @package TheWebSolver\Codegarage\Validation
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;

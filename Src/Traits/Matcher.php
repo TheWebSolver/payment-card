@@ -1,10 +1,4 @@
 <?php
-/**
- * Matches Payment Card ID data.
- *
- * @package TheWebSolver\Codegarage\Validation
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;

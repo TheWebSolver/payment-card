@@ -1,15 +1,10 @@
 <?php
-/**
- * Validator Test with custom implementation.
- *
- * @package TheWebSolver\Codegarage\Test
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\CardType;
 use TheWebSolver\Codegarage\PaymentCard\Traits\CardResolver;
 use TheWebSolver\Codegarage\PaymentCard\Traits\BatchResolver;
@@ -73,9 +68,9 @@ class CustomValidatorTest extends TestCase {
 			}
 		};
 
-		$this->assertCount( expectedCount: 3, haystack: $class->getCards() );
+		$this->assertCount( 3, $class->getCards() );
 		$this->assertTrue( $class->validate( cardNumber: 378282246310005 ) );   // American Express.
-		$this->assertFalse( $class->validate( cardNumber: 5105105105105100 ) ); // Mastercard
+		$this->assertFalse( $class->validate( cardNumber: 5105105105105100 ) ); // Mastercard.
 	}
 
 	public function testInBatch(): void {
@@ -110,23 +105,21 @@ class CustomValidatorTest extends TestCase {
 		};
 
 		$this->assertTrue( $validator->validate( 378282246310005 ) ); // American Express.
-		$this->assertCount( expectedCount: 4, haystack: $validator->getCoveredCards() );
+		$this->assertCount( 4, $validator->getCoveredCards() );
 
 		$validator->resetCoveredCards();
 
 		$this->assertTrue( $validator->validate( 5105105105105100 ) ); // Mastercard.
-		$this->assertCount( expectedCount: 6, haystack: $validator->getCoveredCards() );
+		$this->assertCount( 6, $validator->getCoveredCards() );
 
 		$validator->resetCoveredCards();
 
 		$this->assertFalse( $validator->validate( 'invalid card number' ) );
-		$this->assertCount( expectedCount: 13, haystack: $validator->getCoveredCards() );
+		$this->assertCount( 13, $validator->getCoveredCards() );
 	}
 
-	/**
-	 * @param string|mixed[]|null $allowedCards
-	 * @dataProvider provideAllowedOrBatchData
-	 */
+	/** @param string|mixed[]|null $allowedCards */
+	#[DataProvider( 'provideAllowedOrBatchData' )]
 	public function testEitherAllowedOrBatch( string|array|null $allowedCards, int $number, int $count = 0 ): void {
 		$class = new class( $allowedCards ) {
 			use CardResolver, BatchResolver {
@@ -159,11 +152,11 @@ class CustomValidatorTest extends TestCase {
 		};
 
 		$this->assertTrue( $class->validate( $number ) );
-		$this->assertCount( expectedCount: $count, haystack: $class->getCoveredCards() );
+		$this->assertCount( $count, $class->getCoveredCards() );
 	}
 
 	/** @return mixed[] */
-	public function provideAllowedOrBatchData(): array {
+	public static function provideAllowedOrBatchData(): array {
 		$slash   = DIRECTORY_SEPARATOR;
 		$payload = dirname( __DIR__ ) . $slash . 'Resource' . $slash . 'paymentCards.json';
 

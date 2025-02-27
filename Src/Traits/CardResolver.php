@@ -1,10 +1,4 @@
 <?php
-/**
- * Resolves payment card type.
- *
- * @package TheWebSolver\Codegarage\Validation
- */
-
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
@@ -51,8 +45,17 @@ trait CardResolver {
 		return array_map( array: $this->getCards(), callback: $this->getCardContent( ... ) );
 	}
 
-	/** @return CardSchema */
-	private function getCardContent( Card $card ): array {
+	/**
+	 * @return CardSchema
+	 * @throws TypeError When invalid card provided.
+	 */
+	private function getCardContent( mixed $card ): array {
+		if ( ! $card instanceof Card ) {
+			throw new TypeError(
+				sprintf( 'Impossible to retrieve card content from invalid card "%s".', get_debug_type( $card ) )
+			);
+		}
+
 		$data = array();
 
 		foreach ( Factory::CARD_SCHEMA as $key => $schema ) {

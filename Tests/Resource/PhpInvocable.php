@@ -1,11 +1,7 @@
 <?php
-/**
- * The Payment Cards from a Class.
- *
- * @package TheWebSolver/Codegarage/Test
- */
+declare( strict_types = 1 );
 
- use TheWebSolver\Codegarage\Test\Resource\NapasCard;
+use TheWebSolver\Codegarage\Test\Resource\NapasCard;
 
 return new class() {
 	/** @return array<string,mixed[]> */

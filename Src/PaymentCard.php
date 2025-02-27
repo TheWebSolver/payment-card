@@ -1,12 +1,4 @@
-<?php
-/**
- * Known Payment Card types.
- *
- * @package TheWebSolver\Codegarage\Validation
- *
- * @phpcs:disable WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
- */
-
+<?php // phpcs:disable WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
 declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
@@ -174,7 +166,6 @@ enum PaymentCard: string implements Card {
 
 			return preg_replace( $pattern, $replacement, (string) $cardNumber )
 				?? Asserter::formattingFailed( (string) $cardNumber );
-			;
 		}
 	}
 
