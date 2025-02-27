@@ -3,7 +3,6 @@
   "description": "PHP library to validate Payment Cards (Debit/Credit and more)",
   "type": "library",
   "keywords": [
-    "luhn",
     "card-validation",
     "validator",
     "validation",
@@ -13,6 +12,12 @@
     "bank-card"
   ],
   "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Shesh Ghimire",
+      "email": "sheshgh@outlook.com"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "TheWebSolver\\Codegarage\\PaymentCard\\": "Src/"
@@ -23,19 +28,25 @@
       "TheWebSolver\\Codegarage\\Test\\": "Tests/"
     }
   },
-  "authors": [
-    {
-      "name": "Shesh Ghimire",
-      "email": "sheshgh@outlook.com"
-    }
-  ],
-  "minimum-stability": "dev",
-  "prefer-stable": true,
   "require": {
-    "php": ">=8.2.0"
+    "php": ">=8.2"
   },
   "require-dev": {
-    "phpunit/phpunit": "^9.6",
-    "phpstan/phpstan": "^1.11"
-  }
+    "phpunit/phpunit": "^11.5",
+    "phpstan/phpstan": "^2.1",
+    "squizlabs/php_codesniffer": "^3.11",
+    "phpcompatibility/php-compatibility": "^9.3",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "wp-coding-standards/wpcs": "^3.1"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
+  "suggest": {
+    "thewebsolver/luhn-algorithm": "Allows payment card validation against Luhn Algorithm"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
