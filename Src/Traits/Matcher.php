@@ -5,6 +5,7 @@ namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use InvalidArgumentException;
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
+use TheWebSolver\Codegarage\Validator\LuhnAlgorithm;
 
 trait Matcher {
 	public static function matchesAllowedPattern( mixed &$value ): bool {
@@ -13,7 +14,7 @@ trait Matcher {
 
 	public static function matchesLuhnAlgorithm( string $value, bool $shouldRun = true ): bool {
 		return $shouldRun && class_exists( '\\TheWebSolver\\Codegarage\\LuhnAlgorithm' )
-			? \TheWebSolver\Codegarage\LuhnAlgorithm::validate( value: $value )
+			? LuhnAlgorithm::validate( value: $value )
 			: true;
 	}
 
