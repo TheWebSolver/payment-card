@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Traits\Validator;
 
-class ValidatorTest extends TestCase {
+class CardValidationTest extends TestCase {
 	#[DataProvider( 'provideCodes' )]
 	public function testCodeIsValid( array $code, mixed $subject, bool $expected ): void {
 		$class = new class( $code ) {
