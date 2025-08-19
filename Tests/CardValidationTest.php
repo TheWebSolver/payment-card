@@ -22,12 +22,12 @@ class CardValidationTest extends TestCase {
 
 			/** @return (string|int|(string|int)[])[] */
 			public function getLength(): array {
-				return array();
+				return [];
 			}
 
 			/** @return (string|int|(string|int)[])[] */
 			public function getIdRange(): array {
-				return array();
+				return [];
 			}
 
 			/** @return mixed[] */
@@ -40,15 +40,15 @@ class CardValidationTest extends TestCase {
 	}
 
 	public static function provideCodes(): array {
-		return array(
-			array( array( 'Test', 1 ), 5, true ),
-			array( array( 'Test', 2 ), '55', true ),
-			array( array( 'Test', 1 ), true, false ),
-			array( array( 'Test', 4 ), 798, false ),
-			array( array( 'Test', 4 ), '7989', true ),
-			array( array( 'Test' ), '7989', false ),
-			array( array( 'Test', 3 ), '989', true ),
-		);
+		return [
+			[ [ 'Test', 1 ], 5, true ],
+			[ [ 'Test', 2 ], '55', true ],
+			[ [ 'Test', 1 ], true, false ],
+			[ [ 'Test', 4 ], 798, false ],
+			[ [ 'Test', 4 ], '7989', true ],
+			[ [ 'Test' ], '7989', false ],
+			[ [ 'Test', 3 ], '989', true ],
+		];
 	}
 
 	/**
@@ -88,7 +88,7 @@ class CardValidationTest extends TestCase {
 
 			/** @return mixed[] */
 			public function getCode(): array {
-				return array();
+				return [];
 			}
 		};
 
@@ -99,23 +99,23 @@ class CardValidationTest extends TestCase {
 	}
 
 	public static function provideNumbers(): array {
-		return array(
-			array( array( 12, 14 ), array( 432 ), 432187659876, true ),
-			array( array( 12, 14 ), array( true ), 432187659876, false ),
-			array( array( true, 14 ), array( 432 ), 432187659876, false ),
-			array( array( 12, 14 ), array( 432 ), fn() => 432187659876, false ),
-			array( array( 12, 14 ), array( 432 ), '43218765987699', true ),
-			array( array( 12, 14 ), array( 432 ), 43218765987, false ),
-			array( array( array( 13, 15 ) ), array( 432 ), 43218765987, false ),
-			array( array( array( 13, 15 ) ), array( 432 ), 43218765987699, true ),
-			array( array( array( 13, 15 ) ), array( 433 ), 43218765987699, false ),
-			array( array( array( 15, 13 ) ), array( 432 ), 43218765987699, false ),
-			array( array( array( 15 ) ), array( 432 ), 43218765987699, false ),
-			array( array( 6, array( 9, 14 ), 17 ), array( 432 ), 43218765987699, true ),
-			array( array( 6, array( 9, 13 ), 17 ), array( 432 ), 43218765987699, false ),
-			array( array( 6, array( 9, 14 ), 17 ), array( 432, array( 55, 59 ), 71 ), 56218765987699, true ),
-			array( array( 6, array( 9, 14 ), 17 ), array( 432, array( 55, 59 ), 71 ), 71218765987699, true ),
+		return [
+			[ [ 12, 14 ], [ 432 ], 432187659876, true ],
+			[ [ 12, 14 ], [ true ], 432187659876, false ],
+			[ [ true, 14 ], [ 432 ], 432187659876, false ],
+			[ [ 12, 14 ], [ 432 ], fn() => 432187659876, false ],
+			[ [ 12, 14 ], [ 432 ], '43218765987699', true ],
+			[ [ 12, 14 ], [ 432 ], 43218765987, false ],
+			[ [ [ 13, 15 ] ], [ 432 ], 43218765987, false ],
+			[ [ [ 13, 15 ] ], [ 432 ], 43218765987699, true ],
+			[ [ [ 13, 15 ] ], [ 433 ], 43218765987699, false ],
+			[ [ [ 15, 13 ] ], [ 432 ], 43218765987699, false ],
+			[ [ [ 15 ] ], [ 432 ], 43218765987699, false ],
+			[ [ 6, [ 9, 14 ], 17 ], [ 432 ], 43218765987699, true ],
+			[ [ 6, [ 9, 13 ], 17 ], [ 432 ], 43218765987699, false ],
+			[ [ 6, [ 9, 14 ], 17 ], [ 432, [ 55, 59 ], 71 ], 56218765987699, true ],
+			[ [ 6, [ 9, 14 ], 17 ], [ 432, [ 55, 59 ], 71 ], 71218765987699, true ],
 
-		);
+		];
 	}
 }

@@ -34,7 +34,7 @@ class CardFactory {
 	 * - If `classname` key not passed, anonymous class is used.
 	 * - If `checkLuhn` key not passed, Luhn algorithm is always checked.
 	 */
-	public const CARD_SCHEMA = array(
+	public const CARD_SCHEMA = [
 		'type?'      => 'string',
 		'classname?' => 'string',
 		'checkLuhn?' => 'bool',
@@ -44,7 +44,7 @@ class CardFactory {
 		'code'       => 'array{0:string,1:int}',
 		'length'     => 'array<int,string|int|array<int,string|int>>',
 		'idRange'    => 'array<int,string|int|array<int,string|int>>',
-	);
+	];
 
 	/** @var array<mixed> */
 	private array $content;
@@ -225,21 +225,21 @@ class CardFactory {
 	 * @return array{0:string,1:string,2:bool}
 	 */
 	private function polyfillOptional( array $args ): array {
-		return array(
+		return [
 			is_string( $card = ( $args['type'] ?? null ) ) ? $card : self::CREDIT_CARD,
 			is_string( $class = ( $args['classname'] ?? null ) ) ? $class : '',
 			is_bool( $luhn = ( $args['checkLuhn'] ?? null ) ) ? $luhn : true,
-		);
+		];
 	}
 
 	/** @return array{0:mixed,1:string,2:string} */
 	private static function parseContentIfFile( mixed $payload ): array {
 		if ( ! is_string( $payload ) || ! is_readable( $payload ) ) {
-			return array( $payload, 'file type', '' );
+			return [ $payload, 'file type', '' ];
 		}
 
 		return match ( true ) {
-			default                              => array( '', 'file: ' . $payload, $payload ),
+			default                              => [ '', 'file: ' . $payload, $payload ],
 			self::isFileType( $payload, 'json' ) => self::parseJsonContent( $payload ),
 			self::isFileType( $payload, 'php' )  => self::parsePhpContent( $payload )
 		};
@@ -254,7 +254,7 @@ class CardFactory {
 		$content = require $file;
 		$content = is_callable( $content ) ? $content() : $content;
 
-		return array( $content, 'php file: ' . $file, $file );
+		return [ $content, 'php file: ' . $file, $file ];
 	}
 
 	/** @return array{0:mixed,1:string,2:string} */
@@ -266,7 +266,7 @@ class CardFactory {
 			self::shutdownForInvalidFile( $type );
 		}
 
-		return array( json_decode( $content, associative: true ), $type, $file );
+		return [ json_decode( $content, associative: true ), $type, $file ];
 	}
 
 	private static function shutdownIfNonAssociative( mixed $args ): void {

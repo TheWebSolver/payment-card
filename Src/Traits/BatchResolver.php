@@ -13,11 +13,11 @@ trait BatchResolver {
 
 	/** @return array<string,string> */
 	private function getCoveredCards(): array {
-		return $this->coveredCards ?? array();
+		return $this->coveredCards ?? [];
 	}
 
 	private function resetCoveredCards(): void {
-		$this->coveredCards = array();
+		$this->coveredCards = [];
 	}
 
 	private function resolveCardFromNumberIn( Generator $batch, string|int $number ): ?Card {

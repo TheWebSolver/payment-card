@@ -85,8 +85,8 @@ enum PaymentCard: string implements Card {
 		} catch ( TypeError ) {
 			return match ( $this ) {
 				self::DinersClub,
-				self::AmericanExpress => array( 4, 10 ),
-				default               => array( 4, 8, 12 ),
+				self::AmericanExpress => [ 4, 10 ],
+				default               => [ 4, 8, 12 ],
 			};
 		}
 	}
@@ -97,12 +97,12 @@ enum PaymentCard: string implements Card {
 		} catch ( TypeError ) {
 			return match ( $this ) {
 				self::Maestro,
-				self::Mastercard      => array( 'CVC', 3 ),
-				self::AmericanExpress => array( 'CID', 4 ),
-				self::Discover        => array( 'CID', 3 ),
-				self::UnionPay        => array( 'CVN', 3 ),
-				self::Mir             => array( 'CVP2', 3 ),
-				default               => array( 'CVV', 3 )
+				self::Mastercard      => [ 'CVC', 3 ],
+				self::AmericanExpress => [ 'CID', 4 ],
+				self::Discover        => [ 'CID', 3 ],
+				self::UnionPay        => [ 'CVN', 3 ],
+				self::Mir             => [ 'CVP2', 3 ],
+				default               => [ 'CVV', 3 ]
 			};
 		}
 	}
@@ -113,15 +113,15 @@ enum PaymentCard: string implements Card {
 		} catch ( TypeError ) {
 			return match ( $this ) {
 				self::Discover, self::Jcb,
-				self::Mir, self::UnionPay    => array( array( 16, 19 ) ),
-				self::Troy, self::Mastercard => array( 16 ),
-				self::AmericanExpress        => array( 15 ),
-				self::Maestro                => array( array( 12, 19 ) ),
-				self::Visa                   => array( 13, 16, 19 ),
-				self::DinersClub             => array(
+				self::Mir, self::UnionPay    => [ [ 16, 19 ] ],
+				self::Troy, self::Mastercard => [ 16 ],
+				self::AmericanExpress        => [ 15 ],
+				self::Maestro                => [ [ 12, 19 ] ],
+				self::Visa                   => [ 13, 16, 19 ],
+				self::DinersClub             => [
 					/* US & Canada */   16,
-					/* International */ array( 14, 19 ),
-				),
+					/* International */ [ 14, 19 ],
+				],
 			};
 		}
 	}
@@ -131,28 +131,28 @@ enum PaymentCard: string implements Card {
 			return $this->fromFactory()->getIdRange();
 		} catch ( TypeError ) {
 			return match ( $this ) {
-				self::Jcb             => array( array( 3528, 3589 ) ),
-				self::DinersClub      => array(
+				self::Jcb             => [ [ 3528, 3589 ] ],
+				self::DinersClub      => [
 					/* MasterCard: US & Canada */ 55,
 					/* International */           30, 36, 38, 39,
-				),
-				self::Discover        => array(
-					/* UnionPay: China */ array( 622126, 622925 ),
-					/* International */   6011, array( 644, 649 ), 65,
-				),
-				self::Maestro         => array(
+				],
+				self::Discover        => [
+					/* UnionPay: China */ [ 622126, 622925 ],
+					/* International */   6011, [ 644, 649 ], 65,
+				],
+				self::Maestro         => [
 					/* UK */            6759, 676770, 676774,
 				/* International */ 5018, 5020, 5038, 5893, 6304, 6759, 6761, 6762, 6763,
-				),
-				self::Troy            => array(
+				],
+				self::Troy            => [
 					/* Discover: US */  65,
 					/* International */ 9792,
-				),
-				self::Mir             => array( array( 2200, 2204 ) ),
-				self::AmericanExpress => array( 34, 37 ),
-				self::Visa            => array( 4 ),
-				self::Mastercard      => array( array( 51, 55 ), array( 2221, 2720 ) ),
-				self::UnionPay        => array( 62 ),
+				],
+				self::Mir             => [ [ 2200, 2204 ] ],
+				self::AmericanExpress => [ 34, 37 ],
+				self::Visa            => [ 4 ],
+				self::Mastercard      => [ [ 51, 55 ], [ 2221, 2720 ] ],
+				self::UnionPay        => [ 62 ],
 			};//end match
 		}//end try
 	}

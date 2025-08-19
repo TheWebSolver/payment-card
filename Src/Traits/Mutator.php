@@ -68,7 +68,7 @@ trait Mutator {
 	}
 
 	public function setCode( string $name, int $size ): static {
-		$this->code = array( $name, $size );
+		$this->code = [ $name, $size ];
 
 		return $this;
 	}

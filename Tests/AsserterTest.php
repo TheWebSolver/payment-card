@@ -31,17 +31,17 @@ class AsserterTest extends TestCase {
 	}
 
 	public static function provideResolvingSizes(): array {
-		return array(
-			array( array( 1 ), array( '1' ), 'Test' ),
-			array( array( 1, 5 ), array( 1, 5 ), 'Test' ),
-			array( array( 12, array( 13, 15 ), 20 ), array( '12', array( '13', 15 ), 20 ), 'Test' ),
-			array( array( 1 ), array(), 'Test1', 'Test1 must have atleast one element.' ),
-			array( array( 1 ), array( -1 ), 'Test2', 'Test2 minimum value must be a positive integer.' ),
-			array( array( 0 ), array( array( 5, 5 ) ), 'Test3', 'Test3 minimum value must be less than maximum value.' ),
-			array( array( 0 ), array( array( 5, 4 ) ), 'Test3', 'Test3 minimum value must be less than maximum value.' ),
-			array( array( 0 ), array( array( 1, 2, 3 ) ), 'Test4', 'Test4 value must only be of two elements in an array.' ),
-			array( array( 0 ), array( 1, false ), 'Test5', 'Test5 must be between [0-9] as either a "string" or an "int" type. "bool" type given.' ),
-		);
+		return [
+			[ [ 1 ], [ '1' ], 'Test' ],
+			[ [ 1, 5 ], [ 1, 5 ], 'Test' ],
+			[ [ 12, [ 13, 15 ], 20 ], [ '12', [ '13', 15 ], 20 ], 'Test' ],
+			[ [ 1 ], [], 'Test1', 'Test1 must have atleast one element.' ],
+			[ [ 1 ], [ -1 ], 'Test2', 'Test2 minimum value must be a positive integer.' ],
+			[ [ 0 ], [ [ 5, 5 ] ], 'Test3', 'Test3 minimum value must be less than maximum value.' ],
+			[ [ 0 ], [ [ 5, 4 ] ], 'Test3', 'Test3 minimum value must be less than maximum value.' ],
+			[ [ 0 ], [ [ 1, 2, 3 ] ], 'Test4', 'Test4 value must only be of two elements in an array.' ],
+			[ [ 0 ], [ 1, false ], 'Test5', 'Test5 must be between [0-9] as either a "string" or an "int" type. "bool" type given.' ],
+		];
 	}
 
 	public function testNormalize(): void {

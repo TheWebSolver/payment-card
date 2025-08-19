@@ -37,12 +37,12 @@ class RegexGeneratorTest extends TestCase {
 	public static function provideDefaultSizesAndRespectiveGeneration(): array {
 		$holder = '$1 $2 $3';
 
-		return array(
-			array( array( '/(\d{4})(\d{4})(\d{4})/', $holder ), 12 ),
-			array( array( '/(\d{4})(\d{4})(\d{4})(\d{3})/', "$holder $4" ), 15 ),
-			array( array( '/(\d{4})(\d{4})(\d{4})/', $holder ), 10, true ),
-			array( array( '/(\d{4})(\d{4})(\d{4})(\d{4})(\d{9})/', "$holder $4 $5" ), 25 ),
-		);
+		return [
+			[ [ '/(\d{4})(\d{4})(\d{4})/', $holder ], 12 ],
+			[ [ '/(\d{4})(\d{4})(\d{4})(\d{3})/', "$holder $4" ], 15 ],
+			[ [ '/(\d{4})(\d{4})(\d{4})/', $holder ], 10, true ],
+			[ [ '/(\d{4})(\d{4})(\d{4})(\d{4})(\d{9})/', "$holder $4 $5" ], 25 ],
+		];
 	}
 
 	#[DataProvider( 'provideAltSizesAndRespectiveGeneration' )]
@@ -53,13 +53,13 @@ class RegexGeneratorTest extends TestCase {
 	public static function provideAltSizesAndRespectiveGeneration(): array {
 		$holder = '$1 $2 $3';
 
-		return array(
-			array( array( '/(\d{4})(\d{6})(\d{2})/', $holder ), 12 ),
-			array( array( '/(\d{4})(\d{6})(\d{5})/', $holder ), 15 ),
-			array( array( '/(\d{4})(\d{6})(\d{1})/', $holder ), 11, true ),
-			array( array( '/(\d{4})(\d{6})(\d{9})/', $holder ), 19 ),
-			array( array( '/(\d{4})(\d{6})(\d{4})/', $holder ), 14 ),
-			array( array( '/(\d{4})(\d{6})(\d{15})/', $holder ), 25 ),
-		);
+		return [
+			[ [ '/(\d{4})(\d{6})(\d{2})/', $holder ], 12 ],
+			[ [ '/(\d{4})(\d{6})(\d{5})/', $holder ], 15 ],
+			[ [ '/(\d{4})(\d{6})(\d{1})/', $holder ], 11, true ],
+			[ [ '/(\d{4})(\d{6})(\d{9})/', $holder ], 19 ],
+			[ [ '/(\d{4})(\d{6})(\d{4})/', $holder ], 14 ],
+			[ [ '/(\d{4})(\d{6})(\d{15})/', $holder ], 25 ],
+		];
 	}
 }

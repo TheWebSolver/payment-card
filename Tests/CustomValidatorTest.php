@@ -27,8 +27,8 @@ class CustomValidatorTest extends TestCase {
 		};
 
 		$americanExpressCard = ( new $luhnAlwaysPass() )
-			->setLength( array( 15 ) )
-			->setIdRange( array( 34, 37 ) );
+			->setLength( [ 15 ] )
+			->setIdRange( [ 34, 37 ] );
 
 		$this->assertTrue( $americanExpressCard->isNumberValid( 378282246310005 ) );
 
@@ -39,14 +39,14 @@ class CustomValidatorTest extends TestCase {
 		};
 
 		$americanExpressCard = ( new $luhnAlwaysFails() )
-			->setLength( array( 15 ) )
-			->setIdRange( array( 34, 37 ) );
+			->setLength( [ 15 ] )
+			->setIdRange( [ 34, 37 ] );
 
 		$this->assertFalse( $americanExpressCard->isNumberValid( 378282246310005 ) );
 	}
 
 	public function testWithAllowedCards(): void {
-		$allowedCards = array( 'americanExpress', 'dinersClub', 'visa' );
+		$allowedCards = [ 'americanExpress', 'dinersClub', 'visa' ];
 		$class        = new class( $allowedCards ) {
 			use CardResolver {
 				getCards as public;
@@ -85,10 +85,10 @@ class CustomValidatorTest extends TestCase {
 
 			public function __construct() {
 				$slash         = DIRECTORY_SEPARATOR;
-				$this->batches = array(
+				$this->batches = [
 					'first'  => __DIR__ . $slash . 'Resource' . $slash . 'Cards.json',
 					'second' => dirname( __DIR__ ) . $slash . 'Resource' . $slash . 'paymentCards.json',
-				);
+				];
 			}
 
 			public function validate( string|int $cardNumber ): bool {
@@ -160,10 +160,10 @@ class CustomValidatorTest extends TestCase {
 		$slash   = DIRECTORY_SEPARATOR;
 		$payload = dirname( __DIR__ ) . $slash . 'Resource' . $slash . 'paymentCards.json';
 
-		return array(
-			array( null, 378282246310005 ),
-			array( $payload, 378282246310005, 1 ),
-			array( $payload, 5105105105105100, 3 ),
-		);
+		return [
+			[ null, 378282246310005 ],
+			[ $payload, 378282246310005, 1 ],
+			[ $payload, 5105105105105100, 3 ],
+		];
 	}
 }

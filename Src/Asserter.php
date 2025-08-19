@@ -107,7 +107,7 @@ class Asserter {
 	/** @throws InvalidArgumentException When given size is neither a string nor an integer. */
 	public static function assertSingleSize( mixed $size ): int {
 		return is_int( $size ) || is_string( $size )
-			? self::assertPositiveAndValid( array( (int) $size ) )[0]
+			? self::assertPositiveAndValid( [ (int) $size ] )[0]
 			: self::assertionFailed( self::NEEDS_STRING_OR_INT, get_debug_type( $size ) );
 	}
 

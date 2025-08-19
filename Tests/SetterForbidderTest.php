@@ -25,13 +25,13 @@ class SetterForbidderTest extends TestCase {
 	}
 
 	public static function provideForbiddenSetterMethods(): array {
-		return array(
-			array( array( '' ), 'setName', 'name' ),
-			array( array( '' ), 'setAlias', 'alias' ),
-			array( array( '', 0 ), 'setCode', 'code' ),
-			array( array( array( 0 ) ), 'setIdRange', 'idRange' ),
-			array( array( array( 0 ) ), 'setLength', 'length' ),
-			array( array( 0 ), 'setBreakpoint', 'breakpoint' ),
-		);
+		return [
+			[ [ '' ], 'setName', 'name' ],
+			[ [ '' ], 'setAlias', 'alias' ],
+			[ [ '', 0 ], 'setCode', 'code' ],
+			[ [ [ 0 ] ], 'setIdRange', 'idRange' ],
+			[ [ [ 0 ] ], 'setLength', 'length' ],
+			[ [ 0 ], 'setBreakpoint', 'breakpoint' ],
+		];
 	}
 }

@@ -15,7 +15,7 @@ trait RegexBasedFormatter {
 		Asserter::isProcessing( name: 'breakpoint' );
 
 		$pattern = $replacement = '';
-		$numbers = array( $number, ...$numbers );
+		$numbers = [ $number, ...$numbers ];
 		$first   = array_key_first( $numbers );
 
 		foreach ( $numbers as $step => &$checksum ) {
@@ -25,7 +25,7 @@ trait RegexBasedFormatter {
 			$pattern     .= '(\d{' . $count . '})';
 		}
 
-		$this->breakPointArgs = array( $pattern, $replacement, $checksum );
+		$this->breakPointArgs = [ $pattern, $replacement, $checksum ];
 
 		return $this;
 	}

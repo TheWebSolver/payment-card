@@ -16,7 +16,7 @@ trait CardResolver {
 	private bool $registeredOnly;
 
 	private function setCards( Card $card, Card ...$cards ): void {
-		$this->cards = array( $card, ...$cards );
+		$this->cards = [ $card, ...$cards ];
 	}
 
 	private function withoutDefaults(): static {
@@ -35,9 +35,9 @@ trait CardResolver {
 
 	/** @return Card[] */
 	private function getCards(): array {
-		$cards = $this->cards ?? array();
+		$cards = $this->cards ?? [];
 
-		return ( $this->registeredOnly ?? false ) ? $cards : array( ...PaymentCard::cases(), ...$cards );
+		return ( $this->registeredOnly ?? false ) ? $cards : [ ...PaymentCard::cases(), ...$cards ];
 	}
 
 	/** @return CardSchema[] */
@@ -56,7 +56,7 @@ trait CardResolver {
 			);
 		}
 
-		$data = array();
+		$data = [];
 
 		foreach ( Factory::CARD_SCHEMA as $key => $schema ) {
 			if ( str_ends_with( haystack: $key, needle: '?' ) ) {

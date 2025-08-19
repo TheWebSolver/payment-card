@@ -15,24 +15,24 @@ class CardFactoryTest extends TestCase {
 	public function testGlobalCardClassSetterResetter(): void {
 		CardFactory::setGlobalCardClass( NapasCard::class );
 
-		$payload = array(
-			array(
+		$payload = [
+			[
 				'name'       => 'Test Card',
 				'alias'      => 'test-card',
-				'breakpoint' => array( 4, 8, 12 ),
-				'code'       => array( 'CVC', 3 ),
-				'length'     => array( 16, 19 ),
-				'idRange'    => array( 9704 ),
-			),
-			array(
+				'breakpoint' => [ 4, 8, 12 ],
+				'code'       => [ 'CVC', 3 ],
+				'length'     => [ 16, 19 ],
+				'idRange'    => [ 9704 ],
+			],
+			[
 				'name'       => 'Another',
 				'alias'      => 'another',
-				'breakpoint' => array( 4, 8, 12 ),
-				'code'       => array( 'CVV', 3 ),
-				'length'     => array( 16 ),
-				'idRange'    => array( 9860 ),
-			),
-		);
+				'breakpoint' => [ 4, 8, 12 ],
+				'code'       => [ 'CVV', 3 ],
+				'length'     => [ 16 ],
+				'idRange'    => [ 9860 ],
+			],
+		];
 
 		foreach ( ( new CardFactory( $payload ) )->lazyLoadCards() as $card ) {
 			$this->assertInstanceOf( NapasCard::class, actual: $card );
@@ -42,36 +42,36 @@ class CardFactoryTest extends TestCase {
 	}
 
 	public function testCardCreationFromArray(): void {
-		$napas = array(
+		$napas = [
 			'name'       => 'Napas',
 			'alias'      => 'napas',
 			'classname'  => NapasCard::class,
-			'breakpoint' => array( 4, 8, 12 ),
-			'code'       => array( 'CVC', 3 ),
-			'length'     => array( 16, 19 ),
-			'idRange'    => array( 9704 ),
-		);
+			'breakpoint' => [ 4, 8, 12 ],
+			'code'       => [ 'CVC', 3 ],
+			'length'     => [ 16, 19 ],
+			'idRange'    => [ 9704 ],
+		];
 
-		$payload = array(
+		$payload = [
 			$napas,
-			array(
+			[
 				'name'       => 'Gerbang Pembayaran Nasional',
 				'alias'      => 'gpn',
 				'type'       => 'Debit Card',
-				'breakpoint' => array( 4, 8, 12 ),
-				'code'       => array( 'CVC', 3 ),
-				'length'     => array( 16, 18, 19 ),
-				'idRange'    => array( 1946, 50, 56, 58, array( 60, 63 ) ),
-			),
-			array(
+				'breakpoint' => [ 4, 8, 12 ],
+				'code'       => [ 'CVC', 3 ],
+				'length'     => [ 16, 18, 19 ],
+				'idRange'    => [ 1946, 50, 56, 58, [ 60, 63 ] ],
+			],
+			[
 				'name'       => 'Humo',
 				'alias'      => 'humo',
-				'breakpoint' => array( 4, 8, 12 ),
-				'code'       => array( 'CVV', 3 ),
-				'length'     => array( 16 ),
-				'idRange'    => array( 9860 ),
-			),
-		);
+				'breakpoint' => [ 4, 8, 12 ],
+				'code'       => [ 'CVV', 3 ],
+				'length'     => [ 16 ],
+				'idRange'    => [ 9860 ],
+			],
+		];
 
 		$factory = new CardFactory( data: $payload );
 		$loader  = $factory->lazyLoadCards();
@@ -87,7 +87,7 @@ class CardFactoryTest extends TestCase {
 		$cards = ( new CardFactory( $payload ) )->createCards();
 
 		$this->assertSame(
-			expected: array( 'napas', 'gpn', 'humo' ),
+			expected: [ 'napas', 'gpn', 'humo' ],
 			actual: array_map( static fn( $c ) => $c->getAlias(), array: $cards )
 		);
 
@@ -99,7 +99,7 @@ class CardFactoryTest extends TestCase {
 	public function testCardCreationFromJsonFile(): void {
 		$path    = __DIR__ . '/Resource/Cards.json';
 		$cards   = CardFactory::createFromJsonFile( $path );
-		$aliases = array( 'napas', 'gpn', 'humo' );
+		$aliases = [ 'napas', 'gpn', 'humo' ];
 
 		$this->assertCount( expectedCount: 3, haystack: $cards );
 		$this->assertCreatedCardAliasesMatch( (array) $cards, $aliases );
@@ -171,12 +171,12 @@ class CardFactoryTest extends TestCase {
 	}
 
 	public static function providePhpFiles(): array {
-		return array(
-			array( array( 'napas' ), 'PhpArray' ),
-			array( array( 'napas', 'humo' ), 'PhpCallable' ),
-			array( array( 'napas', 'gpn', 'humo' ), 'PhpInvocable', true ),
-			array( array(), 'PhpArrayInvalid', false, true ),
-		);
+		return [
+			[ [ 'napas' ], 'PhpArray' ],
+			[ [ 'napas', 'humo' ], 'PhpCallable' ],
+			[ [ 'napas', 'gpn', 'humo' ], 'PhpInvocable', true ],
+			[ [], 'PhpArrayInvalid', false, true ],
+		];
 	}
 
 	/**

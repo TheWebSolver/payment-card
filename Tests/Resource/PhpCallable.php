@@ -4,23 +4,23 @@ declare( strict_types = 1 );
 use TheWebSolver\Codegarage\Test\Resource\NapasCard;
 
 return function () {
-	return array(
-		array(
+	return [
+		[
 			'name'       => 'Napas',
 			'alias'      => 'napas',
 			'classname'  => NapasCard::class,
-			'breakpoint' => array( 4, 8, 12 ),
-			'code'       => array( 'CVC', 3 ),
-			'length'     => array( 16, 19 ),
-			'idRange'    => array( 9704 ),
-		),
-		array(
+			'breakpoint' => [ 4, 8, 12 ],
+			'code'       => [ 'CVC', 3 ],
+			'length'     => [ 16, 19 ],
+			'idRange'    => [ 9704 ],
+		],
+		[
 			'name'       => 'Humo',
 			'alias'      => 'humo',
-			'breakpoint' => array( 4, 8, 12 ),
-			'code'       => array( 'CVv', 3 ),
-			'length'     => array( 16 ),
-			'idRange'    => array( 9860 ),
-		),
-	);
+			'breakpoint' => [ 4, 8, 12 ],
+			'code'       => [ 'CVv', 3 ],
+			'length'     => [ 16 ],
+			'idRange'    => [ 9860 ],
+		],
+	];
 };
