@@ -32,19 +32,18 @@ class BraintreeTransformerProxy implements Transformer {
 			BraintreeCardTracer::getRegexPattern()
 		);
 
-		$value = trim( $value, '"' );
-		$card  = $this->getCurrentCard( $element['property'], $scope->getCurrentItemIndex() );
+		$card = $this->getCurrentCardFrom( $element['property'], $scope->getCurrentItemIndex() );
 
 		return match ( $card ) {
 			Card::Length,
 			Card::Breakpoint,
 			Card::IINRange => ( new NumericTransformer( $this->numericToInteger ) )->transform( $value, $scope ),
 			Card::Code     => ( new CodeTransformer( $this->numericToInteger ) )->transform( $value, $scope ),
-			default        => $value,
+			default        => trim( $value, '"' ),
 		};
 	}
 
-	private function getCurrentCard( mixed $cardProperty, ?string $currentIndex ): Card {
-		return $currentIndex ? Card::from( $currentIndex ) : BraintreeCardTracer::CARD_PROPERTIES[ $cardProperty ];
+	private function getCurrentCardFrom( mixed $property, ?string $currentIndex ): Card {
+		return $currentIndex ? Card::from( $currentIndex ) : BraintreeCardTracer::CARD_PROPERTIES[ $property ];
 	}
 }

@@ -23,8 +23,10 @@ use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
 class BraintreeCardTracer implements Traceable, Indexable {
 	use CollectorSource;
 
+	/** @example ' visa: { niceType: "Visa", type: "visa", patterns: [4], gaps: [4, 8, 12], lengths: [16, 18, 19], code: { name: "CVV", size: 3, }, } as BuiltInCreditCardType,' */
+	final public const BUILTIN_CREDIT_CARD_TYPE_PATTERN = '/[ ]+["]?(?<type>[\w\-]+)["]?[\:]+[ ]+{[ ]+(?<object>.*?})[, ]+}[ as BuiltInCreditCardType,]/';
 	/** @placeholder `1:` Card properties, `2:` Card properties' initials. */
-	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<properties>[%1$s]+)(?<separator>\:[ ]+?)(?<lookaheadPropertyInitials>(?=, ?[%2$s]+))(?<numericValue>[\[]+[\d,? ?]+[\]])(?<codeValue>[\{]+.*?[\}]))';
+	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<propertyNames>[%1$s]+)(?<separator>\:[ ]+?)(?<everythingBeforeNextProperty>(?=, ?[%2$s]+))(?<codePropertyValue>[\{]+.*?[\}]))';
 	/** @placeholder `1:` static::methodName, `2`: EventAt::caseName, `3:` reason. */
 	final public const USE_EVENT_LISTENER = 'Invalid invocation of "%1$s()". Use event listener for "%2$s" to %3$s';
 	final public const CARD_PROPERTIES    = [
@@ -89,7 +91,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	public static function getRegexPattern(): string {
 		$define = sprintf( self::PATTERN_DEFINITION, self::getPropNames(), self::getPropNames( initial: true ) );
 
-		return "/{$define}(?<property>(?&properties))(?:(?&separator))(?<value>.*?(?&lookaheadPropertyInitials)|(?&numericValue)|(?&codeValue))/";
+		return "/{$define}(?<property>(?&propertyNames))(?:(?&separator))(?<value>.*?(?&everythingBeforeNextProperty)|(?&codePropertyValue))/";
 	}
 
 	/** @throws ScraperError With given message replacing placeholders by provided arguments. */
@@ -156,7 +158,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 		$collectedUsing = $this->getIndicesSource();
 
 		foreach ( $this->cardsFrom( $source ) as $stringifiedCardTypeJSObject ) {
-			$values = $this->infer( trim( $stringifiedCardTypeJSObject ) );
+			$values = $this->infer( $stringifiedCardTypeJSObject );
 
 			unset( $this->currentIterationCount, $this->currentItemIndex );
 
@@ -176,8 +178,8 @@ class BraintreeCardTracer implements Traceable, Indexable {
 
 	/** @return list<string> */
 	private function cardsFrom( string $source ): array {
-		return preg_match_all( '/.*?{(?<cardObject>.*?}, )}/', $source, $matchedGroups )
-			? $matchedGroups['cardObject']
+		return preg_match_all( self::BUILTIN_CREDIT_CARD_TYPE_PATTERN, $source, $matched )
+			? $matched['object']
 			: $this->throw( self::INVALID_JS_OBJECT_PATTERN );
 	}
 
