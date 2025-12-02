@@ -23,9 +23,10 @@ use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
  * }
  */
 class CardFactory {
-	public const CREDIT_CARD  = 'Credit Card';
-	public const DEBIT_CARD   = 'Debit Card';
-	public const DEFAULT_CARD = 'Payment Card';
+	public const CREDIT_CARD   = 'Credit Card';
+	public const DEBIT_CARD    = 'Debit Card';
+	public const DEFAULT_CARD  = 'Payment Card';
+	public const RESOURCE_PATH = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Resource';
 
 	/**
 	 * Possible array keys and their values' datatype Schema for a Payment Card.
