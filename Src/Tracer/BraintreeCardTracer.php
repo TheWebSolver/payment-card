@@ -24,7 +24,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	use CollectorSource;
 
 	/** @placeholder `1:` Card properties, `2:` Card properties' initials. */
-	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<properties>[%1$s]+)(?<lookaheadPropertyInitials>(?=, ?[%2$s]+))(?<numericValue>[\[]+[\d,? ?]+[\]])(?<code>[\{]+.*?[\}]))';
+	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<properties>[%1$s]+)(?<separator>\:[ ]+?)(?<lookaheadPropertyInitials>(?=, ?[%2$s]+))(?<numericValue>[\[]+[\d,? ?]+[\]])(?<codeValue>[\{]+.*?[\}]))';
 	/** @placeholder `1:` static::methodName, `2`: EventAt::caseName, `3:` reason. */
 	final public const USE_EVENT_LISTENER = 'Invalid invocation of "%1$s()". Use event listener for "%2$s" to %3$s';
 	final public const CARD_PROPERTIES    = [
@@ -86,7 +86,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	public static function getRegexPattern(): string {
 		$define = sprintf( self::PATTERN_DEFINITION, self::getPropNames(), self::getPropNames( initial: true ) );
 
-		return "/$define(?<property>(?&properties))(?:\:[ ]+?)(?<value>.*?(?&lookaheadPropertyInitials)|(?&numericValue)|(?&code))/";
+		return "/{$define}(?<property>(?&properties))(?:(?&separator))(?<value>.*?(?&lookaheadPropertyInitials)|(?&numericValue)|(?&codeValue))/";
 	}
 
 	/** @throws ScraperError With given message replacing placeholders by provided arguments. */
