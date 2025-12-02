@@ -64,7 +64,8 @@ trait CardResolver {
 			}
 
 			$getterMethod = 'get' . ucwords( $key );
-			$data[ $key ] = $card->{$getterMethod}();
+
+			method_exists( $card, $getterMethod ) && $data[ $key ] = $card->{$getterMethod}();
 		}
 
 		/** @var CardSchema */
