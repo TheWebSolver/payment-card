@@ -5,6 +5,7 @@
 !Resource
 !.editorconfig
 !composer.json
+!composer.dev.json
 !phpstan.neon
 !phpcs.xml
 !phpunit.xml

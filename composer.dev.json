@@ -1,0 +1,23 @@
+{
+  "minimum-stability":"dev",
+  "prefer-stable": true,
+  "scripts": {
+    "useProd": "@putenv COMPOSER=composer.json",
+    "update:packages": [
+      "@composer update --prefer-source",
+      "@useProd",
+      "@composer dump-autoload -o"
+    ],
+    "test": ["phpstan", "phpunit"]
+  },
+  "require": {
+    "php": ">=8.2",
+    "thewebsolver/scraper": "*"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../scraper"
+    }
+  ]
+}
