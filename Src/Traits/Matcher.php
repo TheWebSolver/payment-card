@@ -13,9 +13,7 @@ trait Matcher {
 	}
 
 	public static function matchesLuhnAlgorithm( string $value, bool $shouldRun = true ): bool {
-		return $shouldRun && class_exists( '\\TheWebSolver\\Codegarage\\LuhnAlgorithm' )
-			? LuhnAlgorithm::validate( value: $value )
-			: true;
+		return $shouldRun && class_exists( LuhnAlgorithm::class ) ? ! ! LuhnAlgorithm::validate( value: $value ) : true;
 	}
 
 	/** @param mixed[] $sizes */
