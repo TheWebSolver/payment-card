@@ -19,7 +19,7 @@ use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
 
 /** @template-implements Traceable<array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>,BraintreeCardTraced> */
-#[CollectUsing( Card::class, Card::Alias )]
+#[CollectUsing( Card::class, Card::Alias, Card::Name, Card::Alias, Card::IINRange, Card::Breakpoint, Card::Length, Card::Code )]
 class BraintreeCardTracer implements Traceable, Indexable {
 	use CollectorSource;
 
