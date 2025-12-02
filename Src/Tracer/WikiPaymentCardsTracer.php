@@ -11,7 +11,7 @@ use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\Scraper\Traits\Table\HtmlTableFromNode;
 
 /** @template-implements TableTracer<string|list<int|int[]>> */
-#[CollectUsing( Card::class, Card::Name, Card::Name, Card::IINRanges, null, Card::Length, Card::Validator )]
+#[CollectUsing( Card::class, Card::Name, Card::Name, Card::IINRange, null, Card::Length, Card::Validator )]
 class WikiPaymentCardsTracer implements TableTracer {
 	/** @use HtmlTableFromNode<string|list<int|int[]>> */
 	use HtmlTableFromNode;

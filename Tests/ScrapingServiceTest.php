@@ -12,11 +12,11 @@ use TheWebSolver\Codegarage\Scraper\Service\ScrapingService;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\WikiPaymentCardsTracer;
+use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
 use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreeTransformerProxy;
 use TheWebSolver\Codegarage\PaymentCard\Service\CommonCardsScrapingService;
 use TheWebSolver\Codegarage\PaymentCard\Service\WikiCardTypeScrapingService;
 use TheWebSolver\Codegarage\PaymentCard\Service\BraintreeCardTypeScrapingService;
-use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
 
 class ScrapingServiceTest extends TestCase {
 	public const RESOURCE_DIRECTORY = __DIR__ . DIRECTORY_SEPARATOR . 'Resource';
@@ -61,7 +61,7 @@ class ScrapingServiceTest extends TestCase {
 		$tracer->addEventListener(
 			function ( BraintreeCardTraced $e ) {
 				$e->tracer->setIndicesSource(
-					new CollectUsing( Card::class, Card::Alias, Card::Name, Card::Alias, Card::IINRanges, Card::Breakpoint, Card::Length, Card::Code )
+					new CollectUsing( Card::class, Card::Alias, Card::Name, Card::Alias, Card::IINRange, Card::Breakpoint, Card::Length, Card::Code )
 				);
 			}
 		);
@@ -72,7 +72,7 @@ class ScrapingServiceTest extends TestCase {
 		$this->assertSame( [ 16 ], $mastercard[ Card::Length->value ] );
 		$this->assertSame(
 			[ [ 51, 55 ], [ 2221, 2229 ], [ 223, 229 ], [ 23, 26 ], [ 270, 271 ], 2720 ],
-			$mastercard[ Card::IINRanges->value ]
+			$mastercard[ Card::IINRange->value ]
 		);
 
 		$this->assertSame(
@@ -92,7 +92,7 @@ class ScrapingServiceTest extends TestCase {
 		$this->assertSame( [ '16' ], $mastercard[ Card::Length->value ] );
 		$this->assertSame(
 			[ [ '51','55' ], [ '2221','2229' ], [ '223','229' ], [ '23','26' ], [ '270','271' ], '2720' ],
-			$mastercard[ Card::IINRanges->value ]
+			$mastercard[ Card::IINRange->value ]
 		);
 		$this->assertSame(
 			[
@@ -112,7 +112,7 @@ class ScrapingServiceTest extends TestCase {
 			[
 				Card::Name->value       => 'American Express',
 				Card::Alias->value      => 'american-express',
-				Card::IINRanges->value  => [ 34,37 ],
+				Card::IINRange->value   => [ 34,37 ],
 				Card::Breakpoint->value => [ 4,10 ],
 				Card::Length->value     => [ 15 ],
 				Card::Code->value       => [
@@ -132,7 +132,7 @@ class ScrapingServiceTest extends TestCase {
 			->addTransformer( new BraintreeTransformerProxy() )
 			->addEventListener(
 				static function ( BraintreeCardTraced $e ) {
-					$e->tracer->setIndicesSource( new CollectUsing( Card::class, Card::Alias, null, Card::Alias, Card::IINRanges ) );
+					$e->tracer->setIndicesSource( new CollectUsing( Card::class, Card::Alias, null, Card::Alias, Card::IINRange ) );
 				}
 			);
 

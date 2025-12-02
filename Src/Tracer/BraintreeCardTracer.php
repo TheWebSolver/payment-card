@@ -30,7 +30,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	final public const CARD_PROPERTIES    = [
 		'niceType' => Card::Name,
 		'type'     => Card::Alias,
-		'patterns' => Card::IINRanges,
+		'patterns' => Card::IINRange,
 		'gaps'     => Card::Breakpoint,
 		'lengths'  => Card::Length,
 		'code'     => Card::Code,

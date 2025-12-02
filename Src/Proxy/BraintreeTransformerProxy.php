@@ -38,9 +38,9 @@ class BraintreeTransformerProxy implements Transformer {
 		return match ( $card ) {
 			Card::Length,
 			Card::Breakpoint,
-			Card::IINRanges => ( new NumericTransformer( $this->numericToInteger ) )->transform( $value, $scope ),
-			Card::Code      => ( new CodeTransformer( $this->numericToInteger ) )->transform( $value, $scope ),
-			default         => $value,
+			Card::IINRange => ( new NumericTransformer( $this->numericToInteger ) )->transform( $value, $scope ),
+			Card::Code     => ( new CodeTransformer( $this->numericToInteger ) )->transform( $value, $scope ),
+			default        => $value,
 		};
 	}
 

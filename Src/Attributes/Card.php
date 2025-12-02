@@ -8,7 +8,7 @@ enum Card: string {
 	case Alias      = 'alias';
 	case Breakpoint = 'breakpoint';
 	case Length     = 'length';
-	case IINRanges  = 'id-range';
+	case IINRange   = 'id-range';
 	case Code       = 'code';
 	case Status     = 'status';
 	case Validator  = 'validator';

@@ -29,8 +29,8 @@ class WikiTransformerProxy implements Transformer {
 			default                    => $this->base,
 			1, Card::Name->value       => new NameTransformer(),
 			3, Card::Status->value     => new StatusTransformer(),
-			2, 4, Card::Length->value,
-			Card::IINRanges->value     => new WikiNumericTransformer( new NumericTransformer( $this->numericToInteger ) ),
+			4, Card::Length->value,
+			2, Card::IINRange->value   => new WikiNumericTransformer( new NumericTransformer( $this->numericToInteger ) ),
 		} )->transform( $element, $scope );
 	}
 }
