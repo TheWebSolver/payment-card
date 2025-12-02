@@ -18,7 +18,7 @@ use TheWebSolver\Codegarage\Scraper\Traits\CollectorSource;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
 
-/** @template-implements Traceable<string|list<int|string|list<int|string>|array{name:string,size:int|string}>,BraintreeCardTraced> */
+/** @template-implements Traceable<array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>,BraintreeCardTraced> */
 #[CollectUsing( Card::class, Card::Alias )]
 class BraintreeCardTracer implements Traceable, Indexable {
 	use CollectorSource;
@@ -40,14 +40,17 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	final public const INVALID_JS_OBJECT_PATTERN = 'Invalid JS Object pattern for extracting Braintree Github Card Types.';
 	/** @placeholder: `%s:` String to extract card type. */
 	final public const INVALID_CARD_OBJECT = 'Invalid JS Object for extracting Braintree GitHub Card property and its value. "%s" given.';
-	/** @placeholder `1: Card property names`, `2:` Additional error message suffix. */
+	/** @placeholder `1:` Card property names`, `2:` Additional error message suffix. */
 	final public const INVALID_CARD_PROPERTIES = 'Braintree GitHub Card Type only supports properties: "%1$s"%2$s.';
+	/** @placeholder `1:` Value type being used as an iterator key. */
+	final public const INVALID_INDEX_VALUE = 'Value used as an index key can only be of string type. "%s" type given';
 
+	/** @var Iterator<array-key,array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>> */
 	private Iterator $cardsGenerator;
 	private CollectUsing $collectedUsing;
 	private string $currentItemIndex;
 	private int $currentIterationCount;
-	/** @var ?Transformer<contravariant static,string|list<int|string|list<int|string>|array{name:string,size:int|string}>> */
+	/** @var ?Transformer<contravariant static,string|list<int|string|list<int|string>>|array{name:string,size:int|string}> */
 	private ?Transformer $transformer = null;
 
 	private ?BraintreeCardTraced $eventBeingDispatched = null;
@@ -140,6 +143,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 		return $this->currentIterationCount ?? null;
 	}
 
+	/** @return Iterator<array-key,array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>> */
 	private function createCardsGenerator( string $source ): Iterator {
 		$this->dispatchEvent( $event = new BraintreeCardTraced( EventAt::Start, $source, $this ) );
 
@@ -157,7 +161,11 @@ class BraintreeCardTracer implements Traceable, Indexable {
 			unset( $this->currentIterationCount, $this->currentItemIndex );
 
 			if ( $index = $collectedUsing?->indexKey ) {
-				yield $values[ $index ] => $values;
+				$valueAsKey = $values[ $index ] ?? null;
+
+				is_string( $valueAsKey ) || $this->throw( self::INVALID_INDEX_VALUE, get_debug_type( $valueAsKey ) );
+
+				yield $valueAsKey => $values;
 			} else {
 				yield $values;
 			}
@@ -173,7 +181,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 			: $this->throw( self::INVALID_JS_OBJECT_PATTERN );
 	}
 
-	/** @return array<int|value-of<Card>,string|list<int|string|list<int|string>|array{name:string,size:int|string}>> */
+	/** @return array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}> */
 	private function infer( string $cardObject ): array {
 		$details = preg_match_all( $this->getRegexPattern(), $cardObject, $matched, PREG_SET_ORDER )
 			? array_reduce( $matched, $this->reduceToCards( ... ), initial: [] )
@@ -187,7 +195,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	/**
 	 * @param array{}  $cards
 	 * @param string[] $card
-	 * @return array<int|value-of<Card>,string|list<int|string|list<int|string>|array{name:string,size:int|string}>>
+	 * @return array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>
 	 */
 	private function reduceToCards( array $cards, array $card ): array {
 		$this->registerCurrentItemIndexAndCount( $enum = $this->getCardEnumBy( $card['property'], $card[0] ) );

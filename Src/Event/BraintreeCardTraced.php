@@ -6,6 +6,7 @@ namespace TheWebSolver\Codegarage\PaymentCard\Event;
 use Iterator;
 use LogicException;
 use TheWebSolver\Codegarage\Scraper\Enums\EventAt;
+use TheWebSolver\Codegarage\PaymentCard\Attributes\Card;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
 
 final class BraintreeCardTraced {
@@ -26,11 +27,15 @@ final class BraintreeCardTraced {
 		return $this->eventAt === $event;
 	}
 
+	/** @param Iterator<array-key,array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>> $iterator */
 	public function setInferredCards( Iterator $iterator ): void {
 		$this->inferredCards = $iterator;
 	}
 
-	/** @throws LogicException When this method is invoked before iterator is set. */
+	/**
+	 * @return Iterator<array-key,array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>>
+	 * @throws LogicException When this method is invoked before iterator is set.
+	 */
 	public function getInferredCards(): Iterator {
 		return $this->inferredCards ?? throw new LogicException( 'Traced Card Types not inferred yet.' );
 	}
