@@ -1,3 +1,5 @@
+includes:
+	- vendor/thewebsolver/scraper/phpstan-common.neon
 parameters:
 	level: max
 	paths:

@@ -29,7 +29,8 @@
     }
   },
   "require": {
-    "php": ">=8.2"
+    "php": ">=8.2",
+    "thewebsolver/scraper": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "^11.5",
@@ -48,5 +49,24 @@
     "thewebsolver/luhn-algorithm": "Allows payment card validation against Luhn Algorithm"
   },
   "minimum-stability": "dev",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "scripts": {
+    "unittest": "vendor/bin/phpunit",
+    "analyze": "vendor/bin/phpstan",
+    "sniff": "vendor/bin/phpcs",
+    "test": [
+      "@analyze",
+      "@unittest",
+      "@sniff"
+    ],
+    "useDev": "@putenv COMPOSER=composer.dev.json",
+    "update:dev": [
+      "@useDev",
+      "@composer update:packages"
+    ],
+    "test:dev": [
+      "@useDev",
+      "@composer test"
+    ]
+  }
 }
