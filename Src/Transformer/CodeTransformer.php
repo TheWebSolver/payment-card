@@ -24,6 +24,20 @@ class CodeTransformer implements Transformer {
 		return "/{$define}(?<name>(?&properties))(?&separator)(?<value>(?&names)|(?&sizes))/";
 	}
 
+	/**
+	 * @return array{name:string,size:int|string}
+	 * @throws ScraperError When Card's Code source is invalid.
+	 */
+	public static function transformCode( string $source, bool $numericToInteger = true ): array {
+		$details = preg_match_all( self::getRegexPattern(), $source, $matches, PREG_SET_ORDER )
+			? array_reduce( $matches, self::reduceToProperties( ... ), initial: [ 'toInt' => $numericToInteger ] )
+			: null;
+
+		unset( $details['toInt'] );
+
+		return $details ?: ScraperError::patternMismatch( "Card's Code", self::getRegexPattern(), $source );
+	}
+
 	public function __construct( private readonly bool $numericToInteger = true ) {}
 
 	public function transform( string|array|DOMElement $element, object $scope ): mixed {
@@ -34,33 +48,22 @@ class CodeTransformer implements Transformer {
 			default                                => throw ScraperError::trigger( self::INVALID_ELEMENT )
 		};
 
-		return $this->extractCardCodeDetails( $value );
+		return $this->transformCode( $value, $this->numericToInteger );
 	}
 
 	/**
-	 * @return array{name:string,size:int|string}
-	 * @throws ScraperError When Card's Code source is invalid.
-	 */
-	private function extractCardCodeDetails( string $source ): array {
-		$details = preg_match_all( $this->getRegexPattern(), $source, $matches, PREG_SET_ORDER )
-			? array_reduce( $matches, $this->reduceToProperties( ... ), initial: [] )
-			: null;
-
-		return $details ?: ScraperError::patternMismatch( "Card's Code", self::getRegexPattern(), $source );
-	}
-
-	/**
-	 * @param array{name?:string,size?:int|string} $properties
-	 * @param array<string>                        $property
+	 * @param array{name?:string,size?:int|string,toInt:bool} $properties
+	 * @param array<string>                                   $property
 	 * @return array{name:string,size:int|string}
 	 * @throws ScraperError When Card's Code properties are invalid.
 	 */
-	private function reduceToProperties( array $properties, array $property ): array {
+	private static function reduceToProperties( array $properties, array $property ): array {
+		$toInt        = $properties['toInt'];
 		$propertyName = $property['name'] ?? null;
 
 		match ( $propertyName ) {
 			'name'  => $properties['name'] = $property['value'],
-			'size'  => $properties['size'] = NumericTransformer::maybeToDigit( $property['value'], $this->numericToInteger ),
+			'size'  => $properties['size'] = NumericTransformer::maybeToDigit( $property['value'], $toInt ),
 			default => throw ScraperError::trigger( self::INVALID_PROPERTIES, implode( '", "', self::PROPERTIES ), $property[0] ),
 		};
 
