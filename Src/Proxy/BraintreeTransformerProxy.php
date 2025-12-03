@@ -4,6 +4,7 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Proxy;
 
 use DOMElement;
+use TheWebSolver\Codegarage\Scraper\Error\ScraperError;
 use TheWebSolver\Codegarage\PaymentCard\Attributes\Card;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
@@ -17,16 +18,13 @@ use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
  * >
  */
 class BraintreeTransformerProxy implements Transformer {
-	final public const INVALID_PATTERN_MATCH_ELEMENT = 'Expected array with string value for card detail extraction. "%1$s" type given. Array must be list of matched pattern and its group from regex: "%2$s".';
-	/** @placeholder: `%S` String to extract card code. */
-	final public const INVALID_JS_OBJECT_FOR_CARD_CODE = 'Invalid JS Object for extracting Braintree GitHub Card Code details. "%s" given.';
-	/** @placeholder: `%S` String to extract card code details. */
-	final public const INVALID_JS_OBJECT_KEYS_FOR_CARD_CODE = 'Card Code must have "name" and "size" key/value pair. "%s" given.';
+	/** @placeholder `1:` Given source type, `2:` Regex pattern to match card details extraction. */
+	final public const INVALID_PATTERN_MATCH_ELEMENT = 'Invalid element type provided to transform Braintree GitHub Card Type. "%1$s" type given. It must be an array with matched group named "property" and "value" from regex: "%2$s".';
 
 	public function __construct( private readonly bool $numericToInteger = true ) {}
 
 	public function transform( string|array|DOMElement $element, object $scope ): string|int|array {
-		( ! is_array( $element ) || ! is_string( $value = $element['value'] ?? null ) ) && BraintreeCardTracer::throw(
+		( ! is_array( $element ) || ! is_string( $value = $element['value'] ?? null ) ) && throw ScraperError::trigger(
 			self::INVALID_PATTERN_MATCH_ELEMENT,
 			get_debug_type( $element ),
 			BraintreeCardTracer::getRegexPattern()

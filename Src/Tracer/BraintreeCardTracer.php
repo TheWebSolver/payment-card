@@ -81,7 +81,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 
 	/** @throws ScraperError When unsupported property name given. */
 	public static function getCardEnumBy( mixed $property, string $source = '' ): Card {
-		return self::CARD_PROPERTIES[ $property ] ?? self::throw(
+		return self::CARD_PROPERTIES[ $property ] ?? throw ScraperError::trigger(
 			self::INVALID_CARD_PROPERTIES,
 			self::getPropNames( separator: '", "' ),
 			$source ? ' "' . $source . '" given' : ''
@@ -91,12 +91,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	public static function getRegexPattern(): string {
 		$define = sprintf( self::PATTERN_DEFINITION, self::getPropNames(), self::getPropNames( initial: true ) );
 
-		return "/{$define}(?<property>(?&propertyNames))(?:(?&separator))(?<value>.*?(?&everythingBeforeNextProperty)|(?&codePropertyValue))/";
-	}
-
-	/** @throws ScraperError With given message replacing placeholders by provided arguments. */
-	public static function throw( string $msg, string|int ...$placeholderArgs ): never {
-		throw new ScraperError( sprintf( $msg, ...$placeholderArgs ) );
+		return "/{$define}(?<property>(?&propertyNames))(?&separator)(?<value>.*?(?&everythingBeforeNextProperty)|(?&codePropertyValue))/";
 	}
 
 	public function inferFrom( string|DOMElement $source, bool $normalize ): void {
@@ -145,7 +140,10 @@ class BraintreeCardTracer implements Traceable, Indexable {
 		return $this->currentIterationCount ?? null;
 	}
 
-	/** @return Iterator<array-key,array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>> */
+	/**
+	 * @return Iterator<array-key,array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>>
+	 * @throws ScraperError When index key for Card collection is not of string type.
+	 */
 	private function createCardsGenerator( string $source ): Iterator {
 		$this->dispatchEvent( $event = new BraintreeCardTraced( EventAt::Start, $source, $this ) );
 
@@ -165,7 +163,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 			if ( $index = $collectedUsing?->indexKey ) {
 				$valueAsKey = $values[ $index ] ?? null;
 
-				is_string( $valueAsKey ) || $this->throw( self::INVALID_INDEX_VALUE, get_debug_type( $valueAsKey ) );
+				is_string( $valueAsKey ) || throw ScraperError::trigger( self::INVALID_INDEX_VALUE, get_debug_type( $valueAsKey ) );
 
 				yield $valueAsKey => $values;
 			} else {
@@ -178,20 +176,20 @@ class BraintreeCardTracer implements Traceable, Indexable {
 
 	/** @return list<string> */
 	private function cardsFrom( string $source ): array {
-		return preg_match_all( self::BUILTIN_CREDIT_CARD_TYPE_PATTERN, $source, $matched )
+		return preg_match_all( $pattern = self::BUILTIN_CREDIT_CARD_TYPE_PATTERN, $source, $matched )
 			? $matched['object']
-			: $this->throw( self::INVALID_JS_OBJECT_PATTERN );
+			: ScraperError::patternMismatch( 'Braintree GitHub Card Type', $pattern, $source );
 	}
 
 	/** @return array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}> */
 	private function infer( string $cardObject ): array {
-		$details = preg_match_all( $this->getRegexPattern(), $cardObject, $matched, PREG_SET_ORDER )
+		$details = preg_match_all( $pattern = $this->getRegexPattern(), $cardObject, $matched, PREG_SET_ORDER )
 			? array_reduce( $matched, $this->reduceToCards( ... ), initial: [] )
 			: null;
 
 		unset( $this->currentItemIndex );
 
-		return $details ?: $this->throw( self::INVALID_CARD_OBJECT, $cardObject );
+		return $details ?: ScraperError::patternMismatch( 'Braintree GitHub Card Type JS Object', $pattern, $cardObject );
 	}
 
 	/**
@@ -263,6 +261,6 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	private static function throwEventListenerNotUsed( string $methodName ): never {
 		$eventAt = Normalize::case( EventAt::Start );
 
-		self::throw( self::USE_EVENT_LISTENER, static::class . '::' . $methodName, $eventAt, 'set Card Type names' );
+		throw ScraperError::trigger( self::USE_EVENT_LISTENER, static::class . '::' . $methodName, $eventAt, 'set Card Type names' );
 	}
 }
