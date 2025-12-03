@@ -10,10 +10,10 @@ use TheWebSolver\Codegarage\Scraper\Interfaces\TableTracer;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\Scraper\Traits\Table\HtmlTableFromNode;
 
-/** @template-implements TableTracer<string|list<int|int[]>> */
+/** @template-implements TableTracer<string|list<int|list<int>>> */
 #[CollectUsing( Card::class, Card::Name, Card::Name, Card::IINRange, null, Card::Length, Card::Validator )]
 class WikiPaymentCardsTracer implements TableTracer {
-	/** @use HtmlTableFromNode<string|list<int|int[]>> */
+	/** @use HtmlTableFromNode<string|list<int|list<int>>> */
 	use HtmlTableFromNode;
 
 	/** @var list<string> */

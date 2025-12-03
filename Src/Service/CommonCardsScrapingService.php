@@ -14,7 +14,6 @@ use TheWebSolver\Codegarage\Scraper\Interfaces\Traceable;
 use TheWebSolver\Codegarage\Scraper\Traits\ScraperSource;
 use TheWebSolver\Codegarage\Scraper\Interfaces\TableTracer;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
-use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
 
 /**
  * @template-implements Scrapable<
@@ -32,10 +31,7 @@ class CommonCardsScrapingService implements Scrapable {
 	 *  Indexable&Traceable<string|list<int|string|list<int|string>|array{name:string,size:int|string}>,BraintreeCardTraced>
 	 * > $service
 	 */
-	public function __construct(
-		private readonly Scrapable $tableService,
-		private readonly Scrapable $service
-	) {}
+	public function __construct( private readonly Scrapable $tableService, private readonly Scrapable $service ) {}
 
 	public function getTracer(): Traceable {
 		throw new ScraperError( 'Common cards proxy does not implement its own tracer.' );

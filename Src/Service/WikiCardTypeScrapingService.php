@@ -6,10 +6,10 @@ namespace TheWebSolver\Codegarage\PaymentCard\Service;
 use TheWebSolver\Codegarage\Scraper\Enums\Table;
 use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 use TheWebSolver\Codegarage\Scraper\Event\TableTraced;
-use TheWebSolver\Codegarage\PaymentCard\Proxy\WikiTransformerProxy;
 use TheWebSolver\Codegarage\Scraper\Attributes\ScrapeFrom;
 use TheWebSolver\Codegarage\Scraper\Interfaces\TableTracer;
 use TheWebSolver\Codegarage\Scraper\Service\TableScrapingService;
+use TheWebSolver\Codegarage\PaymentCard\Proxy\WikiTransformerProxy;
 
 /**
  * @template TTracer of TableTracer<string|list<int|int[]>>

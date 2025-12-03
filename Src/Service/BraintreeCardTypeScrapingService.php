@@ -22,9 +22,7 @@ use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreeTransformerProxy;
 class BraintreeCardTypeScrapingService extends ScrapingService {
 	/** @param Indexable&Traceable<string|list<int|string|list<int|string>|array{name:string,size:int|string}>,BraintreeCardTraced> $tracer */
 	public function __construct( Traceable $tracer, ?ScrapeFrom $scrapeFrom = null ) {
-		parent::__construct( $tracer, $scrapeFrom );
-
-		$this->getTracer()->addEventListener( $this->hydrateWithDefaultTransformers( ... ) );
+		parent::__construct( $tracer->addEventListener( $this->hydrateWithDefaultTransformers( ... ) ), $scrapeFrom );
 	}
 
 	public function defaultCachePath(): string {

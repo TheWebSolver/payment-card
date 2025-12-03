@@ -19,7 +19,7 @@ use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
  */
 class BraintreeTransformerProxy implements Transformer {
 	/** @placeholder `1:` Given source type, `2:` Regex pattern to match card details extraction. */
-	final public const INVALID_PATTERN_MATCH_ELEMENT = 'Invalid element type provided to transform Braintree GitHub Card Type. "%1$s" type given. It must be an array with matched group named "property" and "value" from regex: "%2$s".';
+	final public const INVALID_PATTERN_MATCH_ELEMENT = 'Invalid element type provided to transform Braintree GitHub Card Type. "%1$s" type given. It must have named groups: "property" and "value" from pattern matched regex: "%2$s".';
 
 	public function __construct( private readonly bool $numericToInteger = true ) {}
 
