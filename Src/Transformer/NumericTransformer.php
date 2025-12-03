@@ -16,8 +16,17 @@ class NumericTransformer implements Transformer {
 	/** @placeholder: `%s` The given string to convert to integer. */
 	final public const NOT_A_NUMERIC_VALUE = 'Impossible to transform non-numeric source: "%s" to integer.';
 
+	/** @return list<int|string|list<int|string>> */
+	public static function transformToNumber( string $source, bool $numericToInteger = true ): array {
+		$extracted = self::extractNumericValues( $source );
+
+		array_walk( $extracted, self::walkExtractedValue( ... ), $numericToInteger );
+
+		return $extracted;
+	}
+
 	/** @param-out int|string|list<int|string> $value */
-	public static function walkRecursiveExtraction( string &$value, mixed $k, bool $toDigit = true ): void {
+	public static function walkExtractedValue( string &$value, mixed $k, bool $toDigit = true ): void {
 		$value = match ( true ) {
 			str_starts_with( $value, '[' ) => self::rangeToDigits( self::extractNumericValues( $value ), $toDigit ),
 			str_contains( $value, '-' )    => self::rangeToDigits( explode( '-', $value, limit: 2 ), $toDigit ),
@@ -51,13 +60,9 @@ class NumericTransformer implements Transformer {
 	public function __construct( private readonly bool $numericToInteger = true ) {}
 
 	public function transform( string|array|DOMElement $element, object $scope ): array {
-		is_string( $element ) || throw ScraperError::trigger( self::INVALID_ELEMENT, get_debug_type( $element ) );
-
-		$extracted = $this->extractNumericValues( $element );
-
-		array_walk( $extracted, self::walkRecursiveExtraction( ... ), $this->numericToInteger );
-
-		return $extracted;
+		return is_string( $element )
+			? self::transformToNumber( $element, $this->numericToInteger )
+			: throw ScraperError::trigger( self::INVALID_ELEMENT, get_debug_type( $element ) );
 	}
 
 	/**
@@ -65,7 +70,7 @@ class NumericTransformer implements Transformer {
 	 * @return list<int|string>
 	 */
 	private static function rangeToDigits( array $range, bool $toDigit ): array {
-		array_walk( $range, self::walkRecursiveExtraction( ... ), $toDigit );
+		array_walk( $range, self::walkExtractedValue( ... ), $toDigit );
 
 		return $range;
 	}
