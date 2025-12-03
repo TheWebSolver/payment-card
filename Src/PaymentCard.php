@@ -95,15 +95,17 @@ enum PaymentCard: string implements Card {
 		try {
 			return $this->fromFactory()->getCode();
 		} catch ( TypeError ) {
+			// phpcs:disable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 			return match ( $this ) {
 				self::Maestro,
-				self::Mastercard      => [ 'CVC', 3 ],
-				self::AmericanExpress => [ 'CID', 4 ],
-				self::Discover        => [ 'CID', 3 ],
-				self::UnionPay        => [ 'CVN', 3 ],
-				self::Mir             => [ 'CVP2', 3 ],
-				default               => [ 'CVV', 3 ]
+				self::Mastercard      => [ 'name' => 'CVC', 'size' => 3 ],
+				self::AmericanExpress => [ 'name' => 'CID', 'size' => 4 ],
+				self::Discover        => [ 'name' => 'CID', 'size' => 3 ],
+				self::UnionPay        => [ 'name' => 'CVN', 'size' => 3 ],
+				self::Mir             => [ 'name' => 'CVP2', 'size' => 3 ],
+				default               => [ 'name' => 'CVV', 'size' => 3 ]
 			};
+			// phpcs:enable
 		}
 	}
 
@@ -130,6 +132,7 @@ enum PaymentCard: string implements Card {
 		try {
 			return $this->fromFactory()->getIdRange();
 		} catch ( TypeError ) {
+			// phpcs:disable WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
 			return match ( $this ) {
 				self::Jcb             => [ [ 3528, 3589 ] ],
 				self::DinersClub      => [
@@ -154,6 +157,7 @@ enum PaymentCard: string implements Card {
 				self::Mastercard      => [ [ 51, 55 ], [ 2221, 2720 ] ],
 				self::UnionPay        => [ 62 ],
 			};//end match
+			// phpcs:enable
 		}//end try
 	}
 

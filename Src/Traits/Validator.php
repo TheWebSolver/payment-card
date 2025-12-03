@@ -24,7 +24,6 @@ trait Validator {
 	}
 
 	public function isCodeValid( mixed $code ): bool {
-		return ( is_string( $code ) || is_int( $code ) )
-			&& strlen( (string) $code ) === ( $this->getCode()[1] ?? false );
+		return ( is_string( $code ) || is_int( $code ) ) && strlen( (string) $code ) === ( $this->getCode()['size'] );
 	}
 }

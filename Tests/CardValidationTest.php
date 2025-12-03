@@ -20,12 +20,12 @@ class CardValidationTest extends TestCase {
 				return true;
 			}
 
-			/** @return (string|int|(string|int)[])[] */
+			/** @return mixed[] */
 			public function getLength(): array {
 				return [];
 			}
 
-			/** @return (string|int|(string|int)[])[] */
+			/** @return mixed[] */
 			public function getIdRange(): array {
 				return [];
 			}
@@ -40,15 +40,17 @@ class CardValidationTest extends TestCase {
 	}
 
 	public static function provideCodes(): array {
+		// phpcs:disable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 		return [
-			[ [ 'Test', 1 ], 5, true ],
-			[ [ 'Test', 2 ], '55', true ],
-			[ [ 'Test', 1 ], true, false ],
-			[ [ 'Test', 4 ], 798, false ],
-			[ [ 'Test', 4 ], '7989', true ],
-			[ [ 'Test' ], '7989', false ],
-			[ [ 'Test', 3 ], '989', true ],
+			[ [ 'name' => 'Test', 'size' => 1 ], 5, true ],
+			[ [ 'name' => 'Test', 'size' => 2 ], '55', true ],
+			[ [ 'name' => 'Test', 'size' => 1 ], true, false ],
+			[ [ 'name' => 'Test', 'size' => 4 ], 798, false ],
+			[ [ 'name' => 'Test', 'size' => 4 ], '7989', true ],
+			[ [ 'name' => 'Test', 'size' => 3 ], '7989', false ],
+			[ [ 'name' => 'Test', 'size' => 3 ], '989', true ],
 		];
+		// phpcs:enable
 	}
 
 	/**

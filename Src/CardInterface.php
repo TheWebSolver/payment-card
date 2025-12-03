@@ -30,28 +30,28 @@ interface CardInterface {
 	/**
 	 * Gets the card breakpoint values.
 	 *
-	 * @return int[]
+	 * @return list<int>
 	 */
 	public function getBreakpoint(): array;
 
 	/**
 	 * Gets the card valid length.
 	 *
-	 * @return (int|int[])[]
+	 * @return list<int|list<int>>
 	 */
 	public function getLength(): array;
 
 	/**
 	 * Gets the card Security Code information and its valid length.
 	 *
-	 * @return array{0:string,1:int}
+	 * @return array{name:string,size:int}
 	 */
 	public function getCode(): array;
 
 	/**
 	 * Gets the card valid Identification Number range.
 	 *
-	 * @return (int|int[])[]
+	 * @return list<int|list<int>>
 	 */
 	public function getIdRange(): array;
 
@@ -73,7 +73,7 @@ interface CardInterface {
 	/**
 	 * Sets the card valid length.
 	 *
-	 * @param (string|int|(string|int)[])[] $value
+	 * @param list<int|string|list<int|string>> $value
 	 * @throws InvalidArgumentException When $value is empty, or provided $value not as per expected type.
 	 */
 	public function setLength( array $value ): self;
@@ -86,7 +86,7 @@ interface CardInterface {
 	/**
 	 * Sets the card valid Identification Number range.
 	 *
-	 * @param (string|int|(string|int)[])[] $value
+	 * @param list<int|string|list<int|string>> $value
 	 * @throws InvalidArgumentException When $value is empty, or provided $value not as per expected type.
 	 */
 	public function setIdRange( array $value ): self;

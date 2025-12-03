@@ -12,13 +12,13 @@ trait Mutator {
 	private string $name;
 	private string $alias;
 
-	/** @var array{0:string,1:int} */
+	/** @var array{name:string,size:int} */
 	private array $code;
 
-	/** @var (int|(int)[])[] */
+	/** @var list<int|list<int>> */
 	private array $length;
 
-	/** @var (int|(int)[])[] */
+	/** @var list<int|list<int>> */
 	private array $idRange;
 
 	public function __construct(
@@ -68,7 +68,7 @@ trait Mutator {
 	}
 
 	public function setCode( string $name, int $size ): static {
-		$this->code = [ $name, $size ];
+		$this->code = compact( 'name', 'size' );
 
 		return $this;
 	}

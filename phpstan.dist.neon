@@ -8,10 +8,6 @@ parameters:
 		- Tests/CustomValidatorTest.php
 	ignoreErrors:
 		-
-			message: '#^Offset 1 on array\{string\, int\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			path: Src/Traits/Validator.php
-		-
 			identifier: method.nonObject
 			path: Tests/CardFactoryTest.php
 		-
