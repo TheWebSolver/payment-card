@@ -4,9 +4,10 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\Test;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use TheWebSolver\Codegarage\PaymentCard\CardInterface;
 
 trait FormatterDataProvider {
-	abstract protected function classWithTrait(): object;
+	abstract protected function classWithTrait(): CardInterface;
 
 	#[DataProvider( 'provideVariousNumbersAndBreakpoints' )]
 	public function testNumberFormattingBasedOnBreakpoint(
