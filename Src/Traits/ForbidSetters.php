@@ -31,7 +31,7 @@ trait ForbidSetters {
 	}
 
 	/** @throws LogicException Setter is forbidden for Payment Card Enum cases. */
-	public function setBreakpoint( string|int $number, string|int ...$numbers ): never {
+	public function setBreakpoint( int $number, int ...$numbers ): never {
 		$this->setterIsForbidden( setter: __FUNCTION__ );
 	}
 

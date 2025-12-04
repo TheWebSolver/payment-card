@@ -18,7 +18,7 @@ use TheWebSolver\Codegarage\Scraper\Traits\CollectorSource;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
 
-/** @template-implements Traceable<array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>,BraintreeCardTraced> */
+/** @template-implements Traceable<array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,BraintreeCardTraced> */
 #[CollectUsing( Card::class, Card::Alias, Card::Name, Card::Alias, Card::IINRange, Card::Breakpoint, Card::Length, Card::Code )]
 class BraintreeCardTracer implements Traceable, Indexable {
 	use CollectorSource;
@@ -47,12 +47,12 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	/** @placeholder `1:` Value type being used as an iterator key. */
 	final public const INVALID_INDEX_VALUE = 'Value used as an index key can only be of string type. "%s" type given';
 
-	/** @var Iterator<array-key,array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>> */
+	/** @var Iterator<array-key,array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>> */
 	private Iterator $cardsGenerator;
 	private CollectUsing $collectedUsing;
 	private string $currentItemIndex;
 	private int $currentIterationCount;
-	/** @var ?Transformer<contravariant static,string|list<int|string|list<int|string>>|array{name:string,size:int|string}> */
+	/** @var ?Transformer<contravariant static,string|list<int|list<int>>|array{name:string,size:int}> */
 	private ?Transformer $transformer = null;
 
 	private ?BraintreeCardTraced $eventBeingDispatched = null;
@@ -141,7 +141,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	}
 
 	/**
-	 * @return Iterator<array-key,array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>>
+	 * @return Iterator<array-key,array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>>
 	 * @throws ScraperError When index key for Card collection is not of string type.
 	 */
 	private function createCardsGenerator( string $source ): Iterator {
@@ -181,7 +181,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 			: ScraperError::patternMismatch( 'Braintree GitHub Card Type', $pattern, $source );
 	}
 
-	/** @return array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}> */
+	/** @return array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}> */
 	private function infer( string $cardObject ): array {
 		$details = preg_match_all( $pattern = $this->getRegexPattern(), $cardObject, $matched, PREG_SET_ORDER )
 			? array_reduce( $matched, $this->reduceToCards( ... ), initial: [] )
@@ -195,7 +195,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	/**
 	 * @param array{}  $cards
 	 * @param string[] $card
-	 * @return array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>
+	 * @return array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>
 	 */
 	private function reduceToCards( array $cards, array $card ): array {
 		$this->registerCurrentItemIndexAndCount( $enum = $this->getCardEnumBy( $card['property'], $card[0] ) );

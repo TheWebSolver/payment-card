@@ -68,12 +68,12 @@ interface CardInterface {
 	/**
 	 * Sets the card breakpoint values.
 	 */
-	public function setBreakpoint( string|int $number, string|int ...$numbers ): self;
+	public function setBreakpoint( int $number, int ...$numbers ): self;
 
 	/**
 	 * Sets the card valid length.
 	 *
-	 * @param list<int|string|list<int|string>> $value
+	 * @param list<int|list<int>> $value
 	 * @throws InvalidArgumentException When $value is empty, or provided $value not as per expected type.
 	 */
 	public function setLength( array $value ): self;
@@ -86,7 +86,7 @@ interface CardInterface {
 	/**
 	 * Sets the card valid Identification Number range.
 	 *
-	 * @param list<int|string|list<int|string>> $value
+	 * @param list<int|list<int>> $value
 	 * @throws InvalidArgumentException When $value is empty, or provided $value not as per expected type.
 	 */
 	public function setIdRange( array $value ): self;

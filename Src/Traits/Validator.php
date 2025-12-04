@@ -3,10 +3,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
-/**
- * This is intended to only be used inside concrete that implements
- * `TheWebSolver\Codegarage\PaymentCard\CardInterface`
- */
+/** This is intended to only be used inside concrete that implements `CardInterface` */
 trait Validator {
 	use Matcher;
 

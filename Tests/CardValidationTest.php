@@ -54,8 +54,8 @@ class CardValidationTest extends TestCase {
 	}
 
 	/**
-	 * @param (string|int|(string|int)[])[] $length
-	 * @param (string|int|(string|int)[])[] $ranges
+	 * @param mixed[] $length
+	 * @param mixed[] $ranges
 	 */
 	#[DataProvider( 'provideNumbers' )]
 	public function testNumberIsValid(
@@ -69,8 +69,8 @@ class CardValidationTest extends TestCase {
 			use Validator;
 
 			/**
-			 * @param (string|int|(string|int)[])[] $length
-			 * @param (string|int|(string|int)[])[] $ranges
+			 * @param mixed[] $length
+			 * @param mixed[] $ranges
 			 */
 			public function __construct( private array $length, private array $ranges, private bool $luhn ) {}
 
@@ -78,12 +78,12 @@ class CardValidationTest extends TestCase {
 				return $this->luhn;
 			}
 
-			/** @return (string|int|(string|int)[])[] */
+			/** @return mixed[] */
 			public function getLength(): array {
 				return $this->length;
 			}
 
-			/** @return (string|int|(string|int)[])[] */
+			/** @return mixed[] */
 			public function getIdRange(): array {
 				return $this->ranges;
 			}

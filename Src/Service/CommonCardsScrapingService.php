@@ -17,7 +17,7 @@ use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
 
 /**
  * @template-implements Scrapable<
- *  Iterator<array-key,string|list<int|string|list<int|string>|array{name:string,size:int|string}>>,
+ *  Iterator<array-key,string|list<int|list<int>>|array{name:string,size:int}>,
  *  Traceable<mixed,object>
  * >
  */
@@ -25,10 +25,10 @@ class CommonCardsScrapingService implements Scrapable {
 	use ScrapeYard, ScraperSource;
 
 	/**
-	 * @param Scrapable<Iterator<array-key,ArrayObject<array-key,string|list<int|int[]>>>,TableTracer<string|list<int|int[]>>> $tableService
+	 * @param Scrapable<Iterator<array-key,ArrayObject<array-key,string|list<int|list<int>>>>,TableTracer<string|list<int|list<int>>>> $tableService
 	 * @param Scrapable<
-	 *  Iterator<array-key,string|list<int|string|list<int|string>|array{name:string,size:int|string}>>,
-	 *  Indexable&Traceable<string|list<int|string|list<int|string>|array{name:string,size:int|string}>,BraintreeCardTraced>
+	 *  Iterator<array-key,string|list<int|list<int>>|array{name:string,size:int}>,
+	 *  Indexable&Traceable<string|list<int|list<int>>|array{name:string,size:int},BraintreeCardTraced>
 	 * > $service
 	 */
 	public function __construct( private readonly Scrapable $tableService, private readonly Scrapable $service ) {}

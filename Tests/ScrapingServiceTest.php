@@ -84,25 +84,6 @@ class ScrapingServiceTest extends TestCase {
 		);
 
 		$tracer = new BraintreeCardTracer();
-		$tracer->addTransformer( new BraintreeTransformerProxy( numericToInteger: false ) );
-		$mastercard = $this->getMasterCard( new BraintreeCardTypeScrapingService( $tracer ) );
-
-		$this->assertSame( 'Mastercard', $mastercard[ Card::Name->value ] );
-		$this->assertSame( [ '4', '8', '12' ], $mastercard[ Card::Breakpoint->value ] );
-		$this->assertSame( [ '16' ], $mastercard[ Card::Length->value ] );
-		$this->assertSame(
-			[ [ '51','55' ], [ '2221','2229' ], [ '223','229' ], [ '23','26' ], [ '270','271' ], '2720' ],
-			$mastercard[ Card::IINRange->value ]
-		);
-		$this->assertSame(
-			[
-				'name' => 'CVC',
-				'size' => '3',
-			],
-			$mastercard[ Card::Code->value ]
-		);
-
-		$tracer = new BraintreeCardTracer();
 		$tracer->addTransformer( new BraintreeTransformerProxy() );
 		$service  = new CommonCardsScrapingService( new WikiCardTypeScrapingService( new WikiPaymentCardsTracer() ), new BraintreeCardTypeScrapingService( $tracer ) );
 		$iterator = $service->parse();

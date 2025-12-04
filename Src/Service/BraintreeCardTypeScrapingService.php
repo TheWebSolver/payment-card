@@ -14,13 +14,13 @@ use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreeTransformerProxy;
 
 /**
  * @template-extends ScrapingService<
- *  Iterator<string,string|list<int|string|list<int|string>|array{name:string,size:int|string}>>,
- *  Indexable&Traceable<string|list<int|string|list<int|string>|array{name:string,size:int|string}>,BraintreeCardTraced>
+ *  Iterator<array-key,string|list<int|list<int>|array{name:string,size:int}>>,
+ *  Indexable&Traceable<string|list<int|list<int>|array{name:string,size:int}>,BraintreeCardTraced>
  * >
  */
 #[ScrapeFrom( 'Braintree GitHub', 'https://raw.githubusercontent.com/braintree/credit-card-type/refs/heads/main/src/lib/card-types.ts', 'cards.ts' )]
 class BraintreeCardTypeScrapingService extends ScrapingService {
-	/** @param Indexable&Traceable<string|list<int|string|list<int|string>|array{name:string,size:int|string}>,BraintreeCardTraced> $tracer */
+	/** @param Indexable&Traceable<string|list<int|list<int>|array{name:string,size:int}>,BraintreeCardTraced> $tracer */
 	public function __construct( Traceable $tracer, ?ScrapeFrom $scrapeFrom = null ) {
 		parent::__construct( $tracer->addEventListener( $this->hydrateWithDefaultTransformers( ... ) ), $scrapeFrom );
 	}

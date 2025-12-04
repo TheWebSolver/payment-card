@@ -27,13 +27,13 @@ final class BraintreeCardTraced {
 		return $this->eventAt === $event;
 	}
 
-	/** @param Iterator<array-key,array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>> $iterator */
+	/** @param Iterator<array-key,array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>> $iterator */
 	public function setInferredCards( Iterator $iterator ): void {
 		$this->inferredCards = $iterator;
 	}
 
 	/**
-	 * @return Iterator<array-key,array<int|value-of<Card>,string|list<int|string|list<int|string>>|array{name:string,size:int|string}>>
+	 * @return Iterator<array-key,array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>>
 	 * @throws LogicException When this method is invoked before iterator is set.
 	 */
 	public function getInferredCards(): Iterator {

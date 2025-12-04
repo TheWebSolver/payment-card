@@ -14,13 +14,10 @@ use TheWebSolver\Codegarage\PaymentCard\Transformer\StatusTransformer;
 use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
 use TheWebSolver\Codegarage\PaymentCard\Decorator\WikiNumericTransformer;
 
-/** @template-implements Transformer<TableTracer<string>,string|list<int|string|list<int|string>>> */
+/** @template-implements Transformer<TableTracer<string>,string|list<int|list<int>>> */
 class WikiTransformerProxy implements Transformer {
 	/** @param Transformer<contravariant TableTracer<string>,string> $base */
-	public function __construct(
-		private readonly Transformer $base = new MarshallItem(),
-		private readonly bool $numericToInteger = true
-	) {}
+	public function __construct( private readonly Transformer $base = new MarshallItem() ) {}
 
 	public function transform( string|array|DOMElement $element, object $scope ): string|array {
 		$current = $scope->getCurrentItemIndex() ?? $scope->getCurrentIterationCount( Table::Column );
@@ -30,7 +27,7 @@ class WikiTransformerProxy implements Transformer {
 			1, Card::Name->value       => new NameTransformer(),
 			3, Card::Status->value     => new StatusTransformer(),
 			4, Card::Length->value,
-			2, Card::IINRange->value   => new WikiNumericTransformer( new NumericTransformer( $this->numericToInteger ) ),
+			2, Card::IINRange->value   => new WikiNumericTransformer( new NumericTransformer() ),
 		} )->transform( $element, $scope );
 	}
 }

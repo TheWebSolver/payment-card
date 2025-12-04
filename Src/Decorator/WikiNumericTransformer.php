@@ -8,9 +8,9 @@ use DOMElement;
 use TheWebSolver\Codegarage\Scraper\AssertDOMElement;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 
-/** @template-implements Transformer<object,list<int|string|list<int|string>>> */
+/** @template-implements Transformer<object,list<int|list<int>>> */
 class WikiNumericTransformer implements Transformer {
-	/** @param Transformer<object,list<int|string|list<int|string>>> $numericTransformer */
+	/** @param Transformer<object,list<int|list<int>>> $numericTransformer */
 	public function __construct( private Transformer $numericTransformer ) {}
 
 	public function transform( string|array|DOMElement $element, object $scope ): array {

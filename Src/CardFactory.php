@@ -16,10 +16,10 @@ use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
  *  checkLuhn?: bool,
  *  name:       string,
  *  alias:      string,
- *  breakpoint: array<string|int>,
+ *  breakpoint: list<int>,
  *  code:       array{0:string, 1:int},
- *  length:     array<int,string|int|array<int,string|int>>,
- *  idRange:    array<int,string|int|array<int,string|int>>,
+ *  length:     list<int|list<int>>,
+ *  idRange:    list<int|list<int>>,
  * }
  */
 class CardFactory {
@@ -41,10 +41,10 @@ class CardFactory {
 		'checkLuhn?' => 'bool',
 		'name'       => 'string',
 		'alias'      => 'string',
-		'breakpoint' => 'array<string|int>',
-		'code'       => 'array{0:string,1:int}',
-		'length'     => 'array<int,string|int|array<int,string|int>>',
-		'idRange'    => 'array<int,string|int|array<int,string|int>>',
+		'breakpoint' => 'list<int>',
+		'code'       => 'array{name:string,size:int}',
+		'length'     => 'list<int|list<int>>',
+		'idRange'    => 'list<int|list<int>>',
 	];
 
 	/** @var array<mixed> */
@@ -104,9 +104,8 @@ class CardFactory {
 	}
 
 	/**
-	 * @return array<string|int,Card>|Generator
+	 * @return ($lazyload is true ? Generator<array-key,Card> : array<Card>)
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
-	 * @phpstan-return ($lazyload is true ? Generator : array<string|int,Card>)
 	 */
 	public static function createFromPhpFile(
 		string $path,
@@ -120,9 +119,8 @@ class CardFactory {
 	}
 
 	/**
-	 * @return array<string|int,Card>|Generator
+	 * @return ($lazyload is true ? Generator<array-key,Card> : array<Card>)
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
-	 * @phpstan-return ($lazyload is true ? Generator : array<string|int,Card>)
 	 */
 	public static function createFromJsonFile(
 		string $path,
@@ -136,9 +134,8 @@ class CardFactory {
 	}
 
 	/**
-	 * @return array<string|int,Card>
+	 * @return ($lazyload is true ? Generator<array-key,Card> : array<Card>)
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
-	 * @phpstan-return ($lazyload is true ? Generator : array<string|int,Card>)
 	 */
 	public static function createFromFile(
 		string $path,
@@ -152,14 +149,14 @@ class CardFactory {
 	}
 
 	/**
-	 * @return array<string|int,Card>
+	 * @return array<Card>
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
 	public function createCards( bool $preserveKeys = true ): array {
-		/** @var array<string|int,Card> */
 		return iterator_to_array( $this->lazyLoadCards( $preserveKeys ), $preserveKeys );
 	}
 
+	/** @return Generator<array-key,Card> */
 	public function lazyLoadCards( bool $preserveKeys = true ): Generator {
 		foreach ( $this->content as $index => $args ) {
 			if ( $preserveKeys ) {

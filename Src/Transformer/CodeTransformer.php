@@ -7,7 +7,7 @@ use DOMElement;
 use TheWebSolver\Codegarage\Scraper\Error\ScraperError;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 
-/** @template-implements Transformer<object,array{name:string,size:int|string}> */
+/** @template-implements Transformer<object,array{name:string,size:int}> */
 class CodeTransformer implements Transformer {
 	/** @placeholder `%s:` Card's Code property names. */
 	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<properties>[%s]+)(?<separator>[\:\" ]+?)(?<names>[A-Z]{3})(?<sizes>[\d]{1}))';
@@ -25,20 +25,16 @@ class CodeTransformer implements Transformer {
 	}
 
 	/**
-	 * @return array{name:string,size:int|string}
+	 * @return array{name:string,size:int}
 	 * @throws ScraperError When Card's Code source is invalid.
 	 */
-	public static function transformCode( string $source, bool $numericToInteger = true ): array {
+	public static function transformCode( string $source ): array {
 		$details = preg_match_all( self::getRegexPattern(), $source, $matches, PREG_SET_ORDER )
-			? array_reduce( $matches, self::reduceToProperties( ... ), initial: [ 'toInt' => $numericToInteger ] )
+			? array_reduce( $matches, self::reduceToProperties( ... ), initial: [] )
 			: null;
-
-		unset( $details['toInt'] );
 
 		return $details ?: ScraperError::patternMismatch( "Card's Code", self::getRegexPattern(), $source );
 	}
-
-	public function __construct( private readonly bool $numericToInteger = true ) {}
 
 	public function transform( string|array|DOMElement $element, object $scope ): mixed {
 		$value = match ( true ) {
@@ -48,22 +44,21 @@ class CodeTransformer implements Transformer {
 			default                                => throw ScraperError::trigger( self::INVALID_ELEMENT )
 		};
 
-		return $this->transformCode( $value, $this->numericToInteger );
+		return $this->transformCode( $value );
 	}
 
 	/**
-	 * @param array{name?:string,size?:int|string,toInt:bool} $properties
-	 * @param array<string>                                   $property
-	 * @return array{name:string,size:int|string}
+	 * @param array{name?:string,size?:int} $properties
+	 * @param array<string>                 $property
+	 * @return array{name:string,size:int}
 	 * @throws ScraperError When Card's Code properties are invalid.
 	 */
 	private static function reduceToProperties( array $properties, array $property ): array {
-		$toInt        = $properties['toInt'];
 		$propertyName = $property['name'] ?? null;
 
 		match ( $propertyName ) {
 			'name'  => $properties['name'] = $property['value'],
-			'size'  => $properties['size'] = NumericTransformer::maybeToDigit( $property['value'], $toInt ),
+			'size'  => $properties['size'] = NumericTransformer::maybeToDigit( $property['value'] ),
 			default => throw ScraperError::trigger( self::INVALID_PROPERTIES, implode( '", "', self::PROPERTIES ), $property[0] ),
 		};
 
