@@ -23,12 +23,14 @@ use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
 class BraintreeCardTracer implements Traceable, Indexable {
 	use CollectorSource;
 
+	final public const IGNORABLE_RAW_CONTENT_SEPARATOR = 'cardTypes: CardCollection = {';
+
 	/** @example ' visa: { niceType: "Visa", type: "visa", patterns: [4], gaps: [4, 8, 12], lengths: [16, 18, 19], code: { name: "CVV", size: 3, }, } as BuiltInCreditCardType,' */
 	final public const BUILTIN_CREDIT_CARD_TYPE_PATTERN = '/[ ]+["]?(?<typeValue>[\w\-]+)["]?[\:]+[ ]+{[ ]+(?<object>.*?})[, ]+}[ as BuiltInCreditCardType,]/';
 	/** @placeholder `1:` Card properties, `2:` Card properties' initials. */
 	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<propertyName>[%1$s]+)(?<separator>\:[ ]+?)(?<everythingBeforeNextProperty>.*?(?=, ?[%2$s]+))(?<codePropertyValue>[\{]+.*?[\}]))';
 	/** @placeholder `1:` static::methodName, `2`: EventAt::caseName, `3:` reason. */
-	final public const USE_EVENT_LISTENER = 'Invalid invocation of "%1$s()". Use event listener for "%2$s" to %3$s';
+	final public const USE_EVENT_LISTENER = 'Invalid invocation of "%1$s()". Use event listener for "%2$s" to %3$s.';
 	final public const CARD_PROPERTIES    = [
 		'niceType' => Card::Name,
 		'type'     => Card::Alias,
@@ -50,8 +52,6 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	/** @var Iterator<array-key,array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>> */
 	private Iterator $cardsGenerator;
 	private CollectUsing $collectedUsing;
-	private string $currentItemIndex;
-	private int $currentIterationCount;
 	/** @var ?Transformer<contravariant static,string|list<int|list<int>>|array{name:string,size:int}> */
 	private ?Transformer $transformer = null;
 
@@ -60,6 +60,16 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	private array $eventListeners = [];
 	/** @var array<'Start'|'End',bool> */
 	private array $eventDispatchedStatus = [];
+
+	/**
+	|-------------------------------------------------------------------------------------------------
+	| Artifacts used during each Card Type tracing. Cleared after each tracing iteration.
+	|-------------------------------------------------------------------------------------------------
+	 */
+
+	private string $rawCardObject;
+	private string $currentItemIndex;
+	private int $currentIterationCount;
 
 	public function resetTraced(): void {
 		unset( $this->cardsGenerator, $this->collectedUsing, $this->currentItemIndex, $this->currentIterationCount );
@@ -80,11 +90,12 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	}
 
 	/** @throws ScraperError When unsupported property name given. */
-	public static function getCardEnumBy( mixed $property, string $source = '' ): Card {
+	public static function getCardEnumBy( string $property, string $source = '' ): Card {
 		return self::CARD_PROPERTIES[ $property ] ?? throw ScraperError::trigger(
 			self::INVALID_CARD_PROPERTIES,
 			self::getPropNames( separator: '", "' ),
-			$source ? ' "' . $source . '" given' : ''
+			( $source ? '' : ". \"{$property}\" is not a valid property" ) .
+			( $source ? ". Property extraction source is :- {$source}" : '' )
 		);
 	}
 
@@ -97,9 +108,16 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	public function inferFrom( string|DOMElement $source, bool $normalize ): void {
 		$source instanceof DOMElement && throw new ScraperError( self::INVALID_SOURCE_TYPE );
 
-		$normalize && $source = Normalize::controlsAndWhitespacesIn( $source );
-		$content              = explode( 'cardTypes: CardCollection = {', $source, limit: 2 )[1];
-		$this->cardsGenerator = $this->createCardsGenerator( $content );
+		$this->dispatchEvent( $event = new BraintreeCardTraced( EventAt::Start, $source, $this ) );
+		$this->hydrateIndicesSourceFromAttribute();
+
+		try {
+			$this->cardsGenerator = $event->getInferredCards();
+		} catch ( LogicException ) {
+			$normalize && $source = Normalize::controlsAndWhitespacesIn( $source );
+			$content              = explode( self::IGNORABLE_RAW_CONTENT_SEPARATOR, $source, limit: 2 )[1] ?? null;
+			$this->cardsGenerator = $this->createCardsGenerator( $content ?: throw new ScraperError( self::INVALID_SOURCE_TYPE ) );
+		}
 	}
 
 	public function setIndicesSource( CollectUsing $collection ): void {
@@ -125,7 +143,9 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	}
 
 	public function getData(): Iterator {
-		return $this->cardsGenerator;
+		if ( isset( $this->cardsGenerator ) ) {
+			yield from $this->cardsGenerator;
+		}
 	}
 
 	public function getIndicesSource(): ?CollectUsing {
@@ -145,20 +165,10 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	 * @throws ScraperError When index key for Card collection is not of string type.
 	 */
 	private function createCardsGenerator( string $source ): Iterator {
-		$this->dispatchEvent( $event = new BraintreeCardTraced( EventAt::Start, $source, $this ) );
-
-		try {
-			yield from $event->getInferredCards();
-		} catch ( LogicException ) {} // phpcs:ignore -- Nothing to do here.
-
-		$this->hydrateIndicesSourceFromAttribute();
-
 		$collectedUsing = $this->getIndicesSource();
 
 		foreach ( $this->cardsFrom( $source ) as $stringifiedCardTypeJSObject ) {
 			$values = $this->infer( $stringifiedCardTypeJSObject );
-
-			unset( $this->currentIterationCount, $this->currentItemIndex );
 
 			if ( $index = $collectedUsing?->indexKey ) {
 				$valueAsKey = $values[ $index ] ?? null;
@@ -183,36 +193,40 @@ class BraintreeCardTracer implements Traceable, Indexable {
 
 	/** @return array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}> */
 	private function infer( string $cardObject ): array {
+		$this->rawCardObject = $cardObject;
+
 		$details = preg_match_all( $pattern = $this->getRegexPattern(), $cardObject, $matched, PREG_SET_ORDER )
-			? array_reduce( $matched, $this->reduceToCards( ... ), initial: [] )
+			? array_reduce( $matched, $this->reduceToCardProperties( ... ), initial: [] )
 			: null;
 
-		unset( $this->currentItemIndex );
+		unset( $this->currentItemIndex, $this->currentIterationCount, $this->rawCardObject );
 
-		return $details ?: ScraperError::patternMismatch( 'Braintree GitHub Card Type JS Object', $pattern, $cardObject );
+		return $details ?: ScraperError::patternMismatch( 'Braintree GitHub Card\'s JS Object', $pattern, $cardObject );
 	}
 
 	/**
-	 * @param array{}  $cards
-	 * @param string[] $card
+	 * @param array{}  $properties
+	 * @param string[] $matched
 	 * @return array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>
 	 */
-	private function reduceToCards( array $cards, array $card ): array {
-		$this->registerCurrentItemIndexAndCount( $enum = $this->getCardEnumBy( $card['property'], $card[0] ) );
+	private function reduceToCardProperties( array $properties, array $matched ): array {
+		$card = $this->getCardEnumBy( $matched['property'], $this->rawCardObject );
 
-		if ( $this->shouldInferProperty( name: $enum->value ) ) {
-			$cards[ $enum->value ] = $this->transformer?->transform( $card, $this ) ?? trim( $card['value'], '"' );
+		$this->registerCurrentItemIndexAndCount( $propertyName = $card->value );
+
+		if ( $this->shouldInferProperty( $propertyName ) ) {
+			$properties[ $propertyName ] = $this->transformer?->transform( $matched, $this ) ?? trim( $matched['value'], '"' );
 		}
 
-		return $cards;
+		return $properties;
 	}
 
-	private function registerCurrentItemIndexAndCount( Card $card ): void {
+	private function registerCurrentItemIndexAndCount( string $cardPropertyName ): void {
 		$this->currentIterationCount = ( $this->currentIterationCount ?? 0 ) + 1;
 
-		( $items = $this->getIndicesSource()?->items )
-			&& ( false !== array_search( $card->value, $items, strict: true ) )
-			&& ( $this->currentItemIndex = $card->value );
+		( $cardPropertiesToTrace = $this->getIndicesSource()?->items )
+			&& ( false !== array_search( $cardPropertyName, $cardPropertiesToTrace, strict: true ) )
+			&& ( $this->currentItemIndex = $cardPropertyName );
 	}
 
 	private function shouldInferProperty( string $name ): bool {
@@ -261,6 +275,6 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	private static function throwEventListenerNotUsed( string $methodName ): never {
 		$eventAt = Normalize::case( EventAt::Start );
 
-		throw ScraperError::trigger( self::USE_EVENT_LISTENER, static::class . '::' . $methodName, $eventAt, 'set Card Type names' );
+		throw ScraperError::trigger( self::USE_EVENT_LISTENER, static::class . '::' . $methodName, $eventAt, 'set Card Type property names' );
 	}
 }
