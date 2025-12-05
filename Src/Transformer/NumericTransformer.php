@@ -9,7 +9,7 @@ use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 
 /** @template-implements Transformer<object,list<int|list<int>>> */
 class NumericTransformer implements Transformer {
-	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<bracketRange>[\[]+[\d, ]+[\]])(?<dashRange>[\d]+[\-\–]+[\d]+)(?<digits>[\d]+))';
+	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<bracketRange>[\[]+[\d, ]+[\]])(?<maybeBracketOpen>[\[]? ?)(?<dashRange>[\d]+[\-\–]+[\d]+)(?<digits>[\d]+))';
 
 	/** @placeholder `%s:` Given element type.  */
 	final public const INVALID_ELEMENT = 'Invalid element type provided to transform numeric value. Expected string type, "%s" type given.';
@@ -43,17 +43,16 @@ class NumericTransformer implements Transformer {
 	 * @throws ScraperError When pattern match fails.
 	 */
 	public static function extractNumericValues( string $source ): array {
-		preg_match_all( self::getRegexPattern(), $source, $matched )
-			|| ScraperError::patternMismatch( "Card's numeric values", self::getRegexPattern(), $source );
+		preg_match_all( $pattern = self::getRegexPattern(), $source, $matched )
+			|| ScraperError::patternMismatch( "Card's numeric values", $pattern, $source );
 
 		return $matched['value'];
 	}
 
 	public static function getRegexPattern(): string {
-		$definedPattern = self::PATTERN_DEFINITION;
-		$possiblePrefix = '?:[\[]? ?';
+		$define = self::PATTERN_DEFINITION;
 
-		return "/{$definedPattern}({$possiblePrefix})?(?<value>(?&bracketRange)|(?&dashRange)|(?&digits))/";
+		return "/{$define}(?&maybeBracketOpen)?(?<value>(?&bracketRange)|(?&dashRange)|(?&digits))/";
 	}
 
 	public static function maybeToDigit( string $value ): int {

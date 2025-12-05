@@ -24,9 +24,9 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	use CollectorSource;
 
 	/** @example ' visa: { niceType: "Visa", type: "visa", patterns: [4], gaps: [4, 8, 12], lengths: [16, 18, 19], code: { name: "CVV", size: 3, }, } as BuiltInCreditCardType,' */
-	final public const BUILTIN_CREDIT_CARD_TYPE_PATTERN = '/[ ]+["]?(?<type>[\w\-]+)["]?[\:]+[ ]+{[ ]+(?<object>.*?})[, ]+}[ as BuiltInCreditCardType,]/';
+	final public const BUILTIN_CREDIT_CARD_TYPE_PATTERN = '/[ ]+["]?(?<typeValue>[\w\-]+)["]?[\:]+[ ]+{[ ]+(?<object>.*?})[, ]+}[ as BuiltInCreditCardType,]/';
 	/** @placeholder `1:` Card properties, `2:` Card properties' initials. */
-	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<propertyNames>[%1$s]+)(?<separator>\:[ ]+?)(?<everythingBeforeNextProperty>(?=, ?[%2$s]+))(?<codePropertyValue>[\{]+.*?[\}]))';
+	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<propertyName>[%1$s]+)(?<separator>\:[ ]+?)(?<everythingBeforeNextProperty>.*?(?=, ?[%2$s]+))(?<codePropertyValue>[\{]+.*?[\}]))';
 	/** @placeholder `1:` static::methodName, `2`: EventAt::caseName, `3:` reason. */
 	final public const USE_EVENT_LISTENER = 'Invalid invocation of "%1$s()". Use event listener for "%2$s" to %3$s';
 	final public const CARD_PROPERTIES    = [
@@ -91,7 +91,7 @@ class BraintreeCardTracer implements Traceable, Indexable {
 	public static function getRegexPattern(): string {
 		$define = sprintf( self::PATTERN_DEFINITION, self::getPropNames(), self::getPropNames( initial: true ) );
 
-		return "/{$define}(?<property>(?&propertyNames))(?&separator)(?<value>.*?(?&everythingBeforeNextProperty)|(?&codePropertyValue))/";
+		return "/{$define}(?<property>(?&propertyName))(?&separator)(?<value>(?&everythingBeforeNextProperty)|(?&codePropertyValue))/";
 	}
 
 	public function inferFrom( string|DOMElement $source, bool $normalize ): void {
