@@ -13,7 +13,9 @@ use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 use TheWebSolver\Codegarage\Scraper\Error\ScraperError;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
+use TheWebSolver\Codegarage\PaymentCard\Proxy\CardValidatorProxy;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
+use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreeTransformerProxy;
 
 class BraintreeTracerTest extends TestCase {
 	#[Test]
@@ -181,6 +183,34 @@ class BraintreeTracerTest extends TestCase {
 		self::assertSame( $value, $actual['value'] );
 
 		return $value;
+	}
+
+	#[Test]
+	public function validatesTransformedValuesAccordingToCurrentCardProperty(): void {
+		$tracer     = new BraintreeCardTracer();
+		$cardObject = 'const cardTypes: CardCollection = {
+      mastercard: {
+        niceType: "Mastercard",
+        type: "mastercard",
+        patterns: [[51, 55], [2221, 2229], [223, 229], [23, 26], [270, 271], 2720],
+        gaps: [4, 8, 12],
+        lengths: [16],
+        code: {
+          name: "CVC",
+          size: 3,
+        },
+      } as BuiltInCreditCardType,
+	  }';
+
+		$tracer->addTransformer( new CardValidatorProxy( new BraintreeTransformerProxy() ) );
+		$tracer->inferFrom( $cardObject, normalize: true );
+
+		$iterator = $tracer->getData();
+
+		$this->assertSame(
+			[ [ 51, 55 ], [ 2221, 2229 ], [ 223, 229 ], [ 23, 26 ], [ 270, 271 ], 2720 ],
+			$iterator->current()[ Card::IINRange->value ]
+		);
 	}
 }
 

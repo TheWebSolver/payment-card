@@ -11,16 +11,21 @@ use TheWebSolver\Codegarage\Scraper\Enums\EventAt;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Helper\Normalize;
 use TheWebSolver\Codegarage\Scraper\Error\ScraperError;
+use TheWebSolver\Codegarage\Scraper\Error\ValidationFail;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Traceable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
+use TheWebSolver\Codegarage\Scraper\Interfaces\Validatable;
 use TheWebSolver\Codegarage\Scraper\Traits\CollectorSource;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
 
-/** @template-implements Traceable<array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,BraintreeCardTraced> */
+/**
+ * @template-implements Traceable<array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,BraintreeCardTraced>
+ * @template-implements Validatable<string|list<int|list<int>>|array{name:string,size:int}>
+ */
 #[CollectUsing( Card::class, Card::Alias, Card::Name, Card::Alias, Card::IINRange, Card::Breakpoint, Card::Length, Card::Code )]
-class BraintreeCardTracer implements Traceable, Indexable {
+class BraintreeCardTracer implements Traceable, Indexable, Validatable {
 	use CollectorSource;
 
 	final public const IGNORABLE_RAW_CONTENT_SEPARATOR = 'cardTypes: CardCollection = {';
@@ -158,6 +163,26 @@ class BraintreeCardTracer implements Traceable, Indexable {
 
 	public function getCurrentIterationCount( ?BackedEnum $type = null ): ?int {
 		return $this->currentIterationCount ?? null;
+	}
+
+	public function validate( mixed $data ): void {
+		$cardEnum = Card::tryFrom( $this->getCurrentItemIndex() ?? '' ) ?? match ( $count = $this->getCurrentIterationCount() ) {
+			1 => Card::Name,
+			2 => Card::Alias,
+			3 => Card::IINRange,
+			4 => Card::Breakpoint,
+			5 => Card::Length,
+			6 => Card::Code,
+			default => throw new ValidationFail(
+				sprintf(
+					self::INVALID_CARD_PROPERTIES,
+					self::getPropNames( separator: '", "' ),
+					sprintf( '. Unable to determine which Card property is being validated at %s index.', $count ? $count - 1 : 'unknown' )
+				)
+			),
+		};
+
+		$cardEnum->validate( $data );
 	}
 
 	/**
