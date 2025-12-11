@@ -126,19 +126,19 @@ class BraintreeCardTracer implements Traceable, Indexable {
 			: $this->throwEventListenerNotUsed( __FUNCTION__ );
 	}
 
-	public function addTransformer( Transformer $transformer, ?BackedEnum $structure = null ): static {
+	public function addTransformer( Transformer $transformer ): static {
 		$this->transformer = $transformer;
 
 		return $this;
 	}
 
-	public function addEventListener( callable $listener, ?BackedEnum $structure = null, EventAt $eventAt = EventAt::Start ): static {
+	public function addEventListener( callable $listener, EventAt $eventAt = EventAt::Start ): static {
 		$this->eventListeners[ $eventAt->name ][] = $listener;
 
 		return $this;
 	}
 
-	public function hasTransformer( ?BackedEnum $structure = null ): bool {
+	public function hasTransformer(): bool {
 		return isset( $this->transformer );
 	}
 
