@@ -5,15 +5,12 @@ namespace TheWebSolver\Codegarage\Test;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use TheWebSolver\Codegarage\Scraper\Factory;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\Scraper\Service\ScrapingService;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\WikiPaymentCardsTracer;
-use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
-use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreeTransformerProxy;
 use TheWebSolver\Codegarage\PaymentCard\Service\CommonCardsScrapingService;
 use TheWebSolver\Codegarage\PaymentCard\Service\WikiCardTypeScrapingService;
 use TheWebSolver\Codegarage\PaymentCard\Service\BraintreeCardTypeScrapingService;
@@ -25,8 +22,7 @@ class ScrapingServiceTest extends TestCase {
 
 	#[Test]
 	public function itParsesScrapedPaymentCardDetailsFromWikiSite(): void {
-		$factory  = new Factory();
-		$iterator = $factory->generateDataIterator( new WikiCardTypeScrapingService( new class() extends WikiPaymentCardsTracer {} ) );
+		$iterator = ( new WikiCardTypeScrapingService( new class() extends WikiPaymentCardsTracer {} ) )->parse();
 
 		foreach ( require_once self::WIKI_CARDS as $expectedCard ) {
 			$this->assertSame( $expectedCard, $iterator->current()->getArrayCopy(), 'Indexed card: ' . $expectedCard[0] );
@@ -38,7 +34,7 @@ class ScrapingServiceTest extends TestCase {
 
 		unset( $iterator, $expectedCard );
 
-		$iterator = $factory->generateDataIterator( new WikiCardTypeScrapingService( new WikiPaymentCardsTracer() ) );
+		$iterator = ( new WikiCardTypeScrapingService( new WikiPaymentCardsTracer() ) )->parse();
 		$cards    = require_once self::WIKI_CARDS_INDEXED;
 
 		foreach ( $cards as $expectedCard ) {
@@ -56,7 +52,6 @@ class ScrapingServiceTest extends TestCase {
 	#[Test]
 	public function itScrapesFromBraintreeGithub(): void {
 		$tracer = new BraintreeCardTracer();
-		$tracer->addTransformer( new BraintreeTransformerProxy() );
 
 		$tracer->addEventListener(
 			function ( BraintreeCardTraced $e ) {
@@ -66,7 +61,7 @@ class ScrapingServiceTest extends TestCase {
 			}
 		);
 
-		$mastercard = $this->getMasterCard( new BraintreeCardTypeScrapingService( $tracer ) );
+		$mastercard = $this->getBraintreeMastercard( new BraintreeCardTypeScrapingService( $tracer ) );
 
 		$this->assertSame( [ 4, 8, 12 ], $mastercard[ Card::Breakpoint->value ] );
 		$this->assertSame( [ 16 ], $mastercard[ Card::Length->value ] );
@@ -82,11 +77,14 @@ class ScrapingServiceTest extends TestCase {
 			],
 			$mastercard['code']
 		);
+	}
 
-		$tracer = new BraintreeCardTracer();
-		$tracer->addTransformer( new BraintreeTransformerProxy() );
-		$service  = new CommonCardsScrapingService( new WikiCardTypeScrapingService( new WikiPaymentCardsTracer() ), new BraintreeCardTypeScrapingService( $tracer ) );
-		$iterator = $service->parse();
+	#[Test]
+	public function itScrapesCommonCardTypesFromWikiAndBraintree(): void {
+		$iterator = ( new CommonCardsScrapingService(
+			new WikiCardTypeScrapingService( new WikiPaymentCardsTracer() ),
+			new BraintreeCardTypeScrapingService( new BraintreeCardTracer() )
+		) )->parse();
 
 		$this->assertSame( 'american-express', $iterator->key() );
 		$this->assertSame(
@@ -109,34 +107,18 @@ class ScrapingServiceTest extends TestCase {
 	public function itInfersCardDetailsBasedOnlyIndicesProvided(): void {
 		$tracer = new BraintreeCardTracer();
 
-		$tracer
-			->addTransformer( new BraintreeTransformerProxy() )
-			->addEventListener(
-				static function ( BraintreeCardTraced $e ) {
-					$e->tracer->setIndicesSource( new CollectUsing( Card::class, Card::Alias, null, Card::Alias, Card::IINRange ) );
-				}
-			);
+		$tracer->addEventListener(
+			static function ( BraintreeCardTraced $e ) {
+				$e->tracer->setIndicesSource( new CollectUsing( Card::class, Card::Alias, null, Card::Alias, Card::IINRange ) );
+			}
+		);
 
-		$mastercard = $this->getMasterCard( new BraintreeCardTypeScrapingService( $tracer ) );
+		$mastercard = $this->getBraintreeMastercard( new BraintreeCardTypeScrapingService( $tracer ) );
 
 		$this->assertCount( 2, $mastercard );
 	}
 
-	#[Test]
-	public function testDigitExtraction(): void {
-		$string = '[775557777-8688889999, 45, 99, 5-6, [12,13,14], 622126–622925 (China UnionPay co-branded), 6011, 644-649, 65, 60400100–60420099, 353, 356 (RuPay-JCB co-branded)]';
-
-		$extracted = ( new NumericTransformer() )->transform( $string, $this->createStub( self::class ) );
-
-		$this->assertNotEmpty( $extracted );
-
-		$this->assertSame(
-			[ [ 775557777,8688889999 ],45,99,[ 5,6 ],[ 12,13,14 ],[ 622126,622925 ],6011,[ 644,649 ],65,[ 60400100,60420099 ],353,356 ],
-			$extracted
-		);
-	}
-
-	private function getMasterCard( ScrapingService $scraper ): array {
+	private function getBraintreeMastercard( ScrapingService $scraper ): array {
 		if ( $scraper->withCachePath( self::RESOURCE_DIRECTORY, 'cards.ts' )->hasCache() ) {
 			$iterator = $scraper->parse( $scraper->fromCache() );
 		} else {
