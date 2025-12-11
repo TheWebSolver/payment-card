@@ -6,7 +6,7 @@ namespace TheWebSolver\Codegarage\PaymentCard\Event;
 use Iterator;
 use LogicException;
 use TheWebSolver\Codegarage\Scraper\Enums\EventAt;
-use TheWebSolver\Codegarage\PaymentCard\Attributes\Card;
+use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
 
 final class BraintreeCardTraced {

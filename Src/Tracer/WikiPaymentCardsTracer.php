@@ -5,7 +5,7 @@ namespace TheWebSolver\Codegarage\PaymentCard\Tracer;
 
 use DOMElement;
 use TheWebSolver\Codegarage\Scraper\Enums\Table;
-use TheWebSolver\Codegarage\PaymentCard\Attributes\Card;
+use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Interfaces\TableTracer;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\Scraper\Traits\Table\HtmlTableFromNode;

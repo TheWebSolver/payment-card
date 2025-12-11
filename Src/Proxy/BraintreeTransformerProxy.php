@@ -4,8 +4,8 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Proxy;
 
 use DOMElement;
+use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Error\ScraperError;
-use TheWebSolver\Codegarage\PaymentCard\Attributes\Card;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
 use TheWebSolver\Codegarage\PaymentCard\Transformer\CodeTransformer;

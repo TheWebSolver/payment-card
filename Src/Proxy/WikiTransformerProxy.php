@@ -5,7 +5,7 @@ namespace TheWebSolver\Codegarage\PaymentCard\Proxy;
 
 use DOMElement;
 use TheWebSolver\Codegarage\Scraper\Enums\Table;
-use TheWebSolver\Codegarage\PaymentCard\Attributes\Card;
+use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Interfaces\TableTracer;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\Scraper\Marshaller\MarshallItem;

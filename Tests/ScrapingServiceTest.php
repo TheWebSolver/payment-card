@@ -6,7 +6,7 @@ namespace TheWebSolver\Codegarage\Test;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use TheWebSolver\Codegarage\Scraper\Factory;
-use TheWebSolver\Codegarage\PaymentCard\Attributes\Card;
+use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\Scraper\Service\ScrapingService;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
