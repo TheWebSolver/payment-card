@@ -15,12 +15,14 @@ enum Card: string {
 	case Status     = 'status';
 	case Validator  = 'validator';
 
+
 	const INVALID_CODE_ARRAY_COUNT = self::Code->value . ' must be an array with "name" and "size" keys.';
 	const INVALID_CODE_NAME        = self::Code->value . ' "name" must be an uppercase string of 3 characters.';
 	const INVALID_CODE_SIZE        = self::Code->value . ' "size" must be a positive integer of 1 digit.';
 
-	const INVALID_NUMERIC_VALUE        = '%s must be a positive integer.';
-	const INVALID_NUMERIC_RANGE_COUNT  = '%s must have range with two elements in an array.';
+	const INVALID_NUMERIC_VALUE        = '%s must be an array of integers or ranges represented as arrays.';
+	const INVALID_NUMERIC_SINGLE_VALUE = '%s must be a positive integer.';
+	const INVALID_NUMERIC_RANGE_COUNT  = '%s must have range with two items in an array.';
 	const INVALID_NUMERIC_RANGE_VALUES = '%s range\'s starting value must be less than ending value.';
 
 	/** @throws ValidationFail When value assertion fails. */
@@ -53,18 +55,24 @@ enum Card: string {
 	}
 
 	private function validateNumeric( mixed $value ): true {
-		if ( ! is_array( $value ) ) {
-			return ( is_int( $value ) && $value > 0 )
-				?: throw new ValidationFail( sprintf( self::INVALID_NUMERIC_VALUE, $this->value ) );
+		return is_array( $value ) ? array_walk( $value, $this->walkEachNumericItem( ... ) ) : throw new ValidationFail(
+			sprintf( self::INVALID_NUMERIC_VALUE, $this->value )
+		);
+	}
+
+	private function walkEachNumericItem( mixed $item ): void {
+		if ( ! is_array( $item ) ) {
+			( is_int( $item ) && $item > 0 ) || throw new ValidationFail( sprintf( self::INVALID_NUMERIC_SINGLE_VALUE, $this->value ) );
+
+			return;
 		}
 
-		if ( count( $value ) !== 2 ) {
+		if ( count( $item ) !== 2 ) {
 			throw new ValidationFail( sprintf( self::INVALID_NUMERIC_RANGE_COUNT, $this->value ) );
 		}
 
-		array_walk( $value, $this->validateNumeric( ... ) );
+		array_walk( $item, $this->walkEachNumericItem( ... ) );
 
-		return $value[0] < $value[1]
-			?: throw new ValidationFail( sprintf( self::INVALID_NUMERIC_RANGE_VALUES, $this->value ) );
+		$item[0] < $item[1] || throw new ValidationFail( sprintf( self::INVALID_NUMERIC_RANGE_VALUES, $this->value ) );
 	}
 }
