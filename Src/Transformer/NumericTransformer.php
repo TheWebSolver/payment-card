@@ -9,7 +9,7 @@ use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 
 /** @template-implements Transformer<object,list<int|list<int>>> */
 class NumericTransformer implements Transformer {
-	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<bracketRange>[\[]+[\d, ]+[\]])(?<maybeBracketOpen>[\[]? ?)(?<dashRange>[\d]+[\-\–]+[\d]+)(?<digits>[\d]+))';
+	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<maybeBracketOpen>[\[]? ?)(?<valueSeparator>[,? ?])(?<bracketRange>[\[]+[\d, ]+[\]])(?<dashRange>[\d]+[\-\– ]+[\d]+)(?<digits>[\d]+))';
 
 	/** @placeholder `%s:` Given element type.  */
 	final public const INVALID_ELEMENT = 'Invalid element type provided to transform numeric value. Expected string type, "%s" type given.';
@@ -52,7 +52,7 @@ class NumericTransformer implements Transformer {
 	public static function getRegexPattern(): string {
 		$define = self::PATTERN_DEFINITION;
 
-		return "/{$define}(?&maybeBracketOpen)?(?<value>(?&bracketRange)|(?&dashRange)|(?&digits))/";
+		return "/{$define}(?&maybeBracketOpen)(?&valueSeparator)?(?<value>(?&bracketRange)|(?&dashRange)|(?&digits))/";
 	}
 
 	public static function maybeToDigit( string $value ): int {
