@@ -55,14 +55,15 @@ enum Card: string {
 	}
 
 	private function validateNumeric( mixed $value ): true {
-		return is_array( $value ) ? array_walk( $value, $this->walkEachNumericItem( ... ) ) : throw new ValidationFail(
-			sprintf( self::INVALID_NUMERIC_VALUE, $this->value )
-		);
+		return is_array( $value )
+			? array_walk( $value, $this->validateEveryNumericItem( ... ) )
+			: throw new ValidationFail( sprintf( self::INVALID_NUMERIC_VALUE, $this->value ) );
 	}
 
-	private function walkEachNumericItem( mixed $item ): void {
+	private function validateEveryNumericItem( mixed $item ): void {
 		if ( ! is_array( $item ) ) {
-			( is_int( $item ) && $item > 0 ) || throw new ValidationFail( sprintf( self::INVALID_NUMERIC_SINGLE_VALUE, $this->value ) );
+			( is_int( $item ) && $item > 0 )
+				|| throw new ValidationFail( sprintf( self::INVALID_NUMERIC_SINGLE_VALUE, $this->value ) );
 
 			return;
 		}
@@ -71,7 +72,7 @@ enum Card: string {
 			throw new ValidationFail( sprintf( self::INVALID_NUMERIC_RANGE_COUNT, $this->value ) );
 		}
 
-		array_walk( $item, $this->walkEachNumericItem( ... ) );
+		array_walk( $item, $this->validateEveryNumericItem( ... ) );
 
 		$item[0] < $item[1] || throw new ValidationFail( sprintf( self::INVALID_NUMERIC_RANGE_VALUES, $this->value ) );
 	}
