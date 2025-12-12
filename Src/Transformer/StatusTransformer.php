@@ -12,6 +12,6 @@ class StatusTransformer implements Transformer {
 	public function transform( string|array|DOMElement $element, object $scope ): string {
 		AssertDOMElement::instance( $element );
 
-		return str_starts_with( $element->textContent, 'No' ) ? 'No' : 'Yes';
+		return str_starts_with( trim( $element->textContent ), 'No' ) ? 'No' : 'Yes';
 	}
 }
