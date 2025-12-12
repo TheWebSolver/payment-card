@@ -25,19 +25,19 @@ class NameTransformerTest extends TestCase {
 		);
 
 		( $dom = new DOMDocument() )->loadHTML(
-			'<div>  <p>ignore paragraph</p>  <span> ignore span </span> Capture This <b>ignore bold text</b>  </div>'
+			'<td>  <p>ignore paragraph</p>  <span> ignore span </span> Capture This <b>ignore bold text</b>  </td>'
 		);
 
 		$this->assertSame(
 			'Capture This',
-			$transformer->transform( $dom->getElementsByTagName( 'div' )->item( 0 ), $dom )
+			$transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom )
 		);
 
 		( $dom = new DOMDocument() )->loadHTML(
-			'<div>  <p>ignore paragraph</p>   <span> ignore span </span>   <b>ignore bold text</b>   </div>'
+			'<td>  <p>ignore paragraph</p>   <span> ignore span </span>   <b>ignore bold text</b>   </td>'
 		);
 
-		$this->assertSame( '', $transformer->transform( $dom->getElementsByTagName( 'div' )->item( 0 ), $dom ) );
+		$this->assertSame( '', $transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
 
 		$this->expectException( InvalidSource::class );
 		$this->expectExceptionMessage( 'Given node is not a DOMElement. Given type: "array".' );

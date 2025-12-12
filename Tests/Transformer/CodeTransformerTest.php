@@ -39,7 +39,7 @@ class CodeTransformerTest extends TestCase {
 
 	public static function provideCodeElements(): array {
 		$dom = new DOMDocument();
-		$dom->loadHTML( '<code>name:"CVC" size:3</code>' );
+		$dom->loadHTML( '<td>name:"CVC" size:3</td>' );
 
 		return [
 			[
@@ -79,7 +79,7 @@ class CodeTransformerTest extends TestCase {
 				],
 			],
 			[
-				$dom->getElementsByTagName( 'code' )->item( 0 ),
+				$dom->getElementsByTagName( 'td' )->item( 0 ),
 				[
 					'name' => 'CVC',
 					'size' => 3,

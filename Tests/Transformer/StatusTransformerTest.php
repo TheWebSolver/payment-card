@@ -22,16 +22,16 @@ class StatusTransformerTest extends TestCase {
 		$this->assertSame( 'Yes', $transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
 
 		( $dom = new DOMDocument() )->loadHTML(
-			'<div> <!-- If content starts with "No", then "No" --> No  <span>Yes</span> </div>'
+			'<td> <!-- If content starts with "No", then "No" --> No  <span>Yes</span> </td>'
 		);
 
-		$this->assertSame( 'No', $transformer->transform( $dom->getElementsByTagName( 'div' )->item( 0 ), $dom ) );
+		$this->assertSame( 'No', $transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
 
 		( $dom = new DOMDocument() )->loadHTML(
-			'<div> If content does not start with "No", then "Yes" </div>'
+			'<td> If content does not start with "No", then "Yes" </td>'
 		);
 
-		$this->assertSame( 'Yes', $transformer->transform( $dom->getElementsByTagName( 'div' )->item( 0 ), $dom ) );
+		$this->assertSame( 'Yes', $transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
 
 		$this->expectException( InvalidSource::class );
 		$this->expectExceptionMessage( 'Given node is not a DOMElement. Given type: "array".' );

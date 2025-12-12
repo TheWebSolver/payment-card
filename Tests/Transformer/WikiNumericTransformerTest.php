@@ -15,11 +15,11 @@ class WikiNumericTransformerTest extends TestCase {
 		$transformer = new WikiNumericTransformer( new NumericTransformer() );
 		$dom         = new DOMDocument();
 
-		$dom->loadHTML( '<div>12 - 34, <!-- ignore 5 in comment --> 6, <pre>ignore nested 7 number</pre>[8, 9] <b>whatever</b>  10</div>' );
+		$dom->loadHTML( '<td>12 - 34, <!-- ignore 5 in comment --> 6, <pre>ignore nested 7 number</pre>[8, 9] <b>whatever</b>  10</td>' );
 
 		$this->assertSame(
 			[ [ 12, 34 ], 6, [ 8, 9 ], 10 ],
-			$transformer->transform( $dom->getElementsByTagName( 'body' )->item( 0 )->firstChild, $dom )
+			$transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom )
 		);
 	}
 }
