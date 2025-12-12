@@ -20,14 +20,14 @@ class WikiTransformerProxy implements Transformer {
 	public function __construct( private readonly Transformer $base = new MarshallItem() ) {}
 
 	public function transform( string|array|DOMElement $element, object $scope ): string|array {
-		$current = $scope->getCurrentItemIndex() ?? $scope->getCurrentIterationCount( Table::Column );
+		$property = $scope->getCurrentItemIndex() ?? $scope->getCurrentIterationCount( Table::Column );
 
-		return ( match ( $current ) {
-			default                    => $this->base,
-			1, Card::Name->value       => new NameTransformer(),
-			3, Card::Status->value     => new StatusTransformer(),
+		return ( match ( $property ) {
 			4, Card::Length->value,
-			2, Card::IINRange->value   => new WikiNumericTransformer( new NumericTransformer() ),
+			2, Card::IINRange->value => new WikiNumericTransformer( new NumericTransformer() ),
+			3, Card::Status->value   => new StatusTransformer(),
+			1, Card::Name->value     => new NameTransformer(),
+			default                  => $this->base,
 		} )->transform( $element, $scope );
 	}
 }
