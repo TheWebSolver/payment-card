@@ -8,6 +8,7 @@ use DOMElement;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
+use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
 use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
 
 class NumericTransformerTest extends TestCase {
@@ -102,6 +103,7 @@ class NumericTransformerTest extends TestCase {
 	#[DataProvider( 'provideTransformationElement' )]
 	public function itTransformsNumericValuesToDigits( string|array|DOMElement $element, string|array $expected ): void {
 		if ( is_string( $expected ) ) {
+			$this->expectException( InvalidSource::class );
 			$this->expectExceptionMessage( $expected );
 		}
 

@@ -5,6 +5,7 @@ namespace TheWebSolver\Codegarage\PaymentCard\Transformer;
 
 use DOMElement;
 use TheWebSolver\Codegarage\Scraper\Error\ScraperError;
+use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 
 /** @template-implements Transformer<object,list<int|list<int>>> */
@@ -62,7 +63,7 @@ class NumericTransformer implements Transformer {
 	public function transform( string|array|DOMElement $element, object $scope ): array {
 		return is_string( $element )
 			? self::transformToNumber( $element )
-			: throw ScraperError::trigger( self::INVALID_ELEMENT, get_debug_type( $element ) );
+			: throw new InvalidSource( sprintf( self::INVALID_ELEMENT, get_debug_type( $element ) ) );
 	}
 
 	/**
