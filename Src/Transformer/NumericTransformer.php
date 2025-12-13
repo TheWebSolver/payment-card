@@ -19,23 +19,16 @@ class NumericTransformer implements Transformer {
 
 	/** @return list<int|list<int>> */
 	public static function transformToNumber( string $source ): array {
-		$extracted = self::extractNumericValues( $source );
-
-		array_walk( $extracted, self::walkExtractedValue( ... ) );
-
-		return $extracted;
+		return array_map( self::mapExtractedValue( ... ), self::extractNumericValues( $source ) );
 	}
 
-	/**
-	 * @return int|list<int>
-	 * @param-out int|list<int> $value
-	 */
-	public static function walkExtractedValue( string &$value, mixed $key ): int|array {
-		return $value = match ( true ) {
-			str_starts_with( $value, '[' ) => self::rangeToDigits( self::extractNumericValues( $value ) ),
-			str_contains( $value, '-' )    => self::rangeToDigits( explode( '-', $value, limit: 2 ) ),
-			str_contains( $value, '–' )    => self::rangeToDigits( explode( '–', $value, limit: 2 ) ),
-			default                        => self::maybeToDigit( $value )
+	/** @return int|list<int> */
+	public static function mapExtractedValue( string $value ): int|array {
+		return match ( true ) {
+			str_starts_with( $value, '[' ) => array_map( self::toDigit( ... ), self::extractNumericValues( $value ) ),
+			str_contains( $value, '-' )    => array_map( self::toDigit( ... ), explode( '-', $value, limit: 2 ) ),
+			str_contains( $value, '–' )    => array_map( self::toDigit( ... ), explode( '–', $value, limit: 2 ) ),
+			default                        => self::toDigit( $value )
 		};
 	}
 
@@ -56,7 +49,7 @@ class NumericTransformer implements Transformer {
 		return "/{$define}(?&maybeBracketOpen)(?&valueSeparator)?(?<value>(?&bracketRange)|(?&dashRange)|(?&digits))/";
 	}
 
-	public static function maybeToDigit( string $value ): int {
+	public static function toDigit( string $value ): int {
 		return abs( intval( $value ) );
 	}
 
@@ -64,15 +57,5 @@ class NumericTransformer implements Transformer {
 		return is_string( $element )
 			? self::transformToNumber( $element )
 			: throw new InvalidSource( sprintf( self::INVALID_ELEMENT, get_debug_type( $element ) ) );
-	}
-
-	/**
-	 * @param list<string> $range
-	 * @return list<int>
-	 */
-	private static function rangeToDigits( array $range ): array {
-		array_walk( $range, self::walkExtractedValue( ... ) );
-
-		return $range;
 	}
 }

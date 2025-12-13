@@ -23,7 +23,7 @@ class NumericTransformerTest extends TestCase {
 	#[Test]
 	#[DataProvider( 'provideNumericStringToDigitValues' )]
 	public function itConvertsStringToDigit( string $value, int $expected ): void {
-		$this->assertSame( $expected, NumericTransformer::maybeToDigit( $value ) );
+		$this->assertSame( $expected, NumericTransformer::toDigit( $value ) );
 	}
 
 	public static function provideNumericStringToDigitValues(): array {
@@ -75,21 +75,19 @@ class NumericTransformerTest extends TestCase {
 	 * @param ?mixed[] $expected
 	*/
 	#[Test]
-	#[DataProvider( 'provideDifferentExtractionWalkerValues' )]
-	public function itWalksValuesByType( array $values, ?array $expected ): void {
-		array_walk( $values, NumericTransformer::walkExtractedValue( ... ) );
-
-		$this->assertSame( $expected, $values );
+	#[DataProvider( 'provideDifferentMappableValues' )]
+	public function itMapsValuesByEitherSingleNumericOrNumericRange( array $values, ?array $expected ): void {
+		$this->assertSame( $expected, array_map( NumericTransformer::mapExtractedValue( ... ), $values ) );
 	}
 
 	/** @return mixed[] */
-	public static function provideDifferentExtractionWalkerValues(): array {
+	public static function provideDifferentMappableValues(): array {
 		return [
 			[ [ '[100,200,300]' ], [ [ 100, 200, 300 ] ] ],
 			[ [ '[ 100,    200,      300 ]' ], [ [ 100, 200, 300 ] ] ],
 			[ [ '400-500' ], [ [ 400, 500 ] ] ],
 			[ [ '    400   -   500     ' ], [ [ 400, 500 ] ] ],
-			[ [ '600' ], [ 600 ] ],
+			[ [ '600', '[700, 800]', '5-6', '1–3', '9' ], [ 600, [ 700, 800 ], [ 5, 6 ], [ 1, 3 ], 9 ] ],
 		];
 	}
 
