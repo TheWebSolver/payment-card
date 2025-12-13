@@ -4,10 +4,10 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 trait BreakpointGetter {
-	/** @var int[] */
+	/** @var list<int> */
 	private array $breakpoint;
 
-	/** @return int[] */
+	/** @return list<int> */
 	public function getBreakpoint(): array {
 		return $this->breakpoint;
 	}
