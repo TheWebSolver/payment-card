@@ -16,9 +16,9 @@ enum Card: string {
 	case Validator  = 'validator';
 
 
-	const INVALID_CODE_ARRAY_COUNT = self::Code->value . ' must be an array with "name" and "size" keys.';
-	const INVALID_CODE_NAME        = self::Code->value . ' "name" must be an uppercase string of 3 characters.';
-	const INVALID_CODE_SIZE        = self::Code->value . ' "size" must be a positive integer of 1 digit.';
+	const INVALID_CODE_ARRAY_COUNT = '%s must be an array with "name" and "size" keys.';
+	const INVALID_CODE_NAME        = '%s "name" must be an uppercase string of 3 characters.';
+	const INVALID_CODE_SIZE        = '%s "size" must be a positive integer of 1 digit.';
 
 	const INVALID_NUMERIC_VALUE        = '%s must be an array of integers or ranges represented as arrays.';
 	const INVALID_NUMERIC_SINGLE_VALUE = '%s must be a positive integer.';
@@ -36,20 +36,15 @@ enum Card: string {
 	}
 
 	private function validateCode( mixed $value ): true {
-		if ( ! is_array( $value ) || count( $value ) !== 2 ) {
-			throw new ValidationFail( self::INVALID_CODE_ARRAY_COUNT );
-		}
+		( is_array( $value ) && count( $value ) === 2 ) || $this->failedFor( self::INVALID_CODE_ARRAY_COUNT );
 
-		$name = $value['name'] ?? null;
-		$size = $value['size'] ?? null;
+		[$name, $size] = [ $value['name'] ?? null, $value['size'] ?? null ];
 
-		if ( ! is_string( $name ) || ! ctype_upper( $name ) || 3 !== strlen( $name ) ) {
-			throw new ValidationFail( self::INVALID_CODE_NAME );
-		}
+		( is_string( $name ) && ctype_upper( $name ) && strlen( $name ) === 3 )
+			|| $this->failedFor( self::INVALID_CODE_NAME );
 
-		if ( ! is_int( $size ) || $size <= 0 || 1 !== strlen( (string) $size ) ) {
-			throw new ValidationFail( self::INVALID_CODE_SIZE );
-		}
+		( is_int( $size ) && $size > 0 && strlen( (string) $size ) === 1 )
+			|| $this->failedFor( self::INVALID_CODE_SIZE );
 
 		return true;
 	}
@@ -57,23 +52,24 @@ enum Card: string {
 	private function validateNumeric( mixed $value ): true {
 		return is_array( $value )
 			? array_walk( $value, $this->validateEveryNumericItem( ... ) )
-			: throw new ValidationFail( sprintf( self::INVALID_NUMERIC_VALUE, $this->value ) );
+			: $this->failedFor( self::INVALID_NUMERIC_VALUE );
 	}
 
 	private function validateEveryNumericItem( mixed $item ): void {
 		if ( ! is_array( $item ) ) {
-			( is_int( $item ) && $item > 0 )
-				|| throw new ValidationFail( sprintf( self::INVALID_NUMERIC_SINGLE_VALUE, $this->value ) );
+			( is_int( $item ) && $item > 0 ) || $this->failedFor( self::INVALID_NUMERIC_SINGLE_VALUE );
 
 			return;
 		}
 
-		if ( count( $item ) !== 2 ) {
-			throw new ValidationFail( sprintf( self::INVALID_NUMERIC_RANGE_COUNT, $this->value ) );
-		}
+		count( $item ) === 2 || $this->failedFor( self::INVALID_NUMERIC_RANGE_COUNT );
 
 		array_walk( $item, $this->validateEveryNumericItem( ... ) );
 
-		$item[0] < $item[1] || throw new ValidationFail( sprintf( self::INVALID_NUMERIC_RANGE_VALUES, $this->value ) );
+		$item[0] < $item[1] || $this->failedFor( self::INVALID_NUMERIC_RANGE_VALUES );
+	}
+
+	private function failedFor( string $msg ): never {
+		throw new ValidationFail( sprintf( $msg, $this->value ) );
 	}
 }
