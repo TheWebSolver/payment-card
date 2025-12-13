@@ -65,7 +65,7 @@ class CodeTransformer implements Transformer {
 		if ( 'name' === $propertyName ) {
 			$properties['name'] = $property['value'];
 		} elseif ( 'size' === $propertyName ) {
-			$properties['size'] = NumericTransformer::maybeToDigit( $property['value'] );
+			$properties['size'] = NumericTransformer::toDigit( $property['value'] );
 		}
 
 		return $properties;
