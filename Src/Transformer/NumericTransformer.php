@@ -14,13 +14,6 @@ class NumericTransformer implements Transformer {
 
 	/** @placeholder `%s:` Given element type.  */
 	final public const INVALID_ELEMENT = 'Invalid element type provided to transform numeric value. Expected string type, "%s" type given.';
-	/** @placeholder: `%s` The given string to convert to integer. */
-	final public const NOT_A_NUMERIC_VALUE = 'Impossible to transform non-numeric source: "%s" to integer.';
-
-	/** @return list<int|list<int>> */
-	public static function transformToNumber( string $source ): array {
-		return array_map( self::mapExtractedValue( ... ), self::extractNumericValues( $source ) );
-	}
 
 	/** @return int|list<int> */
 	public static function mapExtractedValue( string $value ): int|array {
@@ -55,7 +48,7 @@ class NumericTransformer implements Transformer {
 
 	public function transform( string|array|DOMElement $element, object $scope ): array {
 		return is_string( $element )
-			? self::transformToNumber( $element )
+			? array_map( self::mapExtractedValue( ... ), self::extractNumericValues( $element ) )
 			: throw new InvalidSource( sprintf( self::INVALID_ELEMENT, get_debug_type( $element ) ) );
 	}
 }
