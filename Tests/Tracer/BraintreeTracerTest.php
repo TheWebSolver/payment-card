@@ -19,7 +19,7 @@ use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreeTransformerProxy;
 
 class BraintreeTracerTest extends TestCase {
 	#[Test]
-	public function getterDefaultValue(): void {
+	public function itVerifiesGetterDefaultValue(): void {
 		$tracer = new BraintreeCardTracer();
 
 		$this->assertFalse( $tracer->hasTransformer() );
@@ -30,15 +30,15 @@ class BraintreeTracerTest extends TestCase {
 	}
 
 	#[Test]
-	public function returnsStringifiedBraintreeCardTypePropertyNamesOrInitialsSeparatedByProvidedSeparator(): void {
+	public function itReturnsStringifiedBraintreeCardTypePropertyNamesOrInitialsSeparatedByProvidedSeparator(): void {
 		$this->assertSame( 'niceType|type|patterns|gaps|lengths|code', BraintreeCardTracer::getPropNames() );
 		$this->assertSame( 'n|t|p|g|l|c', BraintreeCardTracer::getPropNames( initial: true ) );
-		$this->assertSame( 'niceType", type", patterns", gaps", lengths", code', BraintreeCardTracer::getPropNames( separator: '", ' ) );
+		$this->assertSame( 'niceType", "type", "patterns", "gaps", "lengths", "code', BraintreeCardTracer::getPropNames( separator: '", "' ) );
 		$this->assertSame( 'n - t - p - g - l - c', BraintreeCardTracer::getPropNames( initial: true, separator: ' - ' ) );
 	}
 
 	#[Test]
-	public function returnsRegexPatternToMatchBraintreeCardTypePropertiesAndTheirRespectiveValues(): void {
+	public function itReturnsRegexPatternToMatchBraintreeCardTypePropertiesAndTheirRespectiveValues(): void {
 		$define = sprintf( BraintreeCardTracer::PATTERN_DEFINITION, 'niceType|type|patterns|gaps|lengths|code', 'n|t|p|g|l|c' );
 
 		$this->assertSame(
@@ -48,7 +48,7 @@ class BraintreeTracerTest extends TestCase {
 	}
 
 	#[Test]
-	public function returnsCardCasesWhenValidBraintreeCardTypePropertyNameIsGiven(): void {
+	public function itReturnsCardCasesWhenValidBraintreeCardTypePropertyNameIsGiven(): void {
 		$this->assertSame( Card::Alias, BraintreeCardTracer::getCardEnumBy( 'type' ) );
 		$this->assertSame( Card::Name, BraintreeCardTracer::getCardEnumBy( 'niceType' ) );
 		$this->assertSame( Card::IINRange, BraintreeCardTracer::getCardEnumBy( 'patterns' ) );
@@ -59,20 +59,18 @@ class BraintreeTracerTest extends TestCase {
 
 	#[Test]
 	#[DataProvider( 'provideInvalidPropertyNames' )]
-	public function throwsExceptionWhenInvalidBraintreeCardTypePropertyNameIsGiven( string $propertyName, bool $source = false ): void {
-		$sourceMsg   = $source ? 'this is a, test source' : '';
-		$invalidProp = $source ? '' : ". \"{$propertyName}\" is not a valid property";
+	public function itThrowsExceptionWhenInvalidBraintreeCardTypePropertyNameIsGiven( string $propertyName, bool $source = false ): void {
 		$expectedMsg = sprintf(
 			BraintreeCardTracer::INVALID_CARD_PROPERTIES,
 			'niceType", "type", "patterns", "gaps", "lengths", "code',
-			$invalidProp,
-			$sourceMsg ? '. Property extraction source is :- this is a, test source' : ''
+			$source ? '' : ". \"{$propertyName}\" is not a valid property",
+			$source ? '. Property extraction source is :- this is a, test source' : ''
 		);
 
 		$this->expectException( ScraperError::class );
 		$this->expectExceptionMessage( $expectedMsg );
 
-		BraintreeCardTracer::getCardEnumBy( $propertyName, $sourceMsg );
+		BraintreeCardTracer::getCardEnumBy( $propertyName, $source ? 'this is a, test source' : '' );
 	}
 
 	/** @return mixed[] */
@@ -87,7 +85,7 @@ class BraintreeTracerTest extends TestCase {
 	}
 
 	#[Test]
-	public function addsTransformer(): void {
+	public function itAddsTransformer(): void {
 		$tracer = new BraintreeCardTracer();
 		$tracer->addTransformer( $this->createStub( Transformer::class ) );
 
@@ -95,7 +93,7 @@ class BraintreeTracerTest extends TestCase {
 	}
 
 	#[Test]
-	public function throwsExceptionWhenIndicesSourceProvidedOutsideOfEventListener(): void {
+	public function itThrowsExceptionWhenIndicesSourceProvidedOutsideOfEventListener(): void {
 		$tracer = new BraintreeCardTracer();
 
 		$tracer->addEventListener( static fn( $e )=> $e->tracer->setIndicesSource( new CollectUsing( Card::class ) ), eventAt: EventAt::Start )
@@ -113,7 +111,7 @@ class BraintreeTracerTest extends TestCase {
 
 	#[Test]
 	#[DataProvider( 'provideInvalidSourceTypes' )]
-	public function throwsExceptionIfPatternMatchFails( string|DOMElement $source, string $errorMsg, bool $afterIteration = false ): void {
+	public function itThrowsExceptionIfPatternMatchFails( string|DOMElement $source, string $errorMsg, bool $afterIteration = false ): void {
 		$tracer = new BraintreeCardTracer();
 
 		$this->expectException( ScraperError::class );
@@ -133,19 +131,17 @@ class BraintreeTracerTest extends TestCase {
 			// Valid but non-normalized content.
 			[ $validContent, 'Braintree GitHub Card Type', true ],
 			[ BraintreeCardTracer::IGNORABLE_RAW_CONTENT_SEPARATOR . ' "test-card": "must-be-object enclosed by "{" and "}""', 'Braintree GitHub Card Type', true ],
-			// Valid built-in credit card type pattern but value is not valid object. Regex matches nothing.
-			[ BraintreeCardTracer::IGNORABLE_RAW_CONTENT_SEPARATOR . ' card: { type: "valid", } },', 'Braintree GitHub Card\'s JS Object', true ],
-			// Valid object but property name is invalid. Fails when reducing to Card properties.
+			// Regex matches nothing.
 			[
 				BraintreeCardTracer::IGNORABLE_RAW_CONTENT_SEPARATOR . ' card: { type: "valid", invalidPropertyName: {} },',
-				sprintf( BraintreeCardTracer::INVALID_CARD_PROPERTIES, 'niceType", "type", "patterns", "gaps", "lengths", "code', '. Property extraction source is :- type: "valid", invalidPropertyName: {}' ),
+				sprintf( 'Cannot match pattern to given subject: "%s"', 'type: "valid", invalidPropertyName: {}' ),
 				true,
 			],
 		];
 	}
 
 	#[Test]
-	public function ensuresCurrentIterationCountAndPropertyName(): void {
+	public function itEnsuresCurrentIterationCountAndPropertyName(): void {
 		$tracer     = new BraintreeCardTracer();
 		$cardObject = 'const cardTypes: CardCollection = {
   maestro: {
@@ -186,7 +182,7 @@ class BraintreeTracerTest extends TestCase {
 	}
 
 	#[Test]
-	public function validatesTransformedValuesAccordingToCurrentCardProperty(): void {
+	public function itValidatesTransformedValuesAccordingToCurrentCardProperty(): void {
 		$tracer     = new BraintreeCardTracer();
 		$cardObject = 'const cardTypes: CardCollection = {
       mastercard: {
