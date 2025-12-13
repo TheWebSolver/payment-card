@@ -21,8 +21,10 @@ use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
 
 /**
- * @template-implements Traceable<array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,BraintreeCardTraced>
- * @template-implements Validatable<string|list<int|list<int>>|array{name:string,size:int}>
+ * @template-implements Traceable<
+ *   array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,
+ *   BraintreeCardTraced
+ * >
  */
 #[CollectUsing( Card::class, Card::Alias, Card::Name, Card::Alias, Card::IINRange, Card::Breakpoint, Card::Length, Card::Code )]
 class BraintreeCardTracer implements Traceable, Indexable, Validatable {
