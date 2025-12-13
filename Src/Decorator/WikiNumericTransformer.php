@@ -16,12 +16,12 @@ class WikiNumericTransformer implements Transformer {
 	public function transform( string|array|DOMElement $element, object $scope ): array {
 		AssertDOMElement::instance( $element );
 
-		$value = '';
+		$value = ' ';
 
 		foreach ( $element->childNodes as $node ) {
-			$node instanceof DOMText && ( $value .= trim( $node->textContent ) );
+			$node instanceof DOMText && ( $text = trim( $node->textContent ) ) && ( $value .= "{$text} " );
 		}
 
-		return $value ? $this->numericTransformer->transform( $value, $scope ) : [];
+		return ( $value = trim( $value ) ) ? $this->numericTransformer->transform( $value, $scope ) : [];
 	}
 }

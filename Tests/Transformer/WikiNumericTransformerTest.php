@@ -6,20 +6,22 @@ namespace TheWebSolver\Codegarage\Test\Transformer;
 use DOMDocument;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
+use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\PaymentCard\Decorator\WikiNumericTransformer;
 
 class WikiNumericTransformerTest extends TestCase {
 	#[Test]
 	public function itTransformsNumericValuesToDigitsFromDOMElementChildren(): void {
-		$transformer = new WikiNumericTransformer( new NumericTransformer() );
-		$dom         = new DOMDocument();
+		( $dom = new DOMDocument() )
+			->loadHTML( '<td>12 - 34, <!-- ignore 5 in comment --> 6, <pre>ignore nested 7 number</pre>[8, 9] <b>whatever</b>  10</td>' );
 
-		$dom->loadHTML( '<td>12 - 34, <!-- ignore 5 in comment --> 6, <pre>ignore nested 7 number</pre>[8, 9] <b>whatever</b>  10</td>' );
+		$numeric = $this->createMock( Transformer::class );
 
-		$this->assertSame(
-			[ [ 12, 34 ], 6, [ 8, 9 ], 10 ],
-			$transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom )
-		);
+		$numeric->expects( $this->once() )
+			->method( 'transform' )
+			->with( '12 - 34, 6, [8, 9] 10' )
+			->willReturn( [ [ 12, 34 ], 6, [ 8, 9 ], 10 ] ); // Expected transformed value from NumericTransformer.
+
+		( new WikiNumericTransformer( $numeric ) )->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom );
 	}
 }
