@@ -3,39 +3,54 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test\Transformer;
 
+use DOMElement;
 use DOMDocument;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
 use TheWebSolver\Codegarage\PaymentCard\Transformer\StatusTransformer;
 
 class StatusTransformerTest extends TestCase {
 	#[Test]
-	public function itTransformsStatusOnlyFromDOMElement(): void {
-		$transformer = new StatusTransformer();
+	#[DataProvider( 'provideValidData' )]
+	public function itTransformsStatusOnlyFromDOMElement( string $content, mixed $expected ): void {
+		( $dom = new DOMDocument() )->loadHTML( $content );
 
-		// One of the <td> content from Wiki's scraped content.
-		( $dom = new DOMDocument() )->loadHTML(
-			'<td style="color:green">Yes (since 2017)<sup id="cite_ref-18" class="reference"><a href="#cite_note-18"><span class="cite-bracket">[</span>17<span class="cite-bracket">]</span></a></sup></td>'
-		);
+		$this->assertSame( $expected, ( new StatusTransformer() )->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
+	}
 
-		$this->assertSame( 'Yes', $transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
+	/** @return mixed[] */
+	public static function provideValidData(): array {
+		return [
+			// One of the <td> content from Wiki's scraped content.
+			[
+				'<td style="color:green">Yes (since 2017)<sup id="cite_ref-18" class="reference"><a href="#cite_note-18"><span class="cite-bracket">[</span>17<span class="cite-bracket">]</span></a></sup></td>',
+				'Yes',
+			],
+			[ '<td> <!-- If content starts with "No", then "No" --> No  <span>Yes</span> </td>', 'No' ],
+			[ '<td> If content does not start with "No", then "Yes" </td>', 'Yes' ],
+		];
+	}
 
-		( $dom = new DOMDocument() )->loadHTML(
-			'<td> <!-- If content starts with "No", then "No" --> No  <span>Yes</span> </td>'
-		);
+	/**
+	 * @param string|mixed[]|DOMElement $element
+	 * @param class-string              $exceptionClass
+	 */
+	#[Test]
+	#[DataProvider( 'provideInvalidData' )]
+	public function itThrowsExceptionWhenInvalidElementProvided( string|array|DOMElement $element, string $exceptionClass, string $msg ): void {
+		$this->expectException( $exceptionClass );
+		$this->expectExceptionMessage( $msg );
 
-		$this->assertSame( 'No', $transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
+		( new StatusTransformer() )->transform( $element, $this );
+	}
 
-		( $dom = new DOMDocument() )->loadHTML(
-			'<td> If content does not start with "No", then "Yes" </td>'
-		);
-
-		$this->assertSame( 'Yes', $transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
-
-		$this->expectException( InvalidSource::class );
-		$this->expectExceptionMessage( 'Given node is not a DOMElement. Given type: "array".' );
-
-		$transformer->transform( [], $dom );
+	/** @return mixed[] */
+	public static function provideInvalidData(): array {
+		return [
+			[ [], InvalidSource::class, 'Given node is not a DOMElement. Given type: "array".' ],
+			[ '', InvalidSource::class, 'Given node is not a DOMElement. Given type: "string".' ],
+		];
 	}
 }

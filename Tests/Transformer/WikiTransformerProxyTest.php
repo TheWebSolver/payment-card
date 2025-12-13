@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\Scraper\Enums\Table;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
-use TheWebSolver\Codegarage\Scraper\Interfaces\TableTracer;
+use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\PaymentCard\Proxy\WikiTransformerProxy;
 
 class WikiTransformerProxyTest extends TestCase {
@@ -17,7 +17,7 @@ class WikiTransformerProxyTest extends TestCase {
 	#[DataProvider( 'provideElementContent' )]
 	public function itTransformsElementByCardProperty( string $content, int|Card|null $propertyOrCount, mixed $expected ): void {
 		$proxy = new WikiTransformerProxy();
-		$scope = $this->createMock( TableTracer::class );
+		$scope = $this->createMock( Indexable::class );
 		( $dom = new DOMDocument() )->loadHTML( $content );
 
 		if ( $propertyOrCount instanceof Card ) {
@@ -26,7 +26,8 @@ class WikiTransformerProxyTest extends TestCase {
 				->willReturn( $propertyOrCount->value );
 		} else {
 			$scope->expects( $this->once() )
-				->method( 'getCurrentIterationCount' )->with( Table::Column )
+				->method( 'getCurrentIterationCount' )
+				->with( Table::Column )
 				->willReturn( $propertyOrCount );
 		}
 

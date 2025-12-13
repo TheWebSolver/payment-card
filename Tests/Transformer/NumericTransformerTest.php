@@ -46,9 +46,7 @@ class NumericTransformerTest extends TestCase {
 	#[Test]
 	#[DataProvider( 'provideDifferentPatternMatchValues' )]
 	public function itExtractsNumericValuesFromString( string $source, ?array $expected ): void {
-		if ( is_null( $expected ) ) {
-			$this->expectExceptionMessage( sprintf( 'Cannot match pattern to given subject: "%s"', $source ) );
-		}
+		is_null( $expected ) && $this->expectExceptionMessage( sprintf( 'Cannot match pattern to given subject: "%s"', $source ) );
 
 		$this->assertSame( NumericTransformer::extractNumericValues( $source ), $expected );
 	}

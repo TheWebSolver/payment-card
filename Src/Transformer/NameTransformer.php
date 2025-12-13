@@ -16,13 +16,11 @@ class NameTransformer implements Transformer {
 		$content = ' ';
 
 		foreach ( $element->childNodes as $node ) {
-			if ( $node instanceof DOMElement && ( 'a' === $node->tagName ) && ( $elValue = $node->textContent ) ) {
-				$content .= trim( $elValue ) . ' ';
+			if ( $node instanceof DOMElement && ( 'a' === $node->tagName ) && ( $text = trim( $node->textContent ) ) ) {
+				$content .= "{$text} ";
 			}
 
-			if ( $node instanceof DOMText && ( $txtValue = $node->textContent ) ) {
-				$content .= trim( $txtValue ) . ' ';
-			}
+			$node instanceof DOMText && ( $text = trim( $node->textContent ) ) && ( $content .= "{$text} " );
 		}
 
 		return trim( $content );

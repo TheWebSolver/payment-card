@@ -3,45 +3,59 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test\Transformer;
 
+use DOMElement;
 use DOMDocument;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
 use TheWebSolver\Codegarage\PaymentCard\Transformer\NameTransformer;
 
 class NameTransformerTest extends TestCase {
 	#[Test]
-	public function itTransformsNameOnlyFromDOMElement(): void {
-		$transformer = new NameTransformer();
+	#[DataProvider( 'provideValidData' )]
+	public function itTransformsNameOnlyFromDOMElement( string $content, mixed $expected ): void {
+		( $dom = new DOMDocument() )->loadHTML( $content );
 
-		// One of the <td> content from Wiki's scraped content.
-		( $dom = new DOMDocument() )->loadHTML(
-			'<td><a href="/wiki/Diners_Club_International" title="Diners Club International">Diners Club</a> United States &amp; Canada<sup id="cite_ref-DinerUS_13-0" class="reference"><a href="#cite_note-DinerUS-13"><span class="cite-bracket">[</span>12<span class="cite-bracket">]</span></a></sup></td>'
-		);
+		$this->assertSame( $expected, ( new NameTransformer() )->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
+	}
 
-		$this->assertSame(
-			'Diners Club United States & Canada',
-			$transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom )
-		);
+	/** @return mixed[] */
+	public static function provideValidData(): array {
+		return [
+			[
+				'<td><a href="/wiki/Diners_Club_International" title="Diners Club International">Diners Club</a> United States &amp; Canada<sup id="cite_ref-DinerUS_13-0" class="reference"><a href="#cite_note-DinerUS-13"><span class="cite-bracket">[</span>12<span class="cite-bracket">]</span></a></sup></td>',
+				'Diners Club United States & Canada',
+			],
+			[
+				'<td>  <p>ignore paragraph</p>  <span> ignore span </span> Capture This <b>ignore bold text</b>  </td>',
+				'Capture This',
+			],
+			[
+				'<td>  <p>ignore paragraph</p>   <span> ignore span </span>   <b>ignore bold text</b>   </td>',
+				'',
+			],
+		];
+	}
 
-		( $dom = new DOMDocument() )->loadHTML(
-			'<td>  <p>ignore paragraph</p>  <span> ignore span </span> Capture This <b>ignore bold text</b>  </td>'
-		);
+	/**
+	 * @param string|mixed[]|DOMElement $element
+	 * @param class-string              $exceptionClass
+	 */
+	#[Test]
+	#[DataProvider( 'provideInvalidData' )]
+	public function itThrowsExceptionWhenInvalidElementProvided( string|array|DOMElement $element, string $exceptionClass, string $msg ): void {
+		$this->expectException( $exceptionClass );
+		$this->expectExceptionMessage( $msg );
 
-		$this->assertSame(
-			'Capture This',
-			$transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom )
-		);
+		( new NameTransformer() )->transform( $element, $this );
+	}
 
-		( $dom = new DOMDocument() )->loadHTML(
-			'<td>  <p>ignore paragraph</p>   <span> ignore span </span>   <b>ignore bold text</b>   </td>'
-		);
-
-		$this->assertSame( '', $transformer->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
-
-		$this->expectException( InvalidSource::class );
-		$this->expectExceptionMessage( 'Given node is not a DOMElement. Given type: "array".' );
-
-		$transformer->transform( [], $dom );
+	/** @return mixed[] */
+	public static function provideInvalidData(): array {
+		return [
+			[ [], InvalidSource::class, 'Given node is not a DOMElement. Given type: "array".' ],
+			[ '', InvalidSource::class, 'Given node is not a DOMElement. Given type: "string".' ],
+		];
 	}
 }

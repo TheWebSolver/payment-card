@@ -6,12 +6,13 @@ namespace TheWebSolver\Codegarage\PaymentCard\Proxy;
 use DOMElement;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
+use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
 use TheWebSolver\Codegarage\PaymentCard\Transformer\CodeTransformer;
 use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
 
-/** @template-implements Transformer<BraintreeCardTracer,string|list<int|list<int>>|array{name:string,size:int}> */
+/** @template-implements Transformer<Indexable,string|list<int|list<int>>|array{name:string,size:int}> */
 final class BraintreeTransformerProxy implements Transformer {
 	public const MISSING_PROPERTY_KEY = 'Element to transform Braintree Card Type must have "property" key/value pair.';
 	/** @placeholder `1:` Given source type, `2:` Regex pattern to match card details extraction. */

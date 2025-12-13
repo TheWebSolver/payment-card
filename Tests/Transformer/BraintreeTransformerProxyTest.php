@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
-use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
+use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreeTransformerProxy;
 
 class BraintreeTransformerProxyTest extends TestCase {
@@ -16,14 +16,12 @@ class BraintreeTransformerProxyTest extends TestCase {
 	#[Test]
 	#[DataProvider( 'providePropertyKeyOrIndex' )]
 	public function itThrowsExceptionWhenNeitherPropertyKeyNorIndexGiven( array $element, ?string $propertyName, mixed $expected, string $throws = '' ): void {
-		$scope = $this->createMock( BraintreeCardTracer::class );
 		$proxy = new BraintreeTransformerProxy();
+		$scope = $this->createMock( Indexable::class );
 
 		$scope->expects( $this->once() )->method( 'getCurrentItemIndex' )->willReturn( $propertyName );
 
-		if ( $throws ) {
-			$this->expectExceptionMessage( $throws );
-		}
+		$throws && $this->expectExceptionMessage( $throws );
 
 		$this->assertSame( $expected, $proxy->transform( $element, $scope ) );
 	}
@@ -49,7 +47,7 @@ class BraintreeTransformerProxyTest extends TestCase {
 	#[DataProvider( 'provideElementsToTransform' )]
 	public function itTransformsElementByCardProperty( string|array|DOMElement $element, string $propertyName, mixed $expected, string $throws = '' ): void {
 		$proxy = new BraintreeTransformerProxy();
-		$scope = $this->createMock( BraintreeCardTracer::class );
+		$scope = $this->createMock( Indexable::class );
 
 		if ( $throws ) {
 			$this->expectExceptionMessage( $throws );
