@@ -4,7 +4,9 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\Test;
 
 use TypeError;
+use RuntimeException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\CardType;
 use TheWebSolver\Codegarage\PaymentCard\CardFactory;
@@ -41,6 +43,24 @@ class CardFactoryTest extends TestCase {
 		CardFactory::resetGlobalCardClass();
 	}
 
+	#[Test]
+	#[DataProvider( 'provideNonResolvablePayload' )]
+	public function itThrowsExceptionIfNonResolvablePayloadProvided( string|array|null $payload ): void {
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( CardFactory::NON_RESOLVABLE_PAYLOAD );
+
+		( new CardFactory( $payload ) )->createCard();
+	}
+
+	public static function provideNonResolvablePayload(): array {
+		return [
+			[ null ],
+			[ '' ],
+			[ [] ],
+			[ 'invalid/payload/path' ],
+		];
+	}
+
 	public function testCardCreationFromArray(): void {
 		$napas = [
 			'name'       => 'Napas',
@@ -73,7 +93,7 @@ class CardFactoryTest extends TestCase {
 			],
 		];
 
-		$factory = new CardFactory( data: $payload );
+		$factory = new CardFactory( $payload );
 		$loader  = $factory->lazyLoadCards();
 
 		$this->assertSame( expected: 'napas', actual: $loader->current()->getAlias() );
@@ -93,25 +113,20 @@ class CardFactoryTest extends TestCase {
 
 		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $napas ) )->createCard() );
 		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $payload ) )->createCard() );
-		$this->assertSame( 'humo', actual: ( new CardFactory( $payload ) )->createCard( 2 )->getAlias() );
+		$this->assertSame( 'humo', actual: ( $humo = ( new CardFactory( $payload ) )->createCard( 2 ) )->getAlias() );
+		$this->assertInstanceOf( CardType::class, $humo );
 	}
 
 	public function testCardCreationFromJsonFile(): void {
 		$path    = __DIR__ . '/Resource/Cards.json';
-		$cards   = CardFactory::createFromJsonFile( $path );
+		$cards   = CardFactory::createFromFile( $path );
 		$aliases = [ 'napas', 'gpn', 'humo' ];
 
 		$this->assertCount( expectedCount: 3, haystack: $cards );
 		$this->assertCreatedCardAliasesMatch( (array) $cards, $aliases );
 		$this->assertAllCardsAreRegistered( (array) $cards );
 
-		$altCards = CardFactory::createFromFile( $path );
-
-		foreach ( $cards as $index => $card ) {
-			$this->assertTrue( $altCards[ $index ]->getName() === $card->getName() );
-		}
-
-		$cards = CardFactory::createFromJsonFile( $path, lazyload: true );
+		$cards = CardFactory::createFromFile( $path, lazyload: true );
 
 		while ( $cards->valid() ) {
 			$this->assertSame( expected: $aliases[ $cards->key() ], actual: $cards->current()->getAlias() );
@@ -121,7 +136,7 @@ class CardFactoryTest extends TestCase {
 		$this->expectException( TypeError::class );
 		$this->expectExceptionMessage( $path = __DIR__ . '/Resource/CardsInvalid.json' );
 
-		CardFactory::createFromJsonFile( $path );
+		CardFactory::createFromFile( $path );
 	}
 
 	#[DataProvider( 'providePhpFiles' )]
@@ -138,7 +153,7 @@ class CardFactoryTest extends TestCase {
 			$this->expectExceptionMessage( $path );
 		}
 
-		$cards = CardFactory::createFromPhpFile( $path );
+		$cards = CardFactory::createFromFile( $path );
 
 		$this->assertCreatedCardAliasesMatch( (array) $cards, $aliases, $aliasAsKey );
 		$this->assertAllCardsAreRegistered( (array) $cards );
@@ -158,7 +173,7 @@ class CardFactoryTest extends TestCase {
 			$this->expectExceptionMessage( $path );
 		}
 
-		$cards = CardFactory::createFromPhpFile( $path, lazyload: true );
+		$cards = CardFactory::createFromFile( $path, lazyload: true );
 
 		while ( $cards->valid() ) {
 			$alias = $cards->current()->getAlias();

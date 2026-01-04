@@ -80,7 +80,7 @@ class CustomValidatorTest extends TestCase {
 				resetCoveredCards as public;
 			}
 
-			/** @var array{first:string,second:string} */
+			/** @var array{first:non-empty-string,second:non-empty-string} */
 			private array $batches;
 
 			public function __construct() {
@@ -92,13 +92,13 @@ class CustomValidatorTest extends TestCase {
 			}
 
 			public function validate( string|int $cardNumber ): bool {
-				$firstBatch = Factory::createFromJsonFile( path: $this->batches['first'], lazyload: true );
+				$firstBatch = Factory::createFromFile( path: $this->batches['first'], lazyload: true );
 
 				if ( $this->resolveCardFromNumberIn( $firstBatch, $cardNumber ) ) {
 					return true;
 				}
 
-				$secondBatch = Factory::createFromJsonFile( path: $this->batches['second'], lazyload: true );
+				$secondBatch = Factory::createFromFile( path: $this->batches['second'], lazyload: true );
 
 				return $this->resolveCardFromNumberIn( $secondBatch, $cardNumber ) ? true : false;
 			}
