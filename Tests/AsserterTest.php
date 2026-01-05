@@ -6,6 +6,7 @@ namespace TheWebSolver\Codegarage\Test;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
+use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 
 class AsserterTest extends TestCase {
 	public function testWithoutUsingCardType(): void {
@@ -35,12 +36,12 @@ class AsserterTest extends TestCase {
 			[ [ 1 ], [ '1' ], 'Test' ],
 			[ [ 1, 5 ], [ 1, 5 ], 'Test' ],
 			[ [ 12, [ 13, 15 ], 20 ], [ '12', [ '13', 15 ], 20 ], 'Test' ],
-			[ [ 1 ], [], 'Test1', 'Test1 must have atleast one element.' ],
-			[ [ 1 ], [ -1 ], 'Test2', 'Test2 minimum value must be a positive integer.' ],
-			[ [ 0 ], [ [ 5, 5 ] ], 'Test3', 'Test3 minimum value must be less than maximum value.' ],
-			[ [ 0 ], [ [ 5, 4 ] ], 'Test3', 'Test3 minimum value must be less than maximum value.' ],
-			[ [ 0 ], [ [ 1, 2, 3 ] ], 'Test4', 'Test4 value must only be of two elements in an array.' ],
-			[ [ 0 ], [ 1, false ], 'Test5', 'Test5 must be between [0-9] as either a "string" or an "int" type. "bool" type given.' ],
+			[ [ 1 ], [], 'Test1', sprintf( Asserter::NEEDS_ONE_ELEMENT, CardFactory::DEFAULT_CARD, 'Test1' ) ],
+			[ [ 1 ], [ -1 ], 'Test2', sprintf( Asserter::NEEDS_POSITIVE_INT, CardFactory::DEFAULT_CARD, 'Test2' ) ],
+			[ [ 0 ], [ [ 5, 5 ] ], 'Test3', sprintf( Asserter::NEEDS_MIN_LESS_THAN_MAX, CardFactory::DEFAULT_CARD, 'Test3' ) ],
+			[ [ 0 ], [ [ 5, 4 ] ], 'Test3', sprintf( Asserter::NEEDS_MIN_LESS_THAN_MAX, CardFactory::DEFAULT_CARD, 'Test3' ) ],
+			[ [ 0 ], [ [ 1, 2, 3 ] ], 'Test4', sprintf( Asserter::NEEDS_TWO_ELEMENTS, CardFactory::DEFAULT_CARD, 'Test4' ) ],
+			[ [ 0 ], [ 1, false ], 'Test5', sprintf( Asserter::NEEDS_INT_OR_NUMERIC, CardFactory::DEFAULT_CARD, 'Test5', 'bool' ) ],
 		];
 	}
 
