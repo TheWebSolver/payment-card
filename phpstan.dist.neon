@@ -4,7 +4,7 @@ parameters:
 	level: max
 	paths:
 		- Src/
-		- Tests/QueueBasedFormatterTest.php
+		- Tests/CardNumberFormatterTest.php
 		- Tests/CustomValidatorTest.php
 	ignoreErrors:
 		-

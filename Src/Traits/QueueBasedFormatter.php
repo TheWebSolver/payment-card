@@ -9,10 +9,11 @@ use TheWebSolver\Codegarage\PaymentCard\Asserter;
 trait QueueBasedFormatter {
 	use BreakpointGetter;
 
+	/** @no-named-arguments */
 	public function setBreakpoint( string|int $number, string|int ...$numbers ): static {
 		Asserter::isProcessing( name: 'breakpoint' );
 
-		$this->breakpoint = array_map( Asserter::assertSingleSize( ... ), array: func_get_args() );
+		$this->breakpoint = array_map( Asserter::assertSingleSize( ... ), array: [ $number, ...$numbers ] );
 
 		return $this;
 	}
