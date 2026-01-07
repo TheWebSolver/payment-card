@@ -38,7 +38,7 @@ class CardFactory {
 	 */
 	public const CARD_SCHEMA = [
 		'type?'      => 'string',
-		'classname?' => 'string',
+		'classname?' => 'class-string<' . Card::class . '>',
 		'checkLuhn?' => 'bool',
 		'name'       => 'string',
 		'alias'      => 'string',
@@ -180,21 +180,9 @@ class CardFactory {
 	}
 
 	private function resolvePayloadContent(): void {
-		if ( $this->payload ?? false ) {
-			return;
-		}
-
-		if ( ! isset( $this->filePath ) ) {
-			throw new RuntimeException( self::NON_RESOLVABLE_PAYLOAD );
-		}
-
-		if ( is_array( $content = $this->parseContentFromFilepath() ) && ! empty( $content ) ) {
-			$this->payload = $content;
-
-			return;
-		}
-
-		throw new RuntimeException( self::NON_RESOLVABLE_PAYLOAD );
+		$this->payload ??= ! is_array( $content = $this->parseContentFromFilepath() ) || empty( $content )
+			? throw new RuntimeException( self::NON_RESOLVABLE_PAYLOAD )
+			: $content;
 	}
 
 	/** @param array<string,mixed> $args */
@@ -221,10 +209,10 @@ class CardFactory {
 
 	private function parseContentFromFilepath(): mixed {
 		return match ( true ) {
-			! is_readable( $this->filePath )         => null,
-			str_ends_with( $this->filePath, 'json' ) => self::parseJsonContent(),
-			str_ends_with( $this->filePath, 'php' )  => self::parsePhpContent(),
-			default                              => self::invalidFile(
+			! is_readable( $this->filePath ?? '' )   => null,
+			str_ends_with( $this->filePath, 'json' ) => $this->parseJsonContent(),
+			str_ends_with( $this->filePath, 'php' )  => $this->parsePhpContent(),
+			default                                  => self::invalidFile(
 				( $this->fileType ? strtoupper( $this->fileType ) . ' ' : '' ) . "file: {$this->filePath}"
 			),
 		};
