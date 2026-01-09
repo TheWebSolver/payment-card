@@ -3,92 +3,46 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
-use TypeError;
-use LogicException;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
-use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
-use TheWebSolver\Codegarage\PaymentCard\CardFactory as Factory;
+use TheWebSolver\Codegarage\PaymentCard\CardFactory;
+use TheWebSolver\Codegarage\PaymentCard\CardInterface;
 
-/** @phpstan-import-type CardSchema from Factory */
 trait CardResolver {
-	/** @var Card[] */
-	private array $cards;
-	private bool $registeredOnly;
+	/** @var string[] */
+	private array $coveredCards;
 
-	private function setCards( Card $card, Card ...$cards ): void {
-		$this->cards = [ $card, ...$cards ];
+	/** @return string[] */
+	public function getCoveredCardIndices(): array {
+		return $this->coveredCards ?? [];
 	}
 
-	private function withoutDefaults(): static {
-		$this->registeredOnly = true;
-
-		return $this;
+	public function resetCoveredCardIndices(): void {
+		$this->coveredCards = [];
 	}
 
-	/**
-	 * @param string|CardSchema $data
-	 * @throws TypeError When content parsed from $data does not match the `CardSchema`.
-	 */
-	private function registerCardsFromPayload( string|array $data ): void {
-		$this->cards = ( new Factory() )->withPayload( $data )->createCards( preserveKeys: false );
-	}
+	/** @return ($exitOnResolve is true ? CardInterface|null : non-empty-list<CardInterface>|null) */
+	private function resolve( string|int $cardNumber, CardFactory $factory, bool $exitOnResolve = true ): null|CardInterface|array {
+		$resolvedCards = [];
+		$allowedCards  = $factory->indicesToCreate;
+		$generator     = $factory->lazyloadCardsBySentPayloadIndex();
 
-	/** @return Card[] */
-	private function getCards(): array {
-		$cards = $this->cards ?? [];
+		while ( $generator->valid() ) {
+			$key                        = $generator->key();
+			$needCardCreation           = ! $allowedCards || in_array( $key, $allowedCards, strict: true );
+			$card                       = $generator->send( $needCardCreation );
+			$status                     = ! $card ? 'disallowed' : ( $card->isNumberValid( $cardNumber ) ? 'valid' : 'invalid' );
+			$this->coveredCards[ $key ] = $status;
 
-		return ( $this->registeredOnly ?? false ) ? $cards : [ ...PaymentCard::cases(), ...$cards ];
-	}
+			if ( $card && 'valid' === $status ) {
+				if ( $exitOnResolve ) {
+					$resolvedCards = $card;
 
-	/** @return CardSchema[] */
-	private function getCardsContent(): array {
-		return array_map( array: $this->getCards(), callback: $this->getCardContent( ... ) );
-	}
-
-	/**
-	 * @return CardSchema
-	 * @throws TypeError When invalid card provided.
-	 */
-	private function getCardContent( mixed $card ): array {
-		if ( ! $card instanceof Card ) {
-			throw new TypeError(
-				sprintf( 'Impossible to retrieve card content from invalid card "%s".', get_debug_type( $card ) )
-			);
-		}
-
-		$data = [];
-
-		foreach ( Factory::CARD_SCHEMA as $key => $schema ) {
-			if ( str_ends_with( haystack: $key, needle: '?' ) ) {
-				continue;
-			}
-
-			$getterMethod = 'get' . ucwords( $key );
-
-			method_exists( $card, $getterMethod ) && $data[ $key ] = $card->{$getterMethod}();
-		}
-
-		/** @var CardSchema */
-		return $data;
-	}
-
-	/** @throws LogicException When cards not registered and `CardResolver::withoutDefaults()` used. */
-	private function resolveCardFromNumber( string|int $number ): ?Card {
-		if ( empty( $cards = $this->getCards() ) ) {
-			throw new LogicException(
-				sprintf( 'Payment Cards not registered. Impossible to resolve card number: "%s".', $number )
-			);
-		}
-
-		$length  = 0;
-		$matches = null;
-
-		foreach ( $cards as $card ) {
-			if ( $card->isNumberValid( $number ) ) {
-				PaymentCard::matchIdRange( $card, $number, $length, $matches );
+					break;
+				} else {
+					$resolvedCards[] = $card;
+				}
 			}
 		}
 
-		return $matches;
+		return $resolvedCards ?: null;
 	}
 }

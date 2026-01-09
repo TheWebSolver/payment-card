@@ -104,13 +104,6 @@ class CardFactoryTest extends TestCase {
 		$loader->next();
 		$this->assertNull( $loader->current() );
 
-		$cards = ( new CardFactory( $payload ) )->createCards();
-
-		$this->assertSame(
-			expected: [ 'napas', 'gpn', 'humo' ],
-			actual: array_map( static fn( $c ) => $c->getAlias(), array: $cards )
-		);
-
 		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $napas ) )->createCard() );
 		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $payload ) )->createCard() );
 		$this->assertSame( 'humo', actual: ( $humo = ( new CardFactory( $payload ) )->createCard( 2 ) )->getAlias() );
@@ -119,14 +112,9 @@ class CardFactoryTest extends TestCase {
 
 	public function testCardCreationFromJsonFile(): void {
 		$path    = __DIR__ . '/Resource/Cards.json';
-		$cards   = CardFactory::createFromFile( $path );
 		$aliases = [ 'napas', 'gpn', 'humo' ];
 
-		$this->assertCount( expectedCount: 3, haystack: $cards );
-		$this->assertCreatedCardAliasesMatch( (array) $cards, $aliases );
-		$this->assertAllCardsAreRegistered( (array) $cards );
-
-		$cards = CardFactory::createFromFile( $path, lazyload: true );
+		$cards = CardFactory::createFromFile( $path );
 
 		while ( $cards->valid() ) {
 			$this->assertSame( expected: $aliases[ $cards->key() ], actual: $cards->current()->getAlias() );
@@ -136,7 +124,7 @@ class CardFactoryTest extends TestCase {
 		$this->expectException( TypeError::class );
 		$this->expectExceptionMessage( $path = __DIR__ . '/Resource/CardsInvalid.json' );
 
-		CardFactory::createFromFile( $path );
+		CardFactory::createFromFile( $path )->current();
 	}
 
 	#[DataProvider( 'providePhpFiles' )]
@@ -153,10 +141,10 @@ class CardFactoryTest extends TestCase {
 			$this->expectExceptionMessage( $path );
 		}
 
-		$cards = CardFactory::createFromFile( $path );
+		$cards = iterator_to_array( CardFactory::createFromFile( $path ) );
 
-		$this->assertCreatedCardAliasesMatch( (array) $cards, $aliases, $aliasAsKey );
-		$this->assertAllCardsAreRegistered( (array) $cards );
+		$this->assertCreatedCardAliasesMatch( $cards, $aliases, $aliasAsKey );
+		$this->assertAllCardsAreRegistered( $cards );
 	}
 
 	#[DataProvider( 'providePhpFiles' )]
@@ -173,7 +161,7 @@ class CardFactoryTest extends TestCase {
 			$this->expectExceptionMessage( $path );
 		}
 
-		$cards = CardFactory::createFromFile( $path, lazyload: true );
+		$cards = CardFactory::createFromFile( $path );
 
 		while ( $cards->valid() ) {
 			$alias = $cards->current()->getAlias();

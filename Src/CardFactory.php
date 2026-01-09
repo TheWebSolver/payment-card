@@ -10,20 +10,7 @@ use RuntimeException;
 use InvalidArgumentException;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
-/**
- * @phpstan-type CardSchema array{
- *  type?:      string,
- *  classname?: string,
- *  checkLuhn?: bool,
- *  name:       string,
- *  alias:      string,
- *  breakpoint: list<int>,
- *  code:       array{0:string, 1:int},
- *  length:     list<int|list<int>>,
- *  idRange:    list<int|list<int>>,
- * }
- */
-class CardFactory {
+final class CardFactory {
 	public const CREDIT_CARD   = 'Credit Card';
 	public const DEBIT_CARD    = 'Debit Card';
 	public const DEFAULT_CARD  = 'Payment Card';
@@ -64,13 +51,6 @@ class CardFactory {
 	private string $filePath;
 	private string $fileType = '';
 
-	/**
-	 * List of Payment Card instances for `PaymentCard` enums.
-	 *
-	 * @var Card[]
-	 */
-	private static array $cards;
-
 	/** @var ?class-string<Card> */
 	private static ?string $defaultCardClass;
 
@@ -84,73 +64,24 @@ class CardFactory {
 	}
 
 	/**
-	 * @param string  $index The JSON key.
-	 * @param mixed[] $args  Never used.
-	 * @throws TypeError When something went wrong.
-	 * @access private
-	 */
-	public static function __callStatic( string $index, array $args ): Card {
-		$slash         = DIRECTORY_SEPARATOR;
-		self::$cards ??= ( new self( dirname( __DIR__ ) . "{$slash}Resource{$slash}paymentCards.json" ) )->createCards();
-
-		return self::$cards[ $index ] ?? self::shutdownForInvalidJsonKey( $index );
-	}
-
-	/**
-	 * @param non-empty-string $path
-	 * @return ($lazyload is true ? Generator<array-key,Card> : array<Card>)
+	 * @param non-empty-string           $path            The payload resource path.
+	 * @param list<int|non-empty-string> $indicesToCreate Only payload indices that should create card instance.
+	 * @return ($indicesToCreate is empty ? Generator<array-key,Card> : Generator<array-key,?Card>)
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
-	public static function createFromFile(
-		string $path,
-		bool $preserveKeys = true,
-		bool $lazyload = false
-	): array|Generator {
-		$factory           = new self();
+	public static function createFromFile( string $path, array $indicesToCreate = [] ): Generator {
+		$factory           = new self( indicesToCreate: $indicesToCreate );
 		$factory->filePath = $path;
 
-		return $lazyload ? $factory->lazyLoadCards( $preserveKeys ) : $factory->createCards( $preserveKeys );
+		return $factory->lazyLoadCards();
 	}
 
-	/** @param string|mixed[]|null $payload The payload resource path or a Single Card Schema array or an array of Card Schemas array. */
-	public function __construct( string|array|null $payload = null ) {
+	/**
+	 * @param string|mixed[]|null        $payload         The payload resource path or a Single Card Schema array or an array of Card Schemas array.
+	 * @param list<int|non-empty-string> $indicesToCreate Only payload indices that should create card instance.
+	 */
+	public function __construct( string|array|null $payload = null, public readonly array $indicesToCreate = [] ) {
 		$payload && $this->withPayload( $payload );
-	}
-
-	/** @param string|array<mixed> $payload The payload resource path or a Single Card Schema array or an array of Card Schemas array. */
-	public function withPayload( string|array $payload ): self {
-		if ( is_string( $payload ) && ! empty( $payload ) ) {
-			$this->filePath = $payload;
-		} elseif ( ! empty( $payload ) ) {
-			$this->payload = $payload;
-		}
-
-		return $this;
-	}
-
-	/**
-	 * @return Generator<array-key,Card>
-	 * @throws RuntimeException When payload cannot be resolved.
-	 */
-	public function lazyLoadCards( bool $preserveKeys = true ): Generator {
-		$this->resolvePayloadContent();
-
-		foreach ( $this->payload as $index => $args ) {
-			if ( $preserveKeys ) {
-				yield $index => $this->createCard( $index );
-			} else {
-				yield $this->createCard( $index );
-			}
-		}
-	}
-
-	/**
-	 * @return array<Card>
-	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
-	 * @throws RuntimeException When payload cannot be resolved.
-	 */
-	public function createCards( bool $preserveKeys = true ): array {
-		return iterator_to_array( $this->lazyLoadCards( $preserveKeys ), $preserveKeys );
 	}
 
 	/**
@@ -177,6 +108,64 @@ class CardFactory {
 		} catch ( TypeError | InvalidArgumentException $e ) {
 			$this->shutdownForInvalidSchema( $args, $payloadIndex, $e );
 		}
+	}
+
+	/**
+	 * @return Generator<array-key,?Card>
+	 * @throws RuntimeException When payload cannot be resolved.
+	 */
+	public function lazyLoadCards(): Generator {
+		$this->resolvePayloadContent();
+
+		$onlyIndices = $this->indicesToCreate;
+		$generator   = $this->lazyloadCardsBySentPayloadIndex();
+
+		foreach ( $this->payload as $index => $args ) {
+			yield $index => $generator->send( ! $onlyIndices || in_array( $index, $onlyIndices, strict: true ) );
+		}
+	}
+
+	/**
+	 * Creates Card instances lazily based on payload index sent and matching it with the current index before yield.
+	 *
+	 * @return Generator<array-key,?Card> Returns Card instance or null based on sent value.
+	 * @throws RuntimeException When payload cannot be resolved.
+	 * @see CardFactory::lazyloadCards()
+	 * ```
+	 */
+	public function lazyloadCardsBySentPayloadIndex(): Generator {
+		$this->resolvePayloadContent();
+
+		$card = null;
+
+		foreach ( $this->payload as $index => $args ) {
+			$sent = ( yield $index => $card );
+			$card = ! isset( $sent ) ? $card : $this->maybeCreateCardForIndex( $sent, $index );
+		}
+
+		// The last one is never yielded, so we handle it here.
+		if ( isset( $sent ) && $sent ) {
+			yield $index => $this->maybeCreateCardForIndex( $sent, $index );
+		}
+	}
+
+	private function maybeCreateCardForIndex( mixed $sent, string|int $index ): ?Card {
+		return match ( true ) {
+			is_string( $sent ), is_int( $sent ) => $sent === $index ? $this->createCard( $index ) : null,
+			is_bool( $sent )                    => $sent ? $this->createCard( $index ) : null,
+			default                             => null,
+		};
+	}
+
+	/** @param string|array<mixed> $payload The payload resource path or a Single Card Schema array or an array of Card Schemas array. */
+	private function withPayload( string|array $payload ): self {
+		if ( is_string( $payload ) && ! empty( $payload ) ) {
+			$this->filePath = $payload;
+		} elseif ( ! empty( $payload ) ) {
+			$this->payload = $payload;
+		}
+
+		return $this;
 	}
 
 	private function resolvePayloadContent(): void {
@@ -272,9 +261,5 @@ class CardFactory {
 				/* 5: */ PHP_EOL,
 			)
 		);
-	}
-
-	private static function shutdownForInvalidJsonKey( string $key ): never {
-		throw new TypeError( sprintf( self::INVALID_INDEX_KEY, $key ) );
 	}
 }

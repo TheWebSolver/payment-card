@@ -4,22 +4,17 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\Test;
 
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use TheWebSolver\Codegarage\PaymentCard\CardType;
-use TheWebSolver\Codegarage\PaymentCard\Traits\CardResolver;
-use TheWebSolver\Codegarage\PaymentCard\Traits\BatchResolver;
-use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
-use TheWebSolver\Codegarage\PaymentCard\CardFactory as Factory;
+use TheWebSolver\Codegarage\Test\Fixture\Validator;
+use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 
 class CustomValidatorTest extends TestCase {
-	public static string $payload;
+	public const DOMESTIC_CARDS      = __DIR__ . DIRECTORY_SEPARATOR . 'Resource' . DIRECTORY_SEPARATOR . 'Cards.json';
+	public const INTERNATIONAL_CARDS = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Resource' . DIRECTORY_SEPARATOR . 'paymentCards.json';
 
-	public static function setUpBeforeClass(): void {
-		$slash         = DIRECTORY_SEPARATOR;
-		self::$payload = dirname( __DIR__ ) . $slash . 'Resource' . $slash . 'paymentCards.json';
-	}
-
-	public function testWithCustomLuhn(): void {
+	#[Test]
+	public function itValidatesWithMockedLuhnAlgorithm(): void {
 		$luhnAlwaysPass = new class() extends CardType {
 			public static function matchesLuhnAlgorithm( string $value, bool $shouldRun = true ): bool {
 				return true;
@@ -45,125 +40,49 @@ class CustomValidatorTest extends TestCase {
 		$this->assertFalse( $americanExpressCard->isNumberValid( 378282246310005 ) );
 	}
 
-	public function testWithAllowedCards(): void {
-		$allowedCards = [ 'americanExpress', 'dinersClub', 'visa' ];
-		$class        = new class( $allowedCards ) {
-			use CardResolver {
-				getCards as public;
-			}
-
-			/** @param ?string[] $allowedCards */
-			public function __construct( ?array $allowedCards = null, Factory $factory = new Factory() ) {
-				if ( empty( $allowedCards ) ) {
-					return;
-				}
-
-				$this->withoutDefaults()->setCards(
-					...array_map( $factory->withPayload( CustomValidatorTest::$payload )->createCard( ... ), $allowedCards )
-				);
-			}
-
-			public function validate( string|int $cardNumber ): bool {
-				return $this->resolveCardFromNumber( $cardNumber ) instanceof Card;
-			}
-		};
-
-		$this->assertCount( 3, $class->getCards() );
-		$this->assertTrue( $class->validate( cardNumber: 378282246310005 ) );   // American Express.
-		$this->assertFalse( $class->validate( cardNumber: 5105105105105100 ) ); // Mastercard.
-	}
-
-	public function testInBatch(): void {
-		$validator = new class() {
-			use BatchResolver {
-				getCoveredCards as public;
-				resetCoveredCards as public;
-			}
-
-			/** @var array{first:non-empty-string,second:non-empty-string} */
-			private array $batches;
-
-			public function __construct() {
-				$slash         = DIRECTORY_SEPARATOR;
-				$this->batches = [
-					'first'  => __DIR__ . $slash . 'Resource' . $slash . 'Cards.json',
-					'second' => dirname( __DIR__ ) . $slash . 'Resource' . $slash . 'paymentCards.json',
-				];
-			}
-
-			public function validate( string|int $cardNumber ): bool {
-				$firstBatch = Factory::createFromFile( path: $this->batches['first'], lazyload: true );
-
-				if ( $this->resolveCardFromNumberIn( $firstBatch, $cardNumber ) ) {
-					return true;
-				}
-
-				$secondBatch = Factory::createFromFile( path: $this->batches['second'], lazyload: true );
-
-				return $this->resolveCardFromNumberIn( $secondBatch, $cardNumber ) ? true : false;
-			}
-		};
+	#[Test]
+	public function itValidatesCardTypesFromPayload(): void {
+		$validator = new Validator( new CardFactory( self::DOMESTIC_CARDS ), new CardFactory( self::INTERNATIONAL_CARDS ) );
 
 		$this->assertTrue( $validator->validate( 378282246310005 ) ); // American Express.
-		$this->assertCount( 4, $validator->getCoveredCards() );
+		$this->assertCount( 4, $validator->getCoveredCardIndices() );
 
-		$validator->resetCoveredCards();
+		$validator->resetCoveredCardIndices();
 
 		$this->assertTrue( $validator->validate( 5105105105105100 ) ); // Mastercard.
-		$this->assertCount( 6, $validator->getCoveredCards() );
+		$this->assertCount( 6, $validator->getCoveredCardIndices() );
 
-		$validator->resetCoveredCards();
+		$validator->resetCoveredCardIndices();
 
 		$this->assertFalse( $validator->validate( 'invalid card number' ) );
-		$this->assertCount( 13, $validator->getCoveredCards() );
+		$this->assertCount( 13, $validator->getCoveredCardIndices() );
+
+		$validator->resetCoveredCardIndices();
 	}
 
-	/** @param string|mixed[]|null $allowedCards */
-	#[DataProvider( 'provideAllowedOrBatchData' )]
-	public function testEitherAllowedOrBatch( string|array|null $allowedCards, int $number, int $count = 0 ): void {
-		$class = new class( $allowedCards ) {
-			use CardResolver, BatchResolver {
-				BatchResolver::getCoveredCards as public;
-			}
+	#[Test]
+	public function itValidatesCardTypesFromPayloadWithAllowedIndices(): void {
+		$validator = new Validator(
+			new CardFactory( self::DOMESTIC_CARDS, indicesToCreate: [ 0 ] ),
+			new CardFactory( self::INTERNATIONAL_CARDS, indicesToCreate: [ 'americanExpress', 'mastercard' ] )
+		);
 
-			private bool $useBatch = false;
+		$this->assertTrue( $validator->validate( 5105105105105100 ) ); // Mastercard.
 
-			/** @param string|mixed[]|null $allowedCards */
-			public function __construct(
-				string|array|null $allowedCards,
-				private readonly Factory $factory = new Factory()
-			) {
-				if ( empty( $allowedCards ) ) {
-					return;
-				}
+		// phpcs:disable Universal.Arrays.MixedArrayKeyTypes.StringKey
+		$this->assertSame(
+			[
+				0                 => 'invalid',
+				1                 => 'disallowed',
+				2                 => 'disallowed',
+				'americanExpress' => 'invalid',
+				'dinersClub'      => 'disallowed',
+				'mastercard'      => 'valid',
+			],
+			$validator->getCoveredCardIndices(),
+		);
+		// phpcs:enable
 
-				$this->useBatch = true;
-
-				$factory->withPayload( $allowedCards );
-			}
-
-			public function validate( string|int $cardNumber ): bool {
-				$card = ! $this->useBatch
-					? $this->resolveCardFromNumber( $cardNumber )
-					: $this->resolveCardFromNumberIn( batch: $this->factory->lazyLoadCards(), number: $cardNumber );
-
-				return $card instanceof Card;
-			}
-		};
-
-		$this->assertTrue( $class->validate( $number ) );
-		$this->assertCount( $count, $class->getCoveredCards() );
-	}
-
-	/** @return mixed[] */
-	public static function provideAllowedOrBatchData(): array {
-		$slash   = DIRECTORY_SEPARATOR;
-		$payload = dirname( __DIR__ ) . $slash . 'Resource' . $slash . 'paymentCards.json';
-
-		return [
-			[ null, 378282246310005 ],
-			[ $payload, 378282246310005, 1 ],
-			[ $payload, 5105105105105100, 3 ],
-		];
+		$validator->resetCoveredCardIndices();
 	}
 }

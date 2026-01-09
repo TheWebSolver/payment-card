@@ -4,17 +4,13 @@ parameters:
 	level: max
 	paths:
 		- Src/
+		- Tests/Fixture
 		- Tests/CardNumberFormatterTest.php
 		- Tests/CustomValidatorTest.php
 	ignoreErrors:
 		-
 			identifier: method.nonObject
 			path: Tests/CardFactoryTest.php
-		-
-			identifier: return.type
-			path: Src/PaymentCard.php
-			message: '|fromFactory\(\) should return|'
-			count: 1
 		- # Card creation. Error catch.
 			identifier: argument.type
 			path: Src/CardFactory.php
