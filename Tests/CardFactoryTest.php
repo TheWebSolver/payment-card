@@ -14,7 +14,8 @@ use TheWebSolver\Codegarage\Test\Resource\NapasCard;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
 
 class CardFactoryTest extends TestCase {
-	public function testGlobalCardClassSetterResetter(): void {
+	#[Test]
+	public function itEnsuresGlobalCardClassSetterResetterWorks(): void {
 		CardFactory::setGlobalCardClass( NapasCard::class );
 
 		$payload = [
@@ -61,7 +62,8 @@ class CardFactoryTest extends TestCase {
 		];
 	}
 
-	public function testCardCreationFromArray(): void {
+	#[Test]
+	public function itEnsuresCardsAreCreatedFromPHPArray(): void {
 		$napas = [
 			'name'       => 'Napas',
 			'alias'      => 'napas',
@@ -102,7 +104,7 @@ class CardFactoryTest extends TestCase {
 		$loader->next();
 		$this->assertSame( expected: 'humo', actual: $loader->current()->getAlias() );
 		$loader->next();
-		$this->assertNull( $loader->current() );
+		$this->assertFalse( $loader->valid() );
 
 		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $napas ) )->createCard() );
 		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $payload ) )->createCard() );
@@ -110,7 +112,8 @@ class CardFactoryTest extends TestCase {
 		$this->assertInstanceOf( CardType::class, $humo );
 	}
 
-	public function testCardCreationFromJsonFile(): void {
+	#[Test]
+	public function itEnsuresCardsAreCreatedFromJsonFile(): void {
 		$path    = __DIR__ . '/Resource/Cards.json';
 		$aliases = [ 'napas', 'gpn', 'humo' ];
 
@@ -127,28 +130,9 @@ class CardFactoryTest extends TestCase {
 		CardFactory::createFromFile( $path )->current();
 	}
 
+	#[Test]
 	#[DataProvider( 'providePhpFiles' )]
-	public function testCardCreationFromPhpFile(
-		array $aliases,
-		string $filename,
-		bool $aliasAsKey = false,
-		bool $throws = false
-	): void {
-		$path = __DIR__ . "/Resource/$filename.php";
-
-		if ( $throws ) {
-			$this->expectException( TypeError::class );
-			$this->expectExceptionMessage( $path );
-		}
-
-		$cards = iterator_to_array( CardFactory::createFromFile( $path ) );
-
-		$this->assertCreatedCardAliasesMatch( $cards, $aliases, $aliasAsKey );
-		$this->assertAllCardsAreRegistered( $cards );
-	}
-
-	#[DataProvider( 'providePhpFiles' )]
-	public function testLazyCardCreationFromPhpFile(
+	public function itEnsuresCardsAreCreatedFromPHPFile(
 		array $aliases,
 		string $filename,
 		bool $aliasAsKey = false,
@@ -162,14 +146,21 @@ class CardFactoryTest extends TestCase {
 		}
 
 		$cards = CardFactory::createFromFile( $path );
+		$index = 0;
 
 		while ( $cards->valid() ) {
-			$alias = $cards->current()->getAlias();
-			$key   = $aliasAsKey ? array_search( $cards->key(), $aliases, true ) : $cards->key();
+			$card          = $cards->current();
+			$expectedAlias = $aliases[ $index ];
+			$expectedIndex = $aliasAsKey ? $expectedAlias : $index;
 
-			$this->assertSame( expected: $aliases[ $key ], actual: $alias );
+			$this->assertSame( $expectedAlias, actual: $card->getAlias() );
+			$this->assertSame( $expectedIndex, $cards->key() );
+			$this->assertRegisteredCardType( $card );
+			$this->assertInstanceIsProvidedOrDefault( $card );
 
 			$cards->next();
+
+			++$index;
 		}
 	}
 
@@ -182,28 +173,10 @@ class CardFactoryTest extends TestCase {
 		];
 	}
 
-	/**
-	 * @param array<string|int,Card> $cards
-	 * @param string[]               $aliases
-	 */
-	private function assertCreatedCardAliasesMatch( array $cards, array $aliases, bool $asKey = false ): void {
-		foreach ( $aliases as $key => $alias ) {
-			$this->assertSame( $alias, actual: $cards[ $asKey ? $alias : $key ]->getAlias() );
-		}
-	}
-
-	/** @param array<string|int,Card> $cards */
-	private function assertAllCardsAreRegistered( array $cards ): void {
-		foreach ( $cards as $card ) {
-			$this->assertRegisteredCardType( $card );
-			$this->assertInstanceIsProvidedOrDefault( $card );
-		}
-	}
-
 	private function assertRegisteredCardType( Card $card ): void {
 		$this->assertSame(
-			expected: ( 'gpn' === $card->getAlias() ? 'Debit' : 'Credit' ) . ' Card',
-			actual: $card->getType()
+			( 'gpn' === $card->getAlias() ? 'Debit' : 'Credit' ) . ' Card',
+			$card->getType()
 		);
 	}
 
