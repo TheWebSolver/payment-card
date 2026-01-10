@@ -37,7 +37,7 @@ class CardFactoryTest extends TestCase {
 			],
 		];
 
-		foreach ( ( new CardFactory( $payload ) )->lazyLoadCards() as $card ) {
+		foreach ( ( new CardFactory( $payload ) )->lazyLoad() as $card ) {
 			$this->assertInstanceOf( NapasCard::class, actual: $card );
 		}
 
@@ -50,7 +50,7 @@ class CardFactoryTest extends TestCase {
 		$this->expectException( RuntimeException::class );
 		$this->expectExceptionMessage( CardFactory::NON_RESOLVABLE_PAYLOAD );
 
-		( new CardFactory( $payload ) )->createCard();
+		( new CardFactory( $payload ) )->create();
 	}
 
 	public static function provideNonResolvablePayload(): array {
@@ -96,7 +96,7 @@ class CardFactoryTest extends TestCase {
 		];
 
 		$factory = new CardFactory( $payload );
-		$loader  = $factory->lazyLoadCards();
+		$loader  = $factory->lazyLoad();
 
 		$this->assertSame( expected: 'napas', actual: $loader->current()->getAlias() );
 		$loader->next();
@@ -106,9 +106,9 @@ class CardFactoryTest extends TestCase {
 		$loader->next();
 		$this->assertFalse( $loader->valid() );
 
-		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $napas ) )->createCard() );
-		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $payload ) )->createCard() );
-		$this->assertSame( 'humo', actual: ( $humo = ( new CardFactory( $payload ) )->createCard( 2 ) )->getAlias() );
+		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $napas ) )->create() );
+		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $payload ) )->create() );
+		$this->assertSame( 'humo', actual: ( $humo = ( new CardFactory( $payload ) )->create( 2 ) )->getAlias() );
 		$this->assertInstanceOf( CardType::class, $humo );
 	}
 

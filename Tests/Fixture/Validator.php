@@ -7,7 +7,9 @@ use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Traits\CardResolver;
 
 class Validator {
-	use CardResolver;
+	use CardResolver {
+		CardResolver::resolve as public;
+	}
 
 	/** @var CardFactory[] */
 	private array $factories;

@@ -3,14 +3,16 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
 
+use Closure;
 use Generator;
 use Throwable;
 use TypeError;
 use RuntimeException;
 use InvalidArgumentException;
 use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
+use TheWebSolver\Codegarage\PaymentCard\Data\PaymentCardTypeCreated;
 
-final class CardFactory {
+class CardFactory {
 	public const CREDIT_CARD   = 'Credit Card';
 	public const DEBIT_CARD    = 'Debit Card';
 	public const DEFAULT_CARD  = 'Payment Card';
@@ -73,7 +75,7 @@ final class CardFactory {
 		$factory           = new self( indicesToCreate: $indicesToCreate );
 		$factory->filePath = $path;
 
-		return $factory->lazyLoadCards();
+		return $factory->lazyload();
 	}
 
 	/**
@@ -88,7 +90,7 @@ final class CardFactory {
 	 * @throws RuntimeException When payload cannot be resolved.
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
-	public function createCard( string|int|null $payloadIndex = null ): Card {
+	public function create( string|int|null $payloadIndex = null ): Card {
 		$this->resolvePayloadContent();
 
 		$args = $payloadIndex
@@ -111,48 +113,56 @@ final class CardFactory {
 	}
 
 	/**
+	 * @param null|Closure(PaymentCardTypeCreated):bool $handler true to continue yielding next card, false otherwise.
 	 * @return Generator<array-key,?Card>
 	 * @throws RuntimeException When payload cannot be resolved.
 	 */
-	public function lazyLoadCards(): Generator {
+	public function lazyload( ?Closure $handler = null ): Generator {
 		$this->resolvePayloadContent();
 
 		$onlyIndices = $this->indicesToCreate;
-		$generator   = $this->lazyloadCardsBySentPayloadIndex();
+		$generator   = $this->lazyloadSentPayloadIndexOnly();
 
 		foreach ( $this->payload as $index => $args ) {
-			yield $index => $generator->send( ! $onlyIndices || in_array( $index, $onlyIndices, strict: true ) );
+			$isCreatable = ! $onlyIndices || in_array( $index, $onlyIndices, strict: true );
+			$card        = $generator->send( $isCreatable );
+			$yieldNext   = $handler ? $handler( new PaymentCardTypeCreated( $card, $index, $args, $isCreatable ) ) : true;
+
+			yield $index => $card;
+
+			if ( ! $yieldNext ) {
+				return;
+			}
 		}
 	}
 
 	/**
-	 * Creates Card instances lazily based on payload index sent and matching it with the current index before yield.
+	 * Creates Card instance lazily based on payload index sent and matching it with the current index before yield.
 	 *
 	 * @return Generator<array-key,?Card> Returns Card instance or null based on sent value.
 	 * @throws RuntimeException When payload cannot be resolved.
 	 * @see CardFactory::lazyloadCards()
-	 * ```
 	 */
-	public function lazyloadCardsBySentPayloadIndex(): Generator {
+	public function lazyloadSentPayloadIndexOnly(): Generator {
 		$this->resolvePayloadContent();
 
 		$card = null;
 
 		foreach ( $this->payload as $index => $args ) {
 			$sent = ( yield $index => $card );
-			$card = ! isset( $sent ) ? $card : $this->maybeCreateCardForIndex( $sent, $index );
+			$card = ! isset( $sent ) ? $card : $this->maybeCreateForIndex( $sent, $index );
 		}
 
 		// The last one is never yielded, so we handle it here.
 		if ( isset( $sent ) && $sent ) {
-			yield $index => $this->maybeCreateCardForIndex( $sent, $index );
+			yield $index => $this->maybeCreateForIndex( $sent, $index );
 		}
 	}
 
-	private function maybeCreateCardForIndex( mixed $sent, string|int $index ): ?Card {
+	private function maybeCreateForIndex( mixed $sent, string|int $index ): ?Card {
 		return match ( true ) {
-			is_string( $sent ), is_int( $sent ) => $sent === $index ? $this->createCard( $index ) : null,
-			is_bool( $sent )                    => $sent ? $this->createCard( $index ) : null,
+			is_string( $sent ), is_int( $sent ) => $sent === $index ? $this->create( $index ) : null,
+			is_bool( $sent )                    => $sent ? $this->create( $index ) : null,
 			default                             => null,
 		};
 	}
