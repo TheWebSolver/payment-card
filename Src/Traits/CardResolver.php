@@ -24,7 +24,7 @@ trait CardResolver {
 	private array $resolveArguments;
 
 	/** @return Status[] */
-	public function getCoveredCardIndices(): array {
+	public function getCoveredCardStatus(): array {
 		return $this->coveredCards ?? [];
 	}
 

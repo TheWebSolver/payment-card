@@ -113,7 +113,7 @@ class CustomValidatorTest extends TestCase {
 		$validator = new Validator( new CardFactory( self::DOMESTIC_CARDS ), new CardFactory( self::INTERNATIONAL_CARDS ) );
 
 		$this->assertSame( $expectedStatus, $validator->validate( $cardNumber ) );
-		$this->assertCount( $expectedCoveredCards, $validator->getCoveredCardIndices() );
+		$this->assertCount( $expectedCoveredCards, $validator->getCoveredCardStatus() );
 	}
 
 	/** @return array{string|int,int}[] */
@@ -144,7 +144,7 @@ class CustomValidatorTest extends TestCase {
 				'dinersClub'      => Status::Omitted,
 				'mastercard'      => Status::Success,
 			],
-			$validator->getCoveredCardIndices(),
+			$validator->getCoveredCardStatus(),
 		);
 		// phpcs:enable
 	}
