@@ -6,21 +6,21 @@ parameters:
 		- Src/
 		- Tests/Fixture
 		- Tests/CardNumberFormatterTest.php
-		- Tests/CustomValidatorTest.php
+		- Tests/Fixture/PaymentCardValidator.php
 	ignoreErrors:
 		-
 			identifier: method.nonObject
-			path: Tests/CardFactoryTest.php
+			path: Tests/PaymentCardFactoryTest.php
 		- # Card creation. Error catch.
 			identifier: argument.type
-			path: Src/CardFactory.php
+			path: Src/PaymentCardFactory.php
 			count: 8
 		- # Card creation. Error catch.
 			identifier: offsetAccess.nonOffsetAccessible
-			path: Src/CardFactory.php
+			path: Src/PaymentCardFactory.php
 			count: 6
 		- # Card creation. Error catch.
 			identifier: argument.unpackNonIterable
-			path: Src/CardFactory.php
+			path: Src/PaymentCardFactory.php
 			count: 2
 
