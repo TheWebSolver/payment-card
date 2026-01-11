@@ -1,8 +1,7 @@
 <?php
 declare( strict_types = 1 );
 
-// phpcs:ignore PHPCompatibility.Keywords.ForbiddenNamesAsDeclared.resourceFound
-namespace TheWebSolver\Codegarage\Test\Resource;
+namespace TheWebSolver\Codegarage\Test\Fixture;
 
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
 

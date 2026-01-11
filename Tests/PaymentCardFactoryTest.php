@@ -8,8 +8,8 @@ use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
+use TheWebSolver\Codegarage\Test\Fixture\NapasCard;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
-use TheWebSolver\Codegarage\Test\Resource\NapasCard;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 

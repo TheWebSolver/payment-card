@@ -1,7 +1,7 @@
 <?php
 declare( strict_types = 1 );
 
-use TheWebSolver\Codegarage\Test\Resource\NapasCard;
+use TheWebSolver\Codegarage\Test\Fixture\NapasCard;
 
 return function () {
 	return [
