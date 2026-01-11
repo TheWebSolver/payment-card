@@ -8,7 +8,6 @@ use BackedEnum;
 use DOMElement;
 use LogicException;
 use TheWebSolver\Codegarage\Scraper\Enums\EventAt;
-use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Helper\Normalize;
 use TheWebSolver\Codegarage\Scraper\Error\ScraperError;
 use TheWebSolver\Codegarage\Scraper\Error\ValidationFail;
@@ -19,6 +18,7 @@ use TheWebSolver\Codegarage\Scraper\Interfaces\Validatable;
 use TheWebSolver\Codegarage\Scraper\Traits\CollectorSource;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
+use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 
 /**
  * @template-implements Traceable<

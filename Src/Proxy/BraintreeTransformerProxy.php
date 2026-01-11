@@ -4,13 +4,13 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Proxy;
 
 use DOMElement;
-use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
 use TheWebSolver\Codegarage\PaymentCard\Transformer\CodeTransformer;
 use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
+use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 
 /** @template-implements Transformer<Indexable,string|list<int|list<int>>|array{name:string,size:int}> */
 final class BraintreeTransformerProxy implements Transformer {

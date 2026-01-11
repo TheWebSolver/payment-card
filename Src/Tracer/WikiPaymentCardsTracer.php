@@ -5,10 +5,10 @@ namespace TheWebSolver\Codegarage\PaymentCard\Tracer;
 
 use DOMElement;
 use TheWebSolver\Codegarage\Scraper\Enums\Table;
-use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Interfaces\TableTracer;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\Scraper\Traits\Table\HtmlTableFromNode;
+use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 
 /** @template-implements TableTracer<string|list<int|list<int>>> */
 #[CollectUsing( Card::class, Card::Name, Card::Name, Card::IINRange, null, Card::Length, Card::Validator )]

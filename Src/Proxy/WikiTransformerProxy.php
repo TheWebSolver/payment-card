@@ -5,7 +5,6 @@ namespace TheWebSolver\Codegarage\PaymentCard\Proxy;
 
 use DOMElement;
 use TheWebSolver\Codegarage\Scraper\Enums\Table;
-use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\Scraper\Marshaller\MarshallItem;
@@ -13,6 +12,7 @@ use TheWebSolver\Codegarage\PaymentCard\Transformer\NameTransformer;
 use TheWebSolver\Codegarage\PaymentCard\Transformer\StatusTransformer;
 use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
 use TheWebSolver\Codegarage\PaymentCard\Decorator\WikiNumericTransformer;
+use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 
 /** @template-implements Transformer<Indexable,string|list<int|list<int>>> */
 class WikiTransformerProxy implements Transformer {

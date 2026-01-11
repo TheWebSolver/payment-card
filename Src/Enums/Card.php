@@ -5,7 +5,7 @@ namespace TheWebSolver\Codegarage\PaymentCard\Enums;
 
 use TheWebSolver\Codegarage\Scraper\Error\ValidationFail;
 
-enum Card: string {
+enum PaymentCardProperty: string {
 	case Name       = 'name';
 	case Alias      = 'alias';
 	case Breakpoint = 'breakpoint';
