@@ -9,10 +9,10 @@ use Throwable;
 use TypeError;
 use RuntimeException;
 use InvalidArgumentException;
-use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
-use TheWebSolver\Codegarage\PaymentCard\Data\PaymentCardTypeCreated;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
+use TheWebSolver\Codegarage\PaymentCard\Event\PaymentCardCreated;
 
-class CardFactory {
+class PaymentCardFactory {
 	public const CREDIT_CARD   = 'Credit Card';
 	public const DEBIT_CARD    = 'Debit Card';
 	public const DEFAULT_CARD  = 'Payment Card';
@@ -27,7 +27,7 @@ class CardFactory {
 	 */
 	public const CARD_SCHEMA = [
 		'type?'      => 'string',
-		'classname?' => 'class-string<' . Card::class . '>',
+		'classname?' => 'class-string<' . PaymentCard::class . '>',
 		'checkLuhn?' => 'bool',
 		'name'       => 'string',
 		'alias'      => 'string',
@@ -53,10 +53,10 @@ class CardFactory {
 	private string $filePath;
 	private string $fileType = '';
 
-	/** @var ?class-string<Card> */
+	/** @var ?class-string<PaymentCard> */
 	private static ?string $defaultCardClass;
 
-	/** @param class-string<Card> $classname */
+	/** @param class-string<PaymentCard> $classname */
 	public static function setGlobalCardClass( string $classname ): void {
 		self::$defaultCardClass ??= $classname;
 	}
@@ -68,7 +68,7 @@ class CardFactory {
 	/**
 	 * @param non-empty-string           $path            The payload resource path.
 	 * @param list<int|non-empty-string> $indicesToCreate Only payload indices that should create card instance.
-	 * @return ($indicesToCreate is empty ? Generator<array-key,Card> : Generator<array-key,?Card>)
+	 * @return ($indicesToCreate is empty ? Generator<array-key,PaymentCard> : Generator<array-key,?PaymentCard>)
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
 	public static function createFromFile( string $path, array $indicesToCreate = [] ): Generator {
@@ -90,7 +90,7 @@ class CardFactory {
 	 * @throws RuntimeException When payload cannot be resolved.
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
 	 */
-	public function create( string|int|null $payloadIndex = null ): Card {
+	public function create( string|int|null $payloadIndex = null ): PaymentCard {
 		$this->resolvePayloadContent();
 
 		$args = $payloadIndex
@@ -113,8 +113,8 @@ class CardFactory {
 	}
 
 	/**
-	 * @param null|Closure(PaymentCardTypeCreated):bool $handler true to continue yielding next card, false otherwise.
-	 * @return Generator<array-key,?Card>
+	 * @param null|Closure(PaymentCardCreated):bool $handler true to continue yielding next card, false otherwise.
+	 * @return Generator<array-key,?PaymentCard>
 	 * @throws RuntimeException When payload cannot be resolved.
 	 */
 	public function lazyload( ?Closure $handler = null ): Generator {
@@ -126,7 +126,7 @@ class CardFactory {
 		foreach ( $this->payload as $index => $args ) {
 			$isCreatable = ! $onlyIndices || in_array( $index, $onlyIndices, strict: true );
 			$card        = $generator->send( $isCreatable );
-			$yieldNext   = $handler ? $handler( new PaymentCardTypeCreated( $card, $index, $args, $isCreatable ) ) : true;
+			$yieldNext   = $handler ? $handler( new PaymentCardCreated( $card, $index, $args, $isCreatable ) ) : true;
 
 			yield $index => $card;
 
@@ -139,7 +139,7 @@ class CardFactory {
 	/**
 	 * Creates Card instance lazily based on payload index sent and matching it with the current index before yield.
 	 *
-	 * @return Generator<array-key,?Card> Returns Card instance or null based on sent value.
+	 * @return Generator<array-key,?PaymentCard> Returns Card instance or null based on sent value.
 	 * @throws RuntimeException When payload cannot be resolved.
 	 * @see CardFactory::lazyloadCards()
 	 */
@@ -159,7 +159,7 @@ class CardFactory {
 		}
 	}
 
-	private function maybeCreateForIndex( mixed $sent, string|int $index ): ?Card {
+	private function maybeCreateForIndex( mixed $sent, string|int $index ): ?PaymentCard {
 		return match ( true ) {
 			is_string( $sent ), is_int( $sent ) => $sent === $index ? $this->create( $index ) : null,
 			is_bool( $sent )                    => $sent ? $this->create( $index ) : null,
@@ -185,7 +185,7 @@ class CardFactory {
 	}
 
 	/** @param array<string,mixed> $args */
-	private function getCardInstance( array $args ): Card {
+	private function getCardInstance( array $args ): PaymentCard {
 		[ $type, $classname, $checkLuhn ] = $this->polyfill( $args );
 
 		return new $classname( $type, $checkLuhn );
@@ -193,15 +193,15 @@ class CardFactory {
 
 	/**
 	 * @param array<string,mixed> $args
-	 * @return array{0:string,1:class-string<Card>,2:bool}
+	 * @return array{0:string,1:class-string<PaymentCard>,2:bool}
 	 */
 	private function polyfill( array $args ): array {
 		$class   = $args['classname'] ?? null;
-		$default = self::$defaultCardClass ?? CardType::class;
+		$default = self::$defaultCardClass ?? PaymentCardType::class;
 
 		return [
 			is_string( $card = ( $args['type'] ?? null ) ) ? $card : self::CREDIT_CARD,
-			is_string( $class ) && is_a( $class, Card::class, allow_string: true ) ? $class : $default,
+			is_string( $class ) && is_a( $class, PaymentCard::class, allow_string: true ) ? $class : $default,
 			is_bool( $luhn = ( $args['checkLuhn'] ?? null ) ) ? $luhn : true,
 		];
 	}

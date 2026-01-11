@@ -5,24 +5,24 @@ namespace TheWebSolver\Codegarage\Test;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\Scraper\Service\ScrapingService;
-use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
-use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
-use TheWebSolver\Codegarage\PaymentCard\Tracer\WikiPaymentCardsTracer;
-use TheWebSolver\Codegarage\PaymentCard\Service\CommonCardsScrapingService;
-use TheWebSolver\Codegarage\PaymentCard\Service\WikiCardTypeScrapingService;
-use TheWebSolver\Codegarage\PaymentCard\Service\BraintreeCardTypeScrapingService;
+use TheWebSolver\Codegarage\PaymentCard\Tracer\WikiPaymentCardTracer;
+use TheWebSolver\Codegarage\PaymentCard\Event\BraintreePaymentCardTraced;
+use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
+use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreePaymentCardTracer;
+use TheWebSolver\Codegarage\PaymentCard\Service\WikiPaymentCardScrapingService;
+use TheWebSolver\Codegarage\PaymentCard\Service\CommonPaymentCardScrapingService;
+use TheWebSolver\Codegarage\PaymentCard\Service\BraintreePaymentCardScrapingService;
 
-class ScrapingServiceTest extends TestCase {
+class PaymentCardScrapingServiceTest extends TestCase {
 	public const RESOURCE_DIRECTORY = __DIR__ . DIRECTORY_SEPARATOR . 'Resource';
 	public const WIKI_CARDS         = self::RESOURCE_DIRECTORY . DIRECTORY_SEPARATOR . 'wiki-cards.php';
 	public const WIKI_CARDS_INDEXED = self::RESOURCE_DIRECTORY . DIRECTORY_SEPARATOR . 'wiki-cards-indexed.php';
 
 	#[Test]
 	public function itParsesScrapedPaymentCardDetailsFromWikiSite(): void {
-		$iterator = ( new WikiCardTypeScrapingService( new class() extends WikiPaymentCardsTracer {} ) )->parse();
+		$iterator = ( new WikiPaymentCardScrapingService( new class() extends WikiPaymentCardTracer {} ) )->parse();
 
 		foreach ( require_once self::WIKI_CARDS as $expectedCard ) {
 			$this->assertSame( $expectedCard, $iterator->current()->getArrayCopy(), 'Indexed card: ' . $expectedCard[0] );
@@ -34,7 +34,7 @@ class ScrapingServiceTest extends TestCase {
 
 		unset( $iterator, $expectedCard );
 
-		$iterator = ( new WikiCardTypeScrapingService( new WikiPaymentCardsTracer() ) )->parse();
+		$iterator = ( new WikiPaymentCardScrapingService( new WikiPaymentCardTracer() ) )->parse();
 		$cards    = require_once self::WIKI_CARDS_INDEXED;
 
 		foreach ( $cards as $expectedCard ) {
@@ -51,17 +51,17 @@ class ScrapingServiceTest extends TestCase {
 
 	#[Test]
 	public function itScrapesFromBraintreeGithub(): void {
-		$tracer = new BraintreeCardTracer();
+		$tracer = new BraintreePaymentCardTracer();
 
 		$tracer->addEventListener(
-			function ( BraintreeCardTraced $e ) {
+			function ( BraintreePaymentCardTraced $e ) {
 				$e->tracer->setIndicesSource(
 					new CollectUsing( Card::class, Card::Alias, Card::Name, Card::Alias, Card::IINRange, Card::Breakpoint, Card::Length, Card::Code )
 				);
 			}
 		);
 
-		$mastercard = $this->getBraintreeMastercard( new BraintreeCardTypeScrapingService( $tracer ) );
+		$mastercard = $this->getBraintreeMastercard( new BraintreePaymentCardScrapingService( $tracer ) );
 
 		$this->assertSame( [ 4, 8, 12 ], $mastercard[ Card::Breakpoint->value ] );
 		$this->assertSame( [ 16 ], $mastercard[ Card::Length->value ] );
@@ -81,9 +81,9 @@ class ScrapingServiceTest extends TestCase {
 
 	#[Test]
 	public function itScrapesCommonCardTypesFromWikiAndBraintree(): void {
-		$iterator = ( new CommonCardsScrapingService(
-			new WikiCardTypeScrapingService( new WikiPaymentCardsTracer() ),
-			new BraintreeCardTypeScrapingService( new BraintreeCardTracer() )
+		$iterator = ( new CommonPaymentCardScrapingService(
+			new WikiPaymentCardScrapingService( new WikiPaymentCardTracer() ),
+			new BraintreePaymentCardScrapingService( new BraintreePaymentCardTracer() )
 		) )->parse();
 
 		$this->assertSame( 'american-express', $iterator->key() );
@@ -105,15 +105,15 @@ class ScrapingServiceTest extends TestCase {
 
 	#[Test]
 	public function itInfersCardDetailsBasedOnlyIndicesProvided(): void {
-		$tracer = new BraintreeCardTracer();
+		$tracer = new BraintreePaymentCardTracer();
 
 		$tracer->addEventListener(
-			static function ( BraintreeCardTraced $e ) {
+			static function ( BraintreePaymentCardTraced $e ) {
 				$e->tracer->setIndicesSource( new CollectUsing( Card::class, Card::Alias, null, Card::Alias, Card::IINRange ) );
 			}
 		);
 
-		$mastercard = $this->getBraintreeMastercard( new BraintreeCardTypeScrapingService( $tracer ) );
+		$mastercard = $this->getBraintreeMastercard( new BraintreePaymentCardScrapingService( $tracer ) );
 
 		$this->assertCount( 2, $mastercard );
 	}

@@ -6,19 +6,19 @@ namespace TheWebSolver\Codegarage\Test;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
-use TheWebSolver\Codegarage\PaymentCard\CardType;
-use TheWebSolver\Codegarage\Test\Fixture\Validator;
-use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 use TheWebSolver\Codegarage\Test\Resource\NapasCard;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
+use TheWebSolver\Codegarage\Test\Fixture\PaymentCardValidator;
 
-class CustomValidatorTest extends TestCase {
+class PaymentCardValidatorTest extends TestCase {
 	public const DOMESTIC_CARDS      = __DIR__ . DIRECTORY_SEPARATOR . 'Resource' . DIRECTORY_SEPARATOR . 'Cards.json';
 	public const INTERNATIONAL_CARDS = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Resource' . DIRECTORY_SEPARATOR . 'paymentCards.json';
 
 	#[Test]
 	public function itValidatesWithMockedLuhnAlgorithm(): void {
-		$luhnAlwaysPass = new class() extends CardType {
+		$luhnAlwaysPass = new class() extends PaymentCardType {
 			public static function matchesLuhnAlgorithm( string $value, bool $shouldRun = true ): bool {
 				return true;
 			}
@@ -30,7 +30,7 @@ class CustomValidatorTest extends TestCase {
 
 		$this->assertTrue( $americanExpressCard->isNumberValid( 378282246310005 ) );
 
-		$luhnAlwaysFails = new class() extends CardType {
+		$luhnAlwaysFails = new class() extends PaymentCardType {
 			public static function matchesLuhnAlgorithm( string $value, bool $shouldRun = true ): bool {
 				return false;
 			}
@@ -45,7 +45,7 @@ class CustomValidatorTest extends TestCase {
 
 	#[Test]
 	public function itEnsuresCardsAreResolvedBasedOnExitStatus(): void {
-		$factoryOne = new CardFactory(
+		$factoryOne = new PaymentCardFactory(
 			[
 				[
 					'name'       => 'MastercardOne',
@@ -67,7 +67,7 @@ class CustomValidatorTest extends TestCase {
 			]
 		);
 
-		$factoryTwo = new CardFactory(
+		$factoryTwo = new PaymentCardFactory(
 			[
 				[
 					'name'       => 'MastercardThree',
@@ -89,8 +89,8 @@ class CustomValidatorTest extends TestCase {
 			]
 		);
 
-		$factoryStub     = $this->createStub( CardFactory::class );
-		$validator       = new Validator( $factoryStub, $factoryStub );
+		$factoryStub     = $this->createStub( PaymentCardFactory::class );
+		$validator       = new PaymentCardValidator( $factoryStub, $factoryStub );
 		$factoryOneCards = $validator->resolve( 378282246310005, $factoryOne, exitOnResolve: false ) ?? [];
 		$factoryTwoCards = $validator->resolve( 378282246310005, $factoryTwo, exitOnResolve: false ) ?? [];
 
@@ -101,7 +101,7 @@ class CustomValidatorTest extends TestCase {
 		$this->assertCount( 1, $factoryTwoCards, 'Only MastercardFour has valid ID Range.' );
 		$this->assertSame( 'MastercardFour', $factoryTwoCards[0]->getName() );
 
-		$validator      = new Validator( $factoryStub, $factoryStub );
+		$validator      = new PaymentCardValidator( $factoryStub, $factoryStub );
 		$factoryOneCard = $validator->resolve( 378282246310005, $factoryOne, exitOnResolve: true );
 
 		$this->assertSame( 'MastercardOne', $factoryOneCard?->getName() );
@@ -110,7 +110,7 @@ class CustomValidatorTest extends TestCase {
 	#[Test]
 	#[DataProvider( 'provideCardNumberAndResolvedIndices' )]
 	public function itValidatesCardTypesFromPayload( string|int $cardNumber, int $expectedCoveredCards, bool $expectedStatus = true ): void {
-		$validator = new Validator( new CardFactory( self::DOMESTIC_CARDS ), new CardFactory( self::INTERNATIONAL_CARDS ) );
+		$validator = new PaymentCardValidator( new PaymentCardFactory( self::DOMESTIC_CARDS ), new PaymentCardFactory( self::INTERNATIONAL_CARDS ) );
 
 		$this->assertSame( $expectedStatus, $validator->validate( $cardNumber ) );
 		$this->assertCount( $expectedCoveredCards, $validator->getCoveredCardStatus() );
@@ -127,9 +127,9 @@ class CustomValidatorTest extends TestCase {
 
 	#[Test]
 	public function itValidatesCardTypesFromPayloadWithAllowedIndices(): void {
-		$validator = new Validator(
-			new CardFactory( self::DOMESTIC_CARDS, indicesToCreate: [ 0 ] ),
-			new CardFactory( self::INTERNATIONAL_CARDS, indicesToCreate: [ 'americanExpress', 'mastercard' ] )
+		$validator = new PaymentCardValidator(
+			new PaymentCardFactory( self::DOMESTIC_CARDS, indicesToCreate: [ 0 ] ),
+			new PaymentCardFactory( self::INTERNATIONAL_CARDS, indicesToCreate: [ 'americanExpress', 'mastercard' ] )
 		);
 
 		$this->assertTrue( $validator->validate( 5105105105105100 ) ); // Mastercard.

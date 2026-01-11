@@ -15,7 +15,7 @@ use TheWebSolver\Codegarage\PaymentCard\Decorator\WikiNumericTransformer;
 use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 
 /** @template-implements Transformer<Indexable,string|list<int|list<int>>> */
-class WikiTransformerProxy implements Transformer {
+class WikiPaymentCardTransformerProxy implements Transformer {
 	/** @param Transformer<contravariant Indexable,string> $base */
 	public function __construct( private readonly Transformer $base = new MarshallItem() ) {}
 

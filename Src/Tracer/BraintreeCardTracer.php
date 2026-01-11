@@ -17,17 +17,17 @@ use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Validatable;
 use TheWebSolver\Codegarage\Scraper\Traits\CollectorSource;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
-use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
+use TheWebSolver\Codegarage\PaymentCard\Event\BraintreePaymentCardTraced;
 use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 
 /**
  * @template-implements Traceable<
  *   array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,
- *   BraintreeCardTraced
+ *   BraintreePaymentCardTraced
  * >
  */
 #[CollectUsing( Card::class, Card::Alias, Card::Name, Card::Alias, Card::IINRange, Card::Breakpoint, Card::Length, Card::Code )]
-class BraintreeCardTracer implements Traceable, Indexable, Validatable {
+class BraintreePaymentCardTracer implements Traceable, Indexable, Validatable {
 	use CollectorSource;
 
 	final public const IGNORABLE_RAW_CONTENT_SEPARATOR = 'cardTypes: CardCollection = {';
@@ -62,7 +62,7 @@ class BraintreeCardTracer implements Traceable, Indexable, Validatable {
 	/** @var ?Transformer<contravariant static,string|list<int|list<int>>|array{name:string,size:int}> */
 	private ?Transformer $transformer = null;
 
-	private ?BraintreeCardTraced $eventBeingDispatched = null;
+	private ?BraintreePaymentCardTraced $eventBeingDispatched = null;
 	/** @var array<'Start'|'End',callable[]> */
 	private array $eventListeners = [];
 	/** @var array<'Start'|'End',bool> */
@@ -115,7 +115,7 @@ class BraintreeCardTracer implements Traceable, Indexable, Validatable {
 	public function inferFrom( string|DOMElement $source, bool $normalize ): void {
 		$source instanceof DOMElement && throw new ScraperError( self::INVALID_SOURCE_TYPE );
 
-		$this->dispatchEvent( $event = new BraintreeCardTraced( EventAt::Start, $source, $this ) );
+		$this->dispatchEvent( $event = new BraintreePaymentCardTraced( EventAt::Start, $source, $this ) );
 		$this->hydrateIndicesSourceFromAttribute();
 
 		try {
@@ -208,7 +208,7 @@ class BraintreeCardTracer implements Traceable, Indexable, Validatable {
 			}
 		}
 
-		$this->dispatchEvent( new BraintreeCardTraced( EventAt::End, $source, $this ) );
+		$this->dispatchEvent( new BraintreePaymentCardTraced( EventAt::End, $source, $this ) );
 	}
 
 	/** @return list<string> */
@@ -271,8 +271,8 @@ class BraintreeCardTracer implements Traceable, Indexable, Validatable {
 		$this->getIndicesSource() || $this->registerIndicesSource();
 	}
 
-	/** @param array<callable(BraintreeCardTraced):void> $listeners */
-	private function tryListeningToDispatchedEvent( BraintreeCardTraced $event, array $listeners ): void {
+	/** @param array<callable(BraintreePaymentCardTraced):void> $listeners */
+	private function tryListeningToDispatchedEvent( BraintreePaymentCardTraced $event, array $listeners ): void {
 		try {
 			$this->eventBeingDispatched = $event;
 
@@ -284,7 +284,7 @@ class BraintreeCardTracer implements Traceable, Indexable, Validatable {
 		}
 	}
 
-	private function dispatchEvent( BraintreeCardTraced $event ): void {
+	private function dispatchEvent( BraintreePaymentCardTraced $event ): void {
 		$listeners      = $this->eventListeners[ $event->scope() ] ?? [];
 		$whenDispatched = $this->eventDispatchedStatus[ $event->scope() ] ?? false;
 

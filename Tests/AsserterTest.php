@@ -6,7 +6,7 @@ namespace TheWebSolver\Codegarage\Test;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
-use TheWebSolver\Codegarage\PaymentCard\CardFactory;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 
 class AsserterTest extends TestCase {
 	public function testWithoutUsingCardType(): void {
@@ -36,12 +36,12 @@ class AsserterTest extends TestCase {
 			[ [ 1 ], [ '1' ], 'Test' ],
 			[ [ 1, 5 ], [ 1, 5 ], 'Test' ],
 			[ [ 12, [ 13, 15 ], 20 ], [ '12', [ '13', 15 ], 20 ], 'Test' ],
-			[ [ 1 ], [], 'Test1', sprintf( Asserter::NEEDS_ONE_ELEMENT, CardFactory::DEFAULT_CARD, 'Test1' ) ],
-			[ [ 1 ], [ -1 ], 'Test2', sprintf( Asserter::NEEDS_POSITIVE_INT, CardFactory::DEFAULT_CARD, 'Test2' ) ],
-			[ [ 0 ], [ [ 5, 5 ] ], 'Test3', sprintf( Asserter::NEEDS_MIN_LESS_THAN_MAX, CardFactory::DEFAULT_CARD, 'Test3' ) ],
-			[ [ 0 ], [ [ 5, 4 ] ], 'Test3', sprintf( Asserter::NEEDS_MIN_LESS_THAN_MAX, CardFactory::DEFAULT_CARD, 'Test3' ) ],
-			[ [ 0 ], [ [ 1, 2, 3 ] ], 'Test4', sprintf( Asserter::NEEDS_TWO_ELEMENTS, CardFactory::DEFAULT_CARD, 'Test4' ) ],
-			[ [ 0 ], [ 1, false ], 'Test5', sprintf( Asserter::NEEDS_INT_OR_NUMERIC, CardFactory::DEFAULT_CARD, 'Test5', 'bool' ) ],
+			[ [ 1 ], [], 'Test1', sprintf( Asserter::NEEDS_ONE_ELEMENT, PaymentCardFactory::DEFAULT_CARD, 'Test1' ) ],
+			[ [ 1 ], [ -1 ], 'Test2', sprintf( Asserter::NEEDS_POSITIVE_INT, PaymentCardFactory::DEFAULT_CARD, 'Test2' ) ],
+			[ [ 0 ], [ [ 5, 5 ] ], 'Test3', sprintf( Asserter::NEEDS_MIN_LESS_THAN_MAX, PaymentCardFactory::DEFAULT_CARD, 'Test3' ) ],
+			[ [ 0 ], [ [ 5, 4 ] ], 'Test3', sprintf( Asserter::NEEDS_MIN_LESS_THAN_MAX, PaymentCardFactory::DEFAULT_CARD, 'Test3' ) ],
+			[ [ 0 ], [ [ 1, 2, 3 ] ], 'Test4', sprintf( Asserter::NEEDS_TWO_ELEMENTS, PaymentCardFactory::DEFAULT_CARD, 'Test4' ) ],
+			[ [ 0 ], [ 1, false ], 'Test5', sprintf( Asserter::NEEDS_INT_OR_NUMERIC, PaymentCardFactory::DEFAULT_CARD, 'Test5', 'bool' ) ],
 		];
 	}
 

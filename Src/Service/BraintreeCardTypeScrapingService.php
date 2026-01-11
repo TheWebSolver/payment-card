@@ -4,29 +4,29 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Service;
 
 use Iterator;
-use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Traceable;
 use TheWebSolver\Codegarage\Scraper\Attributes\ScrapeFrom;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 use TheWebSolver\Codegarage\Scraper\Service\ScrapingService;
-use TheWebSolver\Codegarage\PaymentCard\Event\BraintreeCardTraced;
-use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreeTransformerProxy;
+use TheWebSolver\Codegarage\PaymentCard\Event\BraintreePaymentCardTraced;
+use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreePaymentCardTransformerProxy;
 
 /**
  * @template-extends ScrapingService<
  *  Iterator<array-key,string|list<int|list<int>|array{name:string,size:int}>>,
- *  Indexable&Traceable<string|list<int|list<int>|array{name:string,size:int}>,BraintreeCardTraced>
+ *  Indexable&Traceable<string|list<int|list<int>|array{name:string,size:int}>,BraintreePaymentCardTraced>
  * >
  */
 #[ScrapeFrom( 'Braintree GitHub', 'https://raw.githubusercontent.com/braintree/credit-card-type/refs/heads/main/src/lib/card-types.ts', 'cards.ts' )]
-class BraintreeCardTypeScrapingService extends ScrapingService {
-	/** @param Indexable&Traceable<string|list<int|list<int>|array{name:string,size:int}>,BraintreeCardTraced> $tracer */
+class BraintreePaymentCardScrapingService extends ScrapingService {
+	/** @param Indexable&Traceable<string|list<int|list<int>|array{name:string,size:int}>,BraintreePaymentCardTraced> $tracer */
 	public function __construct( Traceable $tracer, ?ScrapeFrom $scrapeFrom = null ) {
 		parent::__construct( $tracer->addEventListener( $this->hydrateWithDefaultTransformers( ... ) ), $scrapeFrom );
 	}
 
 	public function defaultCachePath(): string {
-		return CardFactory::RESOURCE_PATH;
+		return PaymentCardFactory::RESOURCE_PATH;
 	}
 
 	public function parse(): Iterator {
@@ -35,7 +35,7 @@ class BraintreeCardTypeScrapingService extends ScrapingService {
 		yield from $this->getTracer()->getData();
 	}
 
-	protected function hydrateWithDefaultTransformers( BraintreeCardTraced $e ): void {
-		$e->tracer->hasTransformer() || $e->tracer->addTransformer( new BraintreeTransformerProxy() );
+	protected function hydrateWithDefaultTransformers( BraintreePaymentCardTraced $e ): void {
+		$e->tracer->hasTransformer() || $e->tracer->addTransformer( new BraintreePaymentCardTransformerProxy() );
 	}
 }

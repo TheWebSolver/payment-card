@@ -12,7 +12,7 @@ use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 
 /** @template-implements TableTracer<string|list<int|list<int>>> */
 #[CollectUsing( Card::class, Card::Name, Card::Name, Card::IINRange, null, Card::Length, Card::Validator )]
-class WikiPaymentCardsTracer implements TableTracer {
+class WikiPaymentCardTracer implements TableTracer {
 	/** @use HtmlTableFromNode<string|list<int|list<int>>> */
 	use HtmlTableFromNode;
 

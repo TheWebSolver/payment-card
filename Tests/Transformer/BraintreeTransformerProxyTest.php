@@ -7,16 +7,16 @@ use DOMElement;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
-use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
-use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreeTransformerProxy;
+use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
+use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreePaymentCardTransformerProxy;
 
-class BraintreeTransformerProxyTest extends TestCase {
+class BraintreePaymentCardTransformerProxyTest extends TestCase {
 	/** @param mixed[] $element */
 	#[Test]
 	#[DataProvider( 'providePropertyKeyOrIndex' )]
 	public function itThrowsExceptionWhenNeitherPropertyKeyNorIndexGiven( array $element, ?string $propertyName, mixed $expected, string $throws = '' ): void {
-		$proxy = new BraintreeTransformerProxy();
+		$proxy = new BraintreePaymentCardTransformerProxy();
 		$scope = $this->createMock( Indexable::class );
 
 		$scope->expects( $this->once() )->method( 'getCurrentItemIndex' )->willReturn( $propertyName );
@@ -37,7 +37,7 @@ class BraintreeTransformerProxyTest extends TestCase {
 				null,
 				'Visa',
 			],
-			[ [ 'value' => '"Visa"' ], null, '', BraintreeTransformerProxy::MISSING_PROPERTY_KEY ],
+			[ [ 'value' => '"Visa"' ], null, '', BraintreePaymentCardTransformerProxy::MISSING_PROPERTY_KEY ],
 			[ [ 'value' => '"Visa"' ], 'InvalidCaseValue', '', '"InvalidCaseValue" is not a valid backing value' ],
 		];
 	}
@@ -46,7 +46,7 @@ class BraintreeTransformerProxyTest extends TestCase {
 	#[Test]
 	#[DataProvider( 'provideElementsToTransform' )]
 	public function itTransformsElementByCardProperty( string|array|DOMElement $element, string $propertyName, mixed $expected, string $throws = '' ): void {
-		$proxy = new BraintreeTransformerProxy();
+		$proxy = new BraintreePaymentCardTransformerProxy();
 		$scope = $this->createMock( Indexable::class );
 
 		if ( $throws ) {

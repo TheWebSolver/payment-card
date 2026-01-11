@@ -8,15 +8,15 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\Scraper\Enums\Table;
-use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
-use TheWebSolver\Codegarage\PaymentCard\Proxy\WikiTransformerProxy;
+use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
+use TheWebSolver\Codegarage\PaymentCard\Proxy\WikiPaymentCardTransformerProxy;
 
-class WikiTransformerProxyTest extends TestCase {
+class WikiPaymentCardTransformerProxyTest extends TestCase {
 	#[Test]
 	#[DataProvider( 'provideElementContent' )]
 	public function itTransformsElementByCardProperty( string $content, int|Card|null $propertyOrCount, mixed $expected ): void {
-		$proxy = new WikiTransformerProxy();
+		$proxy = new WikiPaymentCardTransformerProxy();
 		$scope = $this->createMock( Indexable::class );
 		( $dom = new DOMDocument() )->loadHTML( $content );
 

@@ -4,9 +4,9 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
-use TheWebSolver\Codegarage\PaymentCard\CardFactory;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 
-trait Mutator {
+trait PaymentCardMutator {
 	use BreakpointGetter;
 
 	private string $name;
@@ -22,7 +22,7 @@ trait Mutator {
 	private array $idRange;
 
 	public function __construct(
-		private readonly string $type = CardFactory::CREDIT_CARD,
+		private readonly string $type = PaymentCardFactory::CREDIT_CARD,
 		private readonly bool $checkLuhn = true,
 		private readonly Asserter $asserter = new Asserter()
 	) {}

@@ -118,14 +118,14 @@ class Asserter {
 	 */
 	public static function assertionFailed( string $message, string|int ...$args ): never {
 		throw new InvalidArgumentException(
-			sprintf( $message, self::$cardType ?? CardFactory::DEFAULT_CARD, self::$processing ?? '', ...$args )
+			sprintf( $message, self::$cardType ?? PaymentCardFactory::DEFAULT_CARD, self::$processing ?? '', ...$args )
 		);
 	}
 
 	/** @throws RuntimeException When formatting fails. */
 	public static function formattingFailed( string $cardNumber ): never {
 		throw new RuntimeException(
-			sprintf( self::INVALID_FORMATTING, self::$cardType ?? CardFactory::DEFAULT_CARD, $cardNumber )
+			sprintf( self::INVALID_FORMATTING, self::$cardType ?? PaymentCardFactory::DEFAULT_CARD, $cardNumber )
 		);
 	}
 }

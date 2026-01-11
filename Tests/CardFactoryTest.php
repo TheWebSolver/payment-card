@@ -8,15 +8,15 @@ use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
-use TheWebSolver\Codegarage\PaymentCard\CardType;
-use TheWebSolver\Codegarage\PaymentCard\CardFactory;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 use TheWebSolver\Codegarage\Test\Resource\NapasCard;
-use TheWebSolver\Codegarage\PaymentCard\CardInterface as Card;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 
-class CardFactoryTest extends TestCase {
+class PaymentCardFactoryTest extends TestCase {
 	#[Test]
 	public function itEnsuresGlobalCardClassSetterResetterWorks(): void {
-		CardFactory::setGlobalCardClass( NapasCard::class );
+		PaymentCardFactory::setGlobalCardClass( NapasCard::class );
 
 		$payload = [
 			[
@@ -37,20 +37,20 @@ class CardFactoryTest extends TestCase {
 			],
 		];
 
-		foreach ( ( new CardFactory( $payload ) )->lazyLoad() as $card ) {
+		foreach ( ( new PaymentCardFactory( $payload ) )->lazyLoad() as $card ) {
 			$this->assertInstanceOf( NapasCard::class, actual: $card );
 		}
 
-		CardFactory::resetGlobalCardClass();
+		PaymentCardFactory::resetGlobalCardClass();
 	}
 
 	#[Test]
 	#[DataProvider( 'provideNonResolvablePayload' )]
 	public function itThrowsExceptionIfNonResolvablePayloadProvided( string|array|null $payload ): void {
 		$this->expectException( RuntimeException::class );
-		$this->expectExceptionMessage( CardFactory::NON_RESOLVABLE_PAYLOAD );
+		$this->expectExceptionMessage( PaymentCardFactory::NON_RESOLVABLE_PAYLOAD );
 
-		( new CardFactory( $payload ) )->create();
+		( new PaymentCardFactory( $payload ) )->create();
 	}
 
 	public static function provideNonResolvablePayload(): array {
@@ -95,7 +95,7 @@ class CardFactoryTest extends TestCase {
 			],
 		];
 
-		$factory = new CardFactory( $payload );
+		$factory = new PaymentCardFactory( $payload );
 		$loader  = $factory->lazyLoad();
 
 		$this->assertSame( expected: 'napas', actual: $loader->current()->getAlias() );
@@ -106,10 +106,10 @@ class CardFactoryTest extends TestCase {
 		$loader->next();
 		$this->assertFalse( $loader->valid() );
 
-		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $napas ) )->create() );
-		$this->assertInstanceOf( NapasCard::class, actual: ( new CardFactory( $payload ) )->create() );
-		$this->assertSame( 'humo', actual: ( $humo = ( new CardFactory( $payload ) )->create( 2 ) )->getAlias() );
-		$this->assertInstanceOf( CardType::class, $humo );
+		$this->assertInstanceOf( NapasCard::class, actual: ( new PaymentCardFactory( $napas ) )->create() );
+		$this->assertInstanceOf( NapasCard::class, actual: ( new PaymentCardFactory( $payload ) )->create() );
+		$this->assertSame( 'humo', actual: ( $humo = ( new PaymentCardFactory( $payload ) )->create( 2 ) )->getAlias() );
+		$this->assertInstanceOf( PaymentCardType::class, $humo );
 	}
 
 	#[Test]
@@ -117,7 +117,7 @@ class CardFactoryTest extends TestCase {
 		$path    = __DIR__ . '/Resource/Cards.json';
 		$aliases = [ 'napas', 'gpn', 'humo' ];
 
-		$cards = CardFactory::createFromFile( $path );
+		$cards = PaymentCardFactory::createFromFile( $path );
 
 		while ( $cards->valid() ) {
 			$this->assertSame( expected: $aliases[ $cards->key() ], actual: $cards->current()->getAlias() );
@@ -127,7 +127,7 @@ class CardFactoryTest extends TestCase {
 		$this->expectException( TypeError::class );
 		$this->expectExceptionMessage( $path = __DIR__ . '/Resource/CardsInvalid.json' );
 
-		CardFactory::createFromFile( $path )->current();
+		PaymentCardFactory::createFromFile( $path )->current();
 	}
 
 	#[Test]
@@ -145,7 +145,7 @@ class CardFactoryTest extends TestCase {
 			$this->expectExceptionMessage( $path );
 		}
 
-		$cards = CardFactory::createFromFile( $path );
+		$cards = PaymentCardFactory::createFromFile( $path );
 		$index = 0;
 
 		while ( $cards->valid() ) {
@@ -173,16 +173,16 @@ class CardFactoryTest extends TestCase {
 		];
 	}
 
-	private function assertRegisteredCardType( Card $card ): void {
+	private function assertRegisteredCardType( PaymentCard $card ): void {
 		$this->assertSame(
 			( 'gpn' === $card->getAlias() ? 'Debit' : 'Credit' ) . ' Card',
 			$card->getType()
 		);
 	}
 
-	private function assertInstanceIsProvidedOrDefault( Card $card ): void {
+	private function assertInstanceIsProvidedOrDefault( PaymentCard $card ): void {
 		if ( 'napas' !== $card->getAlias() ) {
-			$this->assertInstanceOf( CardType::class, $card );
+			$this->assertInstanceOf( PaymentCardType::class, $card );
 
 			return;
 		}

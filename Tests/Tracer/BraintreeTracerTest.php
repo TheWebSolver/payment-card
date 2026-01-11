@@ -8,19 +8,19 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\Scraper\Enums\EventAt;
-use TheWebSolver\Codegarage\PaymentCard\Enums\Card;
-use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 use TheWebSolver\Codegarage\Scraper\Error\ScraperError;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
-use TheWebSolver\Codegarage\PaymentCard\Proxy\CardValidatorProxy;
-use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
-use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreeTransformerProxy;
+use TheWebSolver\Codegarage\PaymentCard\Proxy\PaymentCardValidatorProxy;
+use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
+use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreePaymentCardTracer;
+use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreePaymentCardTransformerProxy;
 
-class BraintreeTracerTest extends TestCase {
+class BraintreePaymentCardTracerTest extends TestCase {
 	#[Test]
 	public function itVerifiesGetterDefaultValue(): void {
-		$tracer = new BraintreeCardTracer();
+		$tracer = new BraintreePaymentCardTracer();
 
 		$this->assertFalse( $tracer->hasTransformer() );
 		$this->assertNull( $tracer->getCurrentItemIndex() );
@@ -31,37 +31,37 @@ class BraintreeTracerTest extends TestCase {
 
 	#[Test]
 	public function itReturnsStringifiedBraintreeCardTypePropertyNamesOrInitialsSeparatedByProvidedSeparator(): void {
-		$this->assertSame( 'niceType|type|patterns|gaps|lengths|code', BraintreeCardTracer::getPropNames() );
-		$this->assertSame( 'n|t|p|g|l|c', BraintreeCardTracer::getPropNames( initial: true ) );
-		$this->assertSame( 'niceType", "type", "patterns", "gaps", "lengths", "code', BraintreeCardTracer::getPropNames( separator: '", "' ) );
-		$this->assertSame( 'n - t - p - g - l - c', BraintreeCardTracer::getPropNames( initial: true, separator: ' - ' ) );
+		$this->assertSame( 'niceType|type|patterns|gaps|lengths|code', BraintreePaymentCardTracer::getPropNames() );
+		$this->assertSame( 'n|t|p|g|l|c', BraintreePaymentCardTracer::getPropNames( initial: true ) );
+		$this->assertSame( 'niceType", "type", "patterns", "gaps", "lengths", "code', BraintreePaymentCardTracer::getPropNames( separator: '", "' ) );
+		$this->assertSame( 'n - t - p - g - l - c', BraintreePaymentCardTracer::getPropNames( initial: true, separator: ' - ' ) );
 	}
 
 	#[Test]
 	public function itReturnsRegexPatternToMatchBraintreeCardTypePropertiesAndTheirRespectiveValues(): void {
-		$define = sprintf( BraintreeCardTracer::PATTERN_DEFINITION, 'niceType|type|patterns|gaps|lengths|code', 'n|t|p|g|l|c' );
+		$define = sprintf( BraintreePaymentCardTracer::PATTERN_DEFINITION, 'niceType|type|patterns|gaps|lengths|code', 'n|t|p|g|l|c' );
 
 		$this->assertSame(
 			"/{$define}(?<property>(?&propertyName))(?&separator)(?<value>(?&everythingBeforeNextProperty)|(?&codePropertyValue))/",
-			BraintreeCardTracer::getRegexPattern()
+			BraintreePaymentCardTracer::getRegexPattern()
 		);
 	}
 
 	#[Test]
 	public function itReturnsCardCasesWhenValidBraintreeCardTypePropertyNameIsGiven(): void {
-		$this->assertSame( Card::Alias, BraintreeCardTracer::getCardEnumBy( 'type' ) );
-		$this->assertSame( Card::Name, BraintreeCardTracer::getCardEnumBy( 'niceType' ) );
-		$this->assertSame( Card::IINRange, BraintreeCardTracer::getCardEnumBy( 'patterns' ) );
-		$this->assertSame( Card::Breakpoint, BraintreeCardTracer::getCardEnumBy( 'gaps' ) );
-		$this->assertSame( Card::Length, BraintreeCardTracer::getCardEnumBy( 'lengths' ) );
-		$this->assertSame( Card::Code, BraintreeCardTracer::getCardEnumBy( 'code' ) );
+		$this->assertSame( Card::Alias, BraintreePaymentCardTracer::getCardEnumBy( 'type' ) );
+		$this->assertSame( Card::Name, BraintreePaymentCardTracer::getCardEnumBy( 'niceType' ) );
+		$this->assertSame( Card::IINRange, BraintreePaymentCardTracer::getCardEnumBy( 'patterns' ) );
+		$this->assertSame( Card::Breakpoint, BraintreePaymentCardTracer::getCardEnumBy( 'gaps' ) );
+		$this->assertSame( Card::Length, BraintreePaymentCardTracer::getCardEnumBy( 'lengths' ) );
+		$this->assertSame( Card::Code, BraintreePaymentCardTracer::getCardEnumBy( 'code' ) );
 	}
 
 	#[Test]
 	#[DataProvider( 'provideInvalidPropertyNames' )]
 	public function itThrowsExceptionWhenInvalidBraintreeCardTypePropertyNameIsGiven( string $propertyName, bool $source = false ): void {
 		$expectedMsg = sprintf(
-			BraintreeCardTracer::INVALID_CARD_PROPERTIES,
+			BraintreePaymentCardTracer::INVALID_CARD_PROPERTIES,
 			'niceType", "type", "patterns", "gaps", "lengths", "code',
 			$source ? '' : ". \"{$propertyName}\" is not a valid property",
 			$source ? '. Property extraction source is :- this is a, test source' : ''
@@ -70,7 +70,7 @@ class BraintreeTracerTest extends TestCase {
 		$this->expectException( ScraperError::class );
 		$this->expectExceptionMessage( $expectedMsg );
 
-		BraintreeCardTracer::getCardEnumBy( $propertyName, $source ? 'this is a, test source' : '' );
+		BraintreePaymentCardTracer::getCardEnumBy( $propertyName, $source ? 'this is a, test source' : '' );
 	}
 
 	/** @return mixed[] */
@@ -86,7 +86,7 @@ class BraintreeTracerTest extends TestCase {
 
 	#[Test]
 	public function itAddsTransformer(): void {
-		$tracer = new BraintreeCardTracer();
+		$tracer = new BraintreePaymentCardTracer();
 		$tracer->addTransformer( $this->createStub( Transformer::class ) );
 
 		$this->assertTrue( $tracer->hasTransformer() );
@@ -94,25 +94,25 @@ class BraintreeTracerTest extends TestCase {
 
 	#[Test]
 	public function itThrowsExceptionWhenIndicesSourceProvidedOutsideOfEventListener(): void {
-		$tracer = new BraintreeCardTracer();
+		$tracer = new BraintreePaymentCardTracer();
 
 		$tracer->addEventListener( static fn( $e )=> $e->tracer->setIndicesSource( new CollectUsing( Card::class ) ), eventAt: EventAt::Start )
-			->inferFrom( BraintreeCardTracer::IGNORABLE_RAW_CONTENT_SEPARATOR . '}', true );
+			->inferFrom( BraintreePaymentCardTracer::IGNORABLE_RAW_CONTENT_SEPARATOR . '}', true );
 
 		$this->assertInstanceOf( CollectUsing::class, $tracer->getIndicesSource() );
 
 		$this->expectException( ScraperError::class );
 		$this->expectExceptionMessage(
-			sprintf( BraintreeCardTracer::USE_EVENT_LISTENER, BraintreeCardTracer::class . '::setIndicesSource', EventAt::class . '::' . EventAt::Start->name, 'set Card Type property names' )
+			sprintf( BraintreePaymentCardTracer::USE_EVENT_LISTENER, BraintreePaymentCardTracer::class . '::setIndicesSource', EventAt::class . '::' . EventAt::Start->name, 'set Card Type property names' )
 		);
 
-		( new BraintreeCardTracer() )->setIndicesSource( new CollectUsing( Card::class ) );
+		( new BraintreePaymentCardTracer() )->setIndicesSource( new CollectUsing( Card::class ) );
 	}
 
 	#[Test]
 	#[DataProvider( 'provideInvalidSourceTypes' )]
 	public function itThrowsExceptionIfPatternMatchFails( string|DOMElement $source, string $errorMsg, bool $afterIteration = false ): void {
-		$tracer = new BraintreeCardTracer();
+		$tracer = new BraintreePaymentCardTracer();
 
 		$this->expectException( ScraperError::class );
 		$this->expectExceptionMessage( $errorMsg );
@@ -123,17 +123,17 @@ class BraintreeTracerTest extends TestCase {
 
 	/** @return mixed[] */
 	public static function provideInvalidSourceTypes(): array {
-		$validContent = file_get_contents( CardFactory::RESOURCE_PATH . '/cards.ts' ) ?: '';
+		$validContent = file_get_contents( PaymentCardFactory::RESOURCE_PATH . '/cards.ts' ) ?: '';
 
 		return [
-			[ new DOMElement( 'invalid' ), BraintreeCardTracer::INVALID_SOURCE_TYPE ],
-			[ 'invalid raw GitHub Content', BraintreeCardTracer::INVALID_SOURCE_TYPE ],
+			[ new DOMElement( 'invalid' ), BraintreePaymentCardTracer::INVALID_SOURCE_TYPE ],
+			[ 'invalid raw GitHub Content', BraintreePaymentCardTracer::INVALID_SOURCE_TYPE ],
 			// Valid but non-normalized content.
 			[ $validContent, 'Braintree GitHub Card Type', true ],
-			[ BraintreeCardTracer::IGNORABLE_RAW_CONTENT_SEPARATOR . ' "test-card": "must-be-object enclosed by "{" and "}""', 'Braintree GitHub Card Type', true ],
+			[ BraintreePaymentCardTracer::IGNORABLE_RAW_CONTENT_SEPARATOR . ' "test-card": "must-be-object enclosed by "{" and "}""', 'Braintree GitHub Card Type', true ],
 			// Regex matches nothing.
 			[
-				BraintreeCardTracer::IGNORABLE_RAW_CONTENT_SEPARATOR . ' card: { type: "valid", invalidPropertyName: {} },',
+				BraintreePaymentCardTracer::IGNORABLE_RAW_CONTENT_SEPARATOR . ' card: { type: "valid", invalidPropertyName: {} },',
 				sprintf( 'Cannot match pattern to given subject: "%s"', 'type: "valid", invalidPropertyName: {}' ),
 				true,
 			],
@@ -142,7 +142,7 @@ class BraintreeTracerTest extends TestCase {
 
 	#[Test]
 	public function itEnsuresCurrentIterationCountAndPropertyName(): void {
-		$tracer     = new BraintreeCardTracer();
+		$tracer     = new BraintreePaymentCardTracer();
 		$cardObject = 'const cardTypes: CardCollection = {
   maestro: {
     niceType: "Maestro",
@@ -171,7 +171,7 @@ class BraintreeTracerTest extends TestCase {
 	}
 
 	/** @param array{0,int,1:string,2:string} $expected */
-	public static function assertCurrentIterationProperty( BraintreeCardTracer $scope, array $expected, array $actual ): string {
+	public static function assertCurrentIterationProperty( BraintreePaymentCardTracer $scope, array $expected, array $actual ): string {
 		[ $count, $name, $value ] = $expected;
 
 		self::assertSame( $count, $scope->getCurrentIterationCount() );
@@ -183,7 +183,7 @@ class BraintreeTracerTest extends TestCase {
 
 	#[Test]
 	public function itValidatesTransformedValuesAccordingToCurrentCardProperty(): void {
-		$tracer     = new BraintreeCardTracer();
+		$tracer     = new BraintreePaymentCardTracer();
 		$cardObject = 'const cardTypes: CardCollection = {
       mastercard: {
         niceType: "Mastercard",
@@ -198,7 +198,7 @@ class BraintreeTracerTest extends TestCase {
       } as BuiltInCreditCardType,
 	  }';
 
-		$tracer->addTransformer( new CardValidatorProxy( new BraintreeTransformerProxy() ) );
+		$tracer->addTransformer( new PaymentCardValidatorProxy( new BraintreePaymentCardTransformerProxy() ) );
 		$tracer->inferFrom( $cardObject, normalize: true );
 
 		$iterator = $tracer->getData();
@@ -212,21 +212,21 @@ class BraintreeTracerTest extends TestCase {
 
 // phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
 
-/** @template-implements Transformer<BraintreeCardTracer,mixed> */
+/** @template-implements Transformer<BraintreePaymentCardTracer,mixed> */
 class IterationAssertionTransformer implements Transformer {
 	public function transform( string|array|DOMElement $element, object $scope ): mixed {
 		// These assertions are made 6 times, for each Card property iteration.
-		BraintreeTracerTest::assertInstanceOf( Card::class, $card = Card::from( $scope->getCurrentItemIndex() ) );
-		BraintreeTracerTest::assertArrayHasKey( 'property', $element );
-		BraintreeTracerTest::assertArrayHasKey( 'value', $element );
+		BraintreePaymentCardTracerTest::assertInstanceOf( Card::class, $card = Card::from( $scope->getCurrentItemIndex() ) );
+		BraintreePaymentCardTracerTest::assertArrayHasKey( 'property', $element );
+		BraintreePaymentCardTracerTest::assertArrayHasKey( 'value', $element );
 
 		return match ( $card ) {
-			Card::Name       => BraintreeTracerTest::assertCurrentIterationProperty( $scope, [ 1,  'niceType', '"Maestro"' ], $element ),
-			Card::Alias      => BraintreeTracerTest::assertCurrentIterationProperty( $scope, [ 2, 'type', '"maestro"' ], $element ),
-			Card::Breakpoint => BraintreeTracerTest::assertCurrentIterationProperty( $scope, [ 4, 'gaps', '[4, 8, 12]' ], $element ),
-			Card::Length     => BraintreeTracerTest::assertCurrentIterationProperty( $scope, [ 5, 'lengths', '[12, 13, 14-16, 17, 18, 19]' ], $element ),
-			Card::Code       => BraintreeTracerTest::assertCurrentIterationProperty( $scope, [ 6, 'code', '{ name: "CVC", size: 3, }' ], $element ),
-			Card::IINRange   => BraintreeTracerTest::assertCurrentIterationProperty(
+			Card::Name       => BraintreePaymentCardTracerTest::assertCurrentIterationProperty( $scope, [ 1,  'niceType', '"Maestro"' ], $element ),
+			Card::Alias      => BraintreePaymentCardTracerTest::assertCurrentIterationProperty( $scope, [ 2, 'type', '"maestro"' ], $element ),
+			Card::Breakpoint => BraintreePaymentCardTracerTest::assertCurrentIterationProperty( $scope, [ 4, 'gaps', '[4, 8, 12]' ], $element ),
+			Card::Length     => BraintreePaymentCardTracerTest::assertCurrentIterationProperty( $scope, [ 5, 'lengths', '[12, 13, 14-16, 17, 18, 19]' ], $element ),
+			Card::Code       => BraintreePaymentCardTracerTest::assertCurrentIterationProperty( $scope, [ 6, 'code', '{ name: "CVC", size: 3, }' ], $element ),
+			Card::IINRange   => BraintreePaymentCardTracerTest::assertCurrentIterationProperty(
 				$scope,
 				[ 3, 'patterns', '[ 493698, [500000, 504174], [504176, 506698], [506779, 508999], [56, 59], 63, 67, 6, ]' ],
 				$element

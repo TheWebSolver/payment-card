@@ -3,11 +3,11 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
 
-use TheWebSolver\Codegarage\PaymentCard\CardInterface;
-use TheWebSolver\Codegarage\PaymentCard\Traits\Mutator;
-use TheWebSolver\Codegarage\PaymentCard\Traits\Validator;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
+use TheWebSolver\Codegarage\PaymentCard\Traits\PaymentCardMutator;
 use TheWebSolver\Codegarage\PaymentCard\Traits\RegexBasedFormatter;
+use TheWebSolver\Codegarage\PaymentCard\Traits\PaymentCardValidator;
 
-class CardType implements CardInterface {
-	use Mutator, Validator, RegexBasedFormatter;
+class PaymentCardType implements PaymentCard {
+	use PaymentCardMutator, PaymentCardValidator, RegexBasedFormatter;
 }

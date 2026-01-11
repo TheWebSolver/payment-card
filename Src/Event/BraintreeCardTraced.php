@@ -6,16 +6,16 @@ namespace TheWebSolver\Codegarage\PaymentCard\Event;
 use Iterator;
 use LogicException;
 use TheWebSolver\Codegarage\Scraper\Enums\EventAt;
-use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreeCardTracer;
 use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
+use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreePaymentCardTracer;
 
-final class BraintreeCardTraced {
+final class BraintreePaymentCardTraced {
 	private Iterator $inferredCards;
 
 	public function __construct(
 		public readonly EventAt $eventAt,
 		public readonly string $target,
-		public readonly BraintreeCardTracer $tracer
+		public readonly BraintreePaymentCardTracer $tracer
 	) {}
 
 	/** @return 'Start'|'End' EventAt case name. */

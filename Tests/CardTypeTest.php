@@ -8,29 +8,29 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
-use TheWebSolver\Codegarage\PaymentCard\CardType;
 use TheWebSolver\Codegarage\Test\Fixture\Formatter;
-use TheWebSolver\Codegarage\PaymentCard\CardFactory;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 
-class CardTypeTest extends TestCase {
+class PaymentCardTypeTest extends TestCase {
 	#[Test]
 	public function itEnsuresSetterGetterWorks(): void {
-		$cardType = new CardType( CardFactory::DEBIT_CARD, false, $this->createStub( Asserter::class ) );
+		$cardType = new PaymentCardType( PaymentCardFactory::DEBIT_CARD, false, $this->createStub( Asserter::class ) );
 
-		$this->assertSame( CardFactory::DEBIT_CARD, $cardType->getType() );
+		$this->assertSame( PaymentCardFactory::DEBIT_CARD, $cardType->getType() );
 		$this->assertFalse( $cardType->needsLuhnCheck() );
 
-		$cardType = new CardType( asserter: $asserter = $this->createMock( Asserter::class ) );
+		$cardType = new PaymentCardType( asserter: $asserter = $this->createMock( Asserter::class ) );
 
-		$asserter->expects( $this->exactly( 2 ) )->method( 'setType' )->with( CardFactory::CREDIT_CARD )->willReturnSelf();
+		$asserter->expects( $this->exactly( 2 ) )->method( 'setType' )->with( PaymentCardFactory::CREDIT_CARD )->willReturnSelf();
 
 		// Suppress validating arguments passed to length and ID Range setter methods to omit throwing any surprise exception.
 		$asserter->expects( $this->exactly( 2 ) )->method( 'assertSizeWith' )->willReturnCallback(
 			static fn ( array $valuePassedToSetterMethod, string $lengthOrIdRange ) => $valuePassedToSetterMethod
 		);
 
-		$this->assertSame( CardFactory::CREDIT_CARD, $cardType->getType() );
+		$this->assertSame( PaymentCardFactory::CREDIT_CARD, $cardType->getType() );
 		$this->assertTrue( $cardType->needsLuhnCheck() );
 
 		$this->assertSame( 'Test', $cardType->setName( 'Test' )->getName() );
@@ -55,7 +55,7 @@ class CardTypeTest extends TestCase {
 		bool $throws = true,
 		?array $getterValue = null
 	): void {
-		$cardType = new CardType();
+		$cardType = new PaymentCardType();
 		$setter   = "set{$type}";
 		$getter   = "get{$type}";
 
@@ -80,6 +80,6 @@ class CardTypeTest extends TestCase {
 	#[Test]
 	#[DataProviderExternal( Formatter::class, 'provideCardNumberWithBreakpoints' )]
 	public function itFormatsCardNumberBasedOnBreakpoint( array $breakpoints, string|int $cardNumber, string $expected ): void {
-		$this->assertSame( $expected, ( new CardType() )->setBreakpoint( ...$breakpoints )->format( $cardNumber ) );
+		$this->assertSame( $expected, ( new PaymentCardType() )->setBreakpoint( ...$breakpoints )->format( $cardNumber ) );
 	}
 }

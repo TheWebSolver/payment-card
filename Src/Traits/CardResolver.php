@@ -3,12 +3,12 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
-use TheWebSolver\Codegarage\PaymentCard\CardFactory;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
-use TheWebSolver\Codegarage\PaymentCard\CardInterface;
-use TheWebSolver\Codegarage\PaymentCard\Data\PaymentCardTypeCreated;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
+use TheWebSolver\Codegarage\PaymentCard\Event\PaymentCardCreated;
 
-trait CardResolver {
+trait PaymentCardResolver {
 	/** @var Status[] */
 	private array $coveredCards;
 
@@ -18,7 +18,7 @@ trait CardResolver {
 	| ----------------------------------------------------------------------------
 	*/
 
-	/** @var non-empty-list<CardInterface> */
+	/** @var non-empty-list<PaymentCard> */
 	private array $resolvedCards;
 	/** @var array{string|int,bool} */
 	private array $resolveArguments;
@@ -28,8 +28,8 @@ trait CardResolver {
 		return $this->coveredCards ?? [];
 	}
 
-	/** @return ($exitOnResolve is true ? CardInterface|null : non-empty-list<CardInterface>|null) */
-	private function resolve( string|int $cardNumber, CardFactory $factory, bool $exitOnResolve = true ): null|CardInterface|array {
+	/** @return ($exitOnResolve is true ? PaymentCard|null : non-empty-list<PaymentCard>|null) */
+	private function resolve( string|int $cardNumber, PaymentCardFactory $factory, bool $exitOnResolve = true ): null|PaymentCard|array {
 		$this->resolveArguments = [ $cardNumber, $exitOnResolve ];
 		$generator              = $factory->lazyLoad( $this->handleResolvedCard( ... ) );
 
@@ -44,7 +44,7 @@ trait CardResolver {
 		return $exitOnResolve ? ( reset( $resolvedCards ) ?: null ) : ( $resolvedCards ?: null );
 	}
 
-	private function handleResolvedCard( PaymentCardTypeCreated $event ): bool {
+	private function handleResolvedCard( PaymentCardCreated $event ): bool {
 		[$cardNumber, $exitOnResolve] = $this->resolveArguments;
 		$status                       = $event->isCreatableCard
 			? ( $event->card?->isNumberValid( $cardNumber ) ? Status::Success : Status::Failure )
