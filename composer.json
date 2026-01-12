@@ -30,7 +30,7 @@
   },
   "require": {
     "php": ">=8.2",
-    "thewebsolver/scraper": "*"
+    "thewebsolver/scraper": "dev-main"
   },
   "require-dev": {
     "phpunit/phpunit": "^11.5",
@@ -46,7 +46,8 @@
     }
   },
   "suggest": {
-    "thewebsolver/luhn-algorithm": "Allows payment card validation against Luhn Algorithm"
+    "thewebsolver/luhn-algorithm": "Allows payment card validation against Luhn Algorithm",
+    "thewebsolver/payment-card-cli": "Helps scraping, tracing and caching traced content via CLI"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,

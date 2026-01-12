@@ -12,12 +12,23 @@
   },
   "require": {
     "php": ">=8.2",
-    "thewebsolver/scraper": "*"
+    "thewebsolver/scraper": "dev-main"
+  },
+  "require-dev": {
+    "thewebsolver/payment-card-cli": "dev-main"
   },
   "repositories": [
     {
       "type": "path",
       "url": "../scraper"
+    },
+    {
+      "type": "path",
+      "url": "../cli"
+    },
+    {
+      "type": "path",
+      "url": "../cli-packages/payment-card-cli"
     }
   ]
 }
