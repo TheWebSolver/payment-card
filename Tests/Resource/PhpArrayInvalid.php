@@ -8,8 +8,11 @@ return [
 		'name'       => 'Napas',
 		'alias'      => 'napas',
 		'classname'  => NapasCard::class,
+		'code'       => [
+			'name' => 'CVC',
+			'size' => true,
+		],
 		'breakpoint' => [ 4, 8, 12 ],
-		'code'       => [ 'CVC', true ],
 		'length'     => [ 16, 19 ],
 		'idRange'    => [ 9704 ],
 	],

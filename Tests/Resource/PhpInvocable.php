@@ -19,8 +19,11 @@ return new class() {
 			'name'       => 'Napas',
 			'alias'      => 'napas',
 			'classname'  => NapasCard::class,
+			'code'       => [
+				'name' => 'CVC',
+				'size' => 3,
+			],
 			'breakpoint' => [ 4, 8, 12 ],
-			'code'       => [ 'CVC', 3 ],
 			'length'     => [ 16, 19 ],
 			'idRange'    => [ 9704 ],
 		];
@@ -32,8 +35,11 @@ return new class() {
 			'name'       => 'Gerbang Pembayaran Nasional',
 			'alias'      => 'gpn',
 			'type'       => 'Debit Card',
+			'code'       => [
+				'name' => 'CVC',
+				'size' => 3,
+			],
 			'breakpoint' => [ 4, 8, 12 ],
-			'code'       => [ 'CVC', 3 ],
 			'length'     => [ 16, 18, 19 ],
 			'idRange'    => [ 1946, 50, 56, 58, [ 60, 63 ] ],
 		];
@@ -44,8 +50,11 @@ return new class() {
 		return [
 			'name'       => 'Humo',
 			'alias'      => 'humo',
+			'code'       => [
+				'name' => 'CVv',
+				'size' => 3,
+			],
 			'breakpoint' => [ 4, 8, 12 ],
-			'code'       => [ 'CVv', 3 ],
 			'length'     => [ 16 ],
 			'idRange'    => [ 9860 ],
 		];
