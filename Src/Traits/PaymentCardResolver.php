@@ -20,7 +20,7 @@ trait PaymentCardResolver {
 
 	/** @var non-empty-list<PaymentCard> */
 	private array $resolvedCards;
-	/** @var array{string|int,bool} */
+	/** @var array{string|int,bool} Card Number & whether should exit on resolve. */
 	private array $resolveArguments;
 
 	/** @return Status[] */
@@ -41,7 +41,7 @@ trait PaymentCardResolver {
 
 		unset( $this->resolveArguments, $this->resolvedCards );
 
-		return $exitOnResolve ? ( reset( $resolvedCards ) ?: null ) : ( $resolvedCards ?: null );
+		return $exitOnResolve ? ( end( $resolvedCards ) ?: null ) : ( $resolvedCards ?: null );
 	}
 
 	private function handleResolvedCard( PaymentCardCreated $event ): bool {
