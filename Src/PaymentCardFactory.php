@@ -86,6 +86,11 @@ class PaymentCardFactory {
 		$payload && $this->withPayload( $payload );
 	}
 
+	/** @return non-empty-array<mixed> */
+	public function getPayload(): array {
+		return $this->payload;
+	}
+
 	/**
 	 * @throws RuntimeException When payload cannot be resolved.
 	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
