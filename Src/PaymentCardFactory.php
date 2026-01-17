@@ -22,7 +22,7 @@ class PaymentCardFactory {
 	 * Possible array keys and their values' datatype Schema for a Payment Card.
 	 *
 	 * - If `type` key not passed, Payment Card is treated as a Credit Card.
-	 * - If `classname` key not passed, anonymous class is used.
+	 * - If `classname` key not passed, base `PaymentCard` class is used.
 	 * - If `checkLuhn` key not passed, Luhn algorithm is always checked.
 	 */
 	public const CARD_SCHEMA = [
@@ -69,21 +69,21 @@ class PaymentCardFactory {
 	 * @param non-empty-string           $path            The payload resource path.
 	 * @param list<int|non-empty-string> $indicesToCreate Only payload indices that should create card instance.
 	 * @return ($indicesToCreate is empty ? Generator<array-key,PaymentCard> : Generator<array-key,?PaymentCard>)
-	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
+	 * @throws TypeError When $args passed does not match the Payment Card schema.
 	 */
 	public static function createFromFile( string $path, array $indicesToCreate = [] ): Generator {
-		$factory           = new self( indicesToCreate: $indicesToCreate );
+		$factory           = new self( payload: [], indicesToCreate: $indicesToCreate );
 		$factory->filePath = $path;
 
 		return $factory->lazyload();
 	}
 
 	/**
-	 * @param string|mixed[]|null        $payload         The payload resource path or a Single Card Schema array or an array of Card Schemas array.
+	 * @param string|mixed[]             $payload         The payload resource path or a Single Card Schema array or an array of Card Schemas array.
 	 * @param list<int|non-empty-string> $indicesToCreate Only payload indices that should create card instance.
 	 */
-	public function __construct( string|array|null $payload = null, public readonly array $indicesToCreate = [] ) {
-		$payload && $this->withPayload( $payload );
+	public function __construct( string|array $payload, public readonly array $indicesToCreate = [] ) {
+		$this->withPayload( $payload );
 	}
 
 	/** @return non-empty-array<mixed> */
@@ -93,12 +93,12 @@ class PaymentCardFactory {
 
 	/**
 	 * @throws RuntimeException When payload cannot be resolved.
-	 * @throws TypeError When $args passed does not match the `CardFactory::CARD_SCHEMA`.
+	 * @throws TypeError When $args passed does not match the Payment Card schema.
 	 */
 	public function create( string|int|null $payloadIndex = null ): PaymentCard {
 		$this->resolvePayloadContent();
 
-		$args = $payloadIndex
+		$args = null !== $payloadIndex
 			? $this->payload[ $payloadIndex ]
 			: ( array_is_list( $this->payload ) ? $this->payload[0] : $this->payload );
 
@@ -146,7 +146,7 @@ class PaymentCardFactory {
 	 *
 	 * @return Generator<array-key,?PaymentCard> Returns Card instance or null based on sent value.
 	 * @throws RuntimeException When payload cannot be resolved.
-	 * @see CardFactory::lazyloadCards()
+	 * @see CardFactory::lazyload()
 	 */
 	public function lazyloadSentPayloadIndexOnly(): Generator {
 		$this->resolvePayloadContent();

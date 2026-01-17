@@ -46,7 +46,7 @@ class PaymentCardFactoryTest extends TestCase {
 
 	#[Test]
 	#[DataProvider( 'provideNonResolvablePayload' )]
-	public function itThrowsExceptionIfNonResolvablePayloadProvided( string|array|null $payload ): void {
+	public function itThrowsExceptionIfNonResolvablePayloadProvided( string|array $payload ): void {
 		$this->expectException( RuntimeException::class );
 		$this->expectExceptionMessage( PaymentCardFactory::NON_RESOLVABLE_PAYLOAD );
 
@@ -55,7 +55,6 @@ class PaymentCardFactoryTest extends TestCase {
 
 	public static function provideNonResolvablePayload(): array {
 		return [
-			[ null ],
 			[ '' ],
 			[ [] ],
 			[ 'invalid/payload/path' ],
