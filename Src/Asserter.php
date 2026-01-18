@@ -18,16 +18,16 @@ class Asserter {
 	public const INVALID_FORMATTING = '%1$s "%2$s" could not be formatted according to the provided breakpoint.';
 
 	private static ?string $processing;
-	private static ?string $cardType;
+	private static string $cardType = 'Payment Card';
 
 	public function setType( string $name ): self {
-		self::$cardType ??= $name;
+		self::$cardType = $name;
 
 		return $this;
 	}
 
 	public function resetType(): void {
-		self::$cardType = null;
+		self::$cardType = 'Payment Card';
 	}
 
 	public function __destruct() {
@@ -117,15 +117,11 @@ class Asserter {
 	 * @throws InvalidArgumentException With given msg.
 	 */
 	public static function assertionFailed( string $message, string|int ...$args ): never {
-		throw new InvalidArgumentException(
-			sprintf( $message, self::$cardType ?? PaymentCardFactory::DEFAULT_CARD, self::$processing ?? '', ...$args )
-		);
+		throw new InvalidArgumentException( sprintf( $message, self::$cardType, self::$processing ?? '', ...$args ) );
 	}
 
 	/** @throws RuntimeException When formatting fails. */
 	public static function formattingFailed( string $cardNumber ): never {
-		throw new RuntimeException(
-			sprintf( self::INVALID_FORMATTING, self::$cardType ?? PaymentCardFactory::DEFAULT_CARD, $cardNumber )
-		);
+		throw new RuntimeException( sprintf( self::INVALID_FORMATTING, self::$cardType, $cardNumber ) );
 	}
 }

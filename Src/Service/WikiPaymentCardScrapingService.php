@@ -6,8 +6,8 @@ namespace TheWebSolver\Codegarage\PaymentCard\Service;
 use TheWebSolver\Codegarage\Scraper\Enums\Table;
 use TheWebSolver\Codegarage\Scraper\Event\TableTraced;
 use TheWebSolver\Codegarage\Scraper\Attributes\ScrapeFrom;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 use TheWebSolver\Codegarage\Scraper\Interfaces\TableTracer;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 use TheWebSolver\Codegarage\Scraper\Service\TableScrapingService;
 use TheWebSolver\Codegarage\PaymentCard\Proxy\WikiPaymentCardTransformerProxy;
 
@@ -23,7 +23,7 @@ class WikiPaymentCardScrapingService extends TableScrapingService {
 	}
 
 	protected function defaultCachePath(): string {
-		return PaymentCardFactory::RESOURCE_PATH;
+		return CardFactory::RESOURCE_PATH;
 	}
 
 	protected function hydrateWithDefaultTransformers( TableTraced $event ): void {

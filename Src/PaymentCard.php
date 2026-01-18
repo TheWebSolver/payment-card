@@ -1,7 +1,7 @@
 <?php
 declare( strict_types = 1 );
 
-namespace TheWebSolver\Codegarage\PaymentCard;
+namespace TheWebSolver\Codegarage\PaymentCard\Interfaces;
 
 use RuntimeException;
 use InvalidArgumentException;

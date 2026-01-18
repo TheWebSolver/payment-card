@@ -7,8 +7,8 @@ use Iterator;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Traceable;
 use TheWebSolver\Codegarage\Scraper\Attributes\ScrapeFrom;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 use TheWebSolver\Codegarage\Scraper\Service\ScrapingService;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreePaymentCardTraced;
 use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreePaymentCardTransformerProxy;
 
@@ -26,7 +26,7 @@ class BraintreePaymentCardScrapingService extends ScrapingService {
 	}
 
 	public function defaultCachePath(): string {
-		return PaymentCardFactory::RESOURCE_PATH;
+		return CardFactory::RESOURCE_PATH;
 	}
 
 	public function parse(): Iterator {

@@ -9,9 +9,9 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\Scraper\Enums\EventAt;
 use TheWebSolver\Codegarage\Scraper\Error\ScraperError;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreePaymentCardTracer;
 use TheWebSolver\Codegarage\PaymentCard\Proxy\PaymentCardPropertyValidatorProxy;
@@ -123,7 +123,7 @@ class BraintreePaymentCardTracerTest extends TestCase {
 
 	/** @return mixed[] */
 	public static function provideInvalidSourceTypes(): array {
-		$validContent = file_get_contents( PaymentCardFactory::RESOURCE_PATH . '/cards.ts' ) ?: '';
+		$validContent = file_get_contents( CardFactory::RESOURCE_PATH . '/cards.ts' ) ?: '';
 
 		return [
 			[ new DOMElement( 'invalid' ), BraintreePaymentCardTracer::INVALID_SOURCE_TYPE ],

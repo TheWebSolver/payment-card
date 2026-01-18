@@ -3,7 +3,9 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test\Fixture;
 
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
+use TheWebSolver\Codegarage\PaymentCard\Event\PaymentCardCreated;
 use TheWebSolver\Codegarage\PaymentCard\Traits\PaymentCardResolver;
 
 class PaymentCardValidator {
@@ -11,10 +13,15 @@ class PaymentCardValidator {
 		PaymentCardResolver::resolve as public;
 	}
 
-	/** @var PaymentCardFactory[] */
+	/** @var non-empty-list<CardFactory<PaymentCard,PaymentCardCreated>> */
 	private array $factories;
 
-	public function __construct( PaymentCardFactory $factory, PaymentCardFactory ...$factories ) {
+	/**
+	 * @param CardFactory<PaymentCard,PaymentCardCreated> $factory
+	 * @param CardFactory<PaymentCard,PaymentCardCreated> ...$factories
+	 * @no-named-arguments
+	 */
+	public function __construct( CardFactory $factory, CardFactory ...$factories ) {
 		$this->factories = [ $factory, ...$factories ];
 	}
 

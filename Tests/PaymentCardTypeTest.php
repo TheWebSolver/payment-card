@@ -11,26 +11,25 @@ use TheWebSolver\Codegarage\PaymentCard\Asserter;
 use TheWebSolver\Codegarage\Test\Fixture\Formatter;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 
 class PaymentCardTypeTest extends TestCase {
 	#[Test]
 	public function itEnsuresSetterGetterWorks(): void {
-		$cardType = new PaymentCardType( PaymentCardFactory::DEBIT_CARD, false, $this->createStub( Asserter::class ) );
+		$cardType = new PaymentCardType( 'Test Card', false, $this->createStub( Asserter::class ) );
 
-		$this->assertSame( PaymentCardFactory::DEBIT_CARD, $cardType->getType() );
+		$this->assertSame( 'Test Card', $cardType->getType() );
 		$this->assertFalse( $cardType->needsLuhnCheck() );
 
-		$cardType = new PaymentCardType( asserter: $asserter = $this->createMock( Asserter::class ) );
+		$cardType = new PaymentCardType( type: 'Debit Card', asserter: $asserter = $this->createMock( Asserter::class ) );
 
-		$asserter->expects( $this->exactly( 2 ) )->method( 'setType' )->with( PaymentCardFactory::CREDIT_CARD )->willReturnSelf();
+		$asserter->expects( $this->exactly( 2 ) )->method( 'setType' )->with( 'Debit Card' )->willReturnSelf();
 
 		// Suppress validating arguments passed to length and ID Range setter methods to omit throwing any surprise exception.
 		$asserter->expects( $this->exactly( 2 ) )->method( 'assertSizeWith' )->willReturnCallback(
 			static fn ( array $valuePassedToSetterMethod, string $lengthOrIdRange ) => $valuePassedToSetterMethod
 		);
 
-		$this->assertSame( PaymentCardFactory::CREDIT_CARD, $cardType->getType() );
+		$this->assertSame( 'Debit Card', $cardType->getType() );
 		$this->assertTrue( $cardType->needsLuhnCheck() );
 
 		$this->assertSame( 'Test', $cardType->setName( 'Test' )->getName() );
@@ -55,7 +54,7 @@ class PaymentCardTypeTest extends TestCase {
 		bool $throws = true,
 		?array $getterValue = null
 	): void {
-		$cardType = new PaymentCardType();
+		$cardType = new PaymentCardType( 'Test' );
 		$setter   = "set{$type}";
 		$getter   = "get{$type}";
 
@@ -80,6 +79,6 @@ class PaymentCardTypeTest extends TestCase {
 	#[Test]
 	#[DataProviderExternal( Formatter::class, 'provideCardNumberWithBreakpoints' )]
 	public function itFormatsCardNumberBasedOnBreakpoint( array $breakpoints, string|int $cardNumber, string $expected ): void {
-		$this->assertSame( $expected, ( new PaymentCardType() )->setBreakpoint( ...$breakpoints )->format( $cardNumber ) );
+		$this->assertSame( $expected, ( new PaymentCardType( 'Test' ) )->setBreakpoint( ...$breakpoints )->format( $cardNumber ) );
 	}
 }

@@ -11,8 +11,8 @@ use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Scrapable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Traceable;
 use TheWebSolver\Codegarage\Scraper\Traits\ScraperSource;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 use TheWebSolver\Codegarage\Scraper\Interfaces\TableTracer;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreePaymentCardTraced;
 
 /**
@@ -43,7 +43,7 @@ class CommonPaymentCardScrapingService implements Scrapable {
 	}
 
 	public function defaultCachePath(): string {
-		return PaymentCardFactory::RESOURCE_PATH;
+		return CardFactory::RESOURCE_PATH;
 	}
 
 	public function parse(): Iterator {

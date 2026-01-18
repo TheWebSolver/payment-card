@@ -8,15 +8,15 @@ use Generator;
 use Throwable;
 use TypeError;
 use RuntimeException;
+use OutOfBoundsException;
 use InvalidArgumentException;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
 use TheWebSolver\Codegarage\PaymentCard\Event\PaymentCardCreated;
 
-class PaymentCardFactory {
-	public const CREDIT_CARD   = 'Credit Card';
-	public const DEBIT_CARD    = 'Debit Card';
-	public const DEFAULT_CARD  = 'Payment Card';
-	public const RESOURCE_PATH = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Resource';
+/** @template-implements CardFactory<PaymentCard,PaymentCardCreated> */
+class PaymentCardFactory implements CardFactory {
+	public const DEFAULT_CARD_TYPE = 'Credit Card';
 
 	/**
 	 * Possible array keys and their values' datatype Schema for a Payment Card.
@@ -37,13 +37,11 @@ class PaymentCardFactory {
 		'idRange'    => 'list<int|list<int>>',
 	];
 
-	/** @placeholder: `%s:` Index key to get Card instance. */
-	public const INVALID_INDEX_KEY = 'Impossible to find Card instance from given index: %s';
-	/** @placeholder: `%s:` File path. */
+	/** @placeholder: `%s:` Resource filepath where payload data exists */
 	public const INVALID_PAYLOAD_PATH = 'Invalid %s provided for creating cards. File must return an array data.';
-	/** @placeholder: `%s:` Card Schema. */
-	public const NON_ASSOCIATIVE_PAYLOAD = 'Invalid data provided for creating card. It must be an associative array with schema: array{%s}';
-	/** @placeholder `1:` Index details, `2:` Path details, `3:` JSON encoded args, `4:`, Previous exception msg, `5:` End of line. */
+	/** @placeholder: `%s:` Provided payload index */
+	public const UNDEFINED_PAYLOAD_INDEX = 'Impossible to create Payment Card instance for undefined payload index: "%s".';
+	/** @placeholder `1:` Index details, `2:` Path details, `3:` JSON encoded args, `4:`, Previous exception msg, `5:` End of line */
 	public const INVALID_PAYLOAD_SCHEMA = 'Invalid Payment Card arguments given%1$s%2$s.%5$sGiven argument: %3$s%5$sError message: %4$s.';
 	public const NON_RESOLVABLE_PAYLOAD = 'Unable to resolve payload for creating Card Type. The payload was neither a valid resource path nor a non-empty array of Card Type Schema.';
 
@@ -68,41 +66,36 @@ class PaymentCardFactory {
 	/**
 	 * @param non-empty-string           $path            The payload resource path.
 	 * @param list<int|non-empty-string> $indicesToCreate Only payload indices that should create card instance.
-	 * @return ($indicesToCreate is empty ? Generator<array-key,PaymentCard> : Generator<array-key,?PaymentCard>)
 	 * @throws TypeError When $args passed does not match the Payment Card schema.
 	 */
-	public static function createFromFile( string $path, array $indicesToCreate = [] ): Generator {
-		$factory           = new self( payload: [], indicesToCreate: $indicesToCreate );
+	public static function createFromFile( string $path, array $indicesToCreate = [] ): static {
+		$factory           = new static( payload: [], indicesToCreate: $indicesToCreate );
 		$factory->filePath = $path;
 
-		return $factory->lazyload();
+		return $factory;
 	}
 
 	/**
 	 * @param string|mixed[]             $payload         The payload resource path or a Single Card Schema array or an array of Card Schemas array.
 	 * @param list<int|non-empty-string> $indicesToCreate Only payload indices that should create card instance.
 	 */
-	public function __construct( string|array $payload, public readonly array $indicesToCreate = [] ) {
+	final public function __construct( string|array $payload, private readonly array $indicesToCreate = [] ) {
 		$this->withPayload( $payload );
 	}
 
-	/** @return non-empty-array<mixed> */
 	public function getPayload(): array {
 		return $this->payload;
 	}
 
-	/**
-	 * @throws RuntimeException When payload cannot be resolved.
-	 * @throws TypeError When $args passed does not match the Payment Card schema.
-	 */
-	public function create( string|int|null $payloadIndex = null ): PaymentCard {
+	public function getCreatableIndices(): array {
+		return $this->indicesToCreate;
+	}
+
+	public function create( string|int $payloadIndex ): PaymentCard {
 		$this->resolvePayloadContent();
 
-		$args = null !== $payloadIndex
-			? $this->payload[ $payloadIndex ]
-			: ( array_is_list( $this->payload ) ? $this->payload[0] : $this->payload );
-
-		self::shutdownIfNonAssociative( $args );
+		$args = $this->payload[ $payloadIndex ]
+			?? throw new OutOfBoundsException( sprintf( self::UNDEFINED_PAYLOAD_INDEX, $payloadIndex ) );
 
 		try {
 			return $this->getCardInstance( $args )
@@ -117,21 +110,16 @@ class PaymentCardFactory {
 		}
 	}
 
-	/**
-	 * @param null|Closure(PaymentCardCreated):bool $handler true to continue yielding next card, false otherwise.
-	 * @return Generator<array-key,?PaymentCard>
-	 * @throws RuntimeException When payload cannot be resolved.
-	 */
-	public function lazyload( ?Closure $handler = null ): Generator {
+	public function lazyload( ?Closure $eventHandler = null ): Generator {
 		$this->resolvePayloadContent();
 
-		$onlyIndices = $this->indicesToCreate;
+		$onlyIndices = $this->getCreatableIndices();
 		$generator   = $this->lazyloadSentPayloadIndexOnly();
 
 		foreach ( $this->payload as $index => $args ) {
 			$isCreatable = ! $onlyIndices || in_array( $index, $onlyIndices, strict: true );
 			$card        = $generator->send( $isCreatable );
-			$yieldNext   = $handler ? $handler( new PaymentCardCreated( $card, $index, $args, $isCreatable ) ) : true;
+			$yieldNext   = $eventHandler ? $eventHandler( new PaymentCardCreated( $card, $index, $args, $isCreatable ) ) : true;
 
 			yield $index => $card;
 
@@ -198,14 +186,14 @@ class PaymentCardFactory {
 
 	/**
 	 * @param array<string,mixed> $args
-	 * @return array{0:string,1:class-string<PaymentCard>,2:bool}
+	 * @return array{string,class-string<PaymentCard>,bool}
 	 */
 	private function polyfill( array $args ): array {
 		$class   = $args['classname'] ?? null;
 		$default = self::$defaultCardClass ?? PaymentCardType::class;
 
 		return [
-			is_string( $card = ( $args['type'] ?? null ) ) ? $card : self::CREDIT_CARD,
+			is_string( $card = ( $args['type'] ?? null ) ) ? $card : self::DEFAULT_CARD_TYPE,
 			is_string( $class ) && is_a( $class, PaymentCard::class, allow_string: true ) ? $class : $default,
 			is_bool( $luhn = ( $args['checkLuhn'] ?? null ) ) ? $luhn : true,
 		];
@@ -235,25 +223,6 @@ class PaymentCardFactory {
 		return ( false !== $json = file_get_contents( $this->filePath ) )
 			? json_decode( $json, associative: true )
 			: self::invalidFile( 'JSON file: ' . $this->filePath );
-	}
-
-	private static function shutdownIfNonAssociative( mixed $args ): void {
-		if ( is_array( $args ) && ! array_is_list( $args ) ) {
-			return;
-		}
-
-		$schema = '';
-		$isLast = array_key_last( self::CARD_SCHEMA );
-
-		foreach ( self::CARD_SCHEMA as $key => $type ) {
-			if ( str_ends_with( haystack: $key, needle: '?' ) ) {
-				continue;
-			}
-
-			$schema .= $key . ':' . $type . ( $isLast === $key ? '' : ', ' );
-		}
-
-		throw new TypeError( sprintf( self::NON_ASSOCIATIVE_PAYLOAD, $schema ) );
 	}
 
 	private static function invalidFile( string $typeWithPath ): never {

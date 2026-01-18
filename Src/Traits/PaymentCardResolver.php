@@ -3,10 +3,10 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
-use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
 use TheWebSolver\Codegarage\PaymentCard\Event\PaymentCardCreated;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 
 trait PaymentCardResolver {
 	/** @var Status[] */
@@ -28,8 +28,11 @@ trait PaymentCardResolver {
 		return $this->coveredCards ?? [];
 	}
 
-	/** @return ($exitOnResolve is true ? PaymentCard|null : non-empty-list<PaymentCard>|null) */
-	private function resolve( string|int $cardNumber, PaymentCardFactory $factory, bool $exitOnResolve = true ): null|PaymentCard|array {
+	/**
+	 * @param CardFactory<PaymentCard,PaymentCardCreated> $factory
+	 * @return ($exitOnResolve is true ? PaymentCard|null : non-empty-list<PaymentCard>|null)
+	 */
+	private function resolve( string|int $cardNumber, CardFactory $factory, bool $exitOnResolve = true ): null|PaymentCard|array {
 		$this->resolveArguments = [ $cardNumber, $exitOnResolve ];
 		$generator              = $factory->lazyLoad( $this->handleResolvedCard( ... ) );
 

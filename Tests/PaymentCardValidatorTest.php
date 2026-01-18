@@ -18,27 +18,19 @@ class PaymentCardValidatorTest extends TestCase {
 
 	#[Test]
 	public function itValidatesWithMockedLuhnAlgorithm(): void {
-		$luhnAlwaysPass = new class() extends PaymentCardType {
+		$americanExpressCard = ( new class( 'Test' ) extends PaymentCardType {
 			public static function matchesLuhnAlgorithm( string $value, bool $shouldRun = true ): bool {
 				return true;
 			}
-		};
-
-		$americanExpressCard = ( new $luhnAlwaysPass() )
-			->setLength( [ 15 ] )
-			->setIdRange( [ 34, 37 ] );
+		} )->setLength( [ 15 ] )->setIdRange( [ 34, 37 ] );
 
 		$this->assertTrue( $americanExpressCard->isNumberValid( 378282246310005 ) );
 
-		$luhnAlwaysFails = new class() extends PaymentCardType {
+		$americanExpressCard = ( new class( 'Test' ) extends PaymentCardType {
 			public static function matchesLuhnAlgorithm( string $value, bool $shouldRun = true ): bool {
 				return false;
 			}
-		};
-
-		$americanExpressCard = ( new $luhnAlwaysFails() )
-			->setLength( [ 15 ] )
-			->setIdRange( [ 34, 37 ] );
+		} )->setLength( [ 15 ] )->setIdRange( [ 34, 37 ] );
 
 		$this->assertFalse( $americanExpressCard->isNumberValid( 378282246310005 ) );
 	}

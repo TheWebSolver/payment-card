@@ -3,7 +3,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Event;
 
-use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
 
 final readonly class PaymentCardCreated {
 	public function __construct(

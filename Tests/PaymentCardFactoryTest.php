@@ -9,9 +9,9 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\Test\Fixture\NapasCard;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
 
 class PaymentCardFactoryTest extends TestCase {
 	#[Test]
@@ -50,7 +50,7 @@ class PaymentCardFactoryTest extends TestCase {
 		$this->expectException( RuntimeException::class );
 		$this->expectExceptionMessage( PaymentCardFactory::NON_RESOLVABLE_PAYLOAD );
 
-		( new PaymentCardFactory( $payload ) )->create();
+		( new PaymentCardFactory( $payload ) )->create( 0 );
 	}
 
 	public static function provideNonResolvablePayload(): array {
@@ -63,18 +63,16 @@ class PaymentCardFactoryTest extends TestCase {
 
 	#[Test]
 	public function itEnsuresCardsAreCreatedFromPHPArray(): void {
-		$napas = [
-			'name'       => 'Napas',
-			'alias'      => 'napas',
-			'classname'  => NapasCard::class,
-			'breakpoint' => [ 4, 8, 12 ],
-			'code'       => [ 'CVC', 3 ],
-			'length'     => [ 16, 19 ],
-			'idRange'    => [ 9704 ],
-		];
-
 		$payload = [
-			$napas,
+			[
+				'name'       => 'Napas',
+				'alias'      => 'napas',
+				'classname'  => NapasCard::class,
+				'breakpoint' => [ 4, 8, 12 ],
+				'code'       => [ 'CVC', 3 ],
+				'length'     => [ 16, 19 ],
+				'idRange'    => [ 9704 ],
+			],
 			[
 				'name'       => 'Gerbang Pembayaran Nasional',
 				'alias'      => 'gpn',
@@ -105,10 +103,12 @@ class PaymentCardFactoryTest extends TestCase {
 		$loader->next();
 		$this->assertFalse( $loader->valid() );
 
-		$this->assertInstanceOf( NapasCard::class, actual: ( new PaymentCardFactory( $napas ) )->create() );
-		$this->assertInstanceOf( NapasCard::class, actual: ( new PaymentCardFactory( $payload ) )->create() );
+		$this->assertInstanceOf( NapasCard::class, actual: ( new PaymentCardFactory( $payload ) )->create( 0 ) );
 		$this->assertSame( 'humo', actual: ( $humo = ( new PaymentCardFactory( $payload ) )->create( 2 ) )->getAlias() );
 		$this->assertInstanceOf( PaymentCardType::class, $humo );
+
+		$this->expectExceptionMessage( sprintf( PaymentCardFactory::UNDEFINED_PAYLOAD_INDEX, 3 ) );
+		( new PaymentCardFactory( $payload ) )->create( 3 );
 	}
 
 	#[Test]
@@ -116,7 +116,7 @@ class PaymentCardFactoryTest extends TestCase {
 		$path    = __DIR__ . '/Resource/Cards.json';
 		$aliases = [ 'napas', 'gpn', 'humo' ];
 
-		$cards = PaymentCardFactory::createFromFile( $path );
+		$cards = PaymentCardFactory::createFromFile( $path )->lazyload();
 
 		while ( $cards->valid() ) {
 			$this->assertSame( expected: $aliases[ $cards->key() ], actual: $cards->current()->getAlias() );
@@ -126,7 +126,7 @@ class PaymentCardFactoryTest extends TestCase {
 		$this->expectException( TypeError::class );
 		$this->expectExceptionMessage( $path = __DIR__ . '/Resource/CardsInvalid.json' );
 
-		PaymentCardFactory::createFromFile( $path )->current();
+		PaymentCardFactory::createFromFile( $path )->lazyload()->current();
 	}
 
 	#[Test]
@@ -144,7 +144,7 @@ class PaymentCardFactoryTest extends TestCase {
 			$this->expectExceptionMessage( $path );
 		}
 
-		$cards = PaymentCardFactory::createFromFile( $path );
+		$cards = PaymentCardFactory::createFromFile( $path )->lazyload();
 		$index = 0;
 
 		while ( $cards->valid() ) {
