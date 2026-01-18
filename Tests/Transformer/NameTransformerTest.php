@@ -9,15 +9,15 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
-use TheWebSolver\Codegarage\PaymentCard\Transformer\NameTransformer;
+use TheWebSolver\Codegarage\PaymentCard\Transformer\WikiPaymentCardNamePropertyTransformer;
 
-class NameTransformerTest extends TestCase {
+class WikiPaymentCardNamePropertyTransformerTest extends TestCase {
 	#[Test]
 	#[DataProvider( 'provideValidData' )]
 	public function itTransformsNameOnlyFromDOMElement( string $content, mixed $expected ): void {
 		( $dom = new DOMDocument() )->loadHTML( $content );
 
-		$this->assertSame( $expected, ( new NameTransformer() )->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
+		$this->assertSame( $expected, ( new WikiPaymentCardNamePropertyTransformer() )->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
 	}
 
 	/** @return mixed[] */
@@ -48,7 +48,7 @@ class NameTransformerTest extends TestCase {
 		$this->expectException( $exceptionClass );
 		$this->expectExceptionMessage( $msg );
 
-		( new NameTransformer() )->transform( $element, $this );
+		( new WikiPaymentCardNamePropertyTransformer() )->transform( $element, $this );
 	}
 
 	/** @return mixed[] */

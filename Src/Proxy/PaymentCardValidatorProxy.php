@@ -8,7 +8,7 @@ use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Validatable;
 
 /** @template-implements Transformer<Validatable,string|list<int|list<int>>|array{name:string,size:int}> */
-class PaymentCardValidatorProxy implements Transformer {
+class PaymentCardPropertyValidatorProxy implements Transformer {
 	/** @param Transformer<object,string|list<int|list<int>>|array{name:string,size:int}> $base */
 	public function __construct( private readonly Transformer $base ) {}
 

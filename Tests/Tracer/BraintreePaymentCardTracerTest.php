@@ -12,9 +12,9 @@ use TheWebSolver\Codegarage\Scraper\Error\ScraperError;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
-use TheWebSolver\Codegarage\PaymentCard\Proxy\PaymentCardValidatorProxy;
 use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreePaymentCardTracer;
+use TheWebSolver\Codegarage\PaymentCard\Proxy\PaymentCardPropertyValidatorProxy;
 use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreePaymentCardTransformerProxy;
 
 class BraintreePaymentCardTracerTest extends TestCase {
@@ -198,7 +198,7 @@ class BraintreePaymentCardTracerTest extends TestCase {
       } as BuiltInCreditCardType,
 	  }';
 
-		$tracer->addTransformer( new PaymentCardValidatorProxy( new BraintreePaymentCardTransformerProxy() ) );
+		$tracer->addTransformer( new PaymentCardPropertyValidatorProxy( new BraintreePaymentCardTransformerProxy() ) );
 		$tracer->inferFrom( $cardObject, normalize: true );
 
 		$iterator = $tracer->getData();

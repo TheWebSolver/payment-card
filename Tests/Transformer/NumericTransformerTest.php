@@ -9,21 +9,21 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
-use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
+use TheWebSolver\Codegarage\PaymentCard\Transformer\PaymentCardNumericPropertyTransformer;
 
-class NumericTransformerTest extends TestCase {
+class PaymentCardNumericPropertyTransformerTest extends TestCase {
 	#[Test]
 	public function itVerifiesRegexPattern(): void {
-		$define   = NumericTransformer::PATTERN_DEFINITION;
+		$define   = PaymentCardNumericPropertyTransformer::PATTERN_DEFINITION;
 		$expected = "/{$define}(?&maybeBracketOpen)(?&valueSeparator)?(?<value>(?&bracketRange)|(?&dashRange)|(?&digits))/";
 
-		$this->assertSame( $expected, NumericTransformer::getRegexPattern() );
+		$this->assertSame( $expected, PaymentCardNumericPropertyTransformer::getRegexPattern() );
 	}
 
 	#[Test]
 	#[DataProvider( 'provideNumericStringToDigitValues' )]
 	public function itConvertsStringToDigit( string $value, int $expected ): void {
-		$this->assertSame( $expected, NumericTransformer::toDigit( $value ) );
+		$this->assertSame( $expected, PaymentCardNumericPropertyTransformer::toDigit( $value ) );
 	}
 
 	public static function provideNumericStringToDigitValues(): array {
@@ -48,7 +48,7 @@ class NumericTransformerTest extends TestCase {
 	public function itExtractsNumericValuesFromString( string $source, ?array $expected ): void {
 		is_null( $expected ) && $this->expectExceptionMessage( sprintf( 'Cannot match pattern to given subject: "%s"', $source ) );
 
-		$this->assertSame( NumericTransformer::extractNumericValues( $source ), $expected );
+		$this->assertSame( PaymentCardNumericPropertyTransformer::extractNumericValues( $source ), $expected );
 	}
 
 	public static function provideDifferentPatternMatchValues(): array {
@@ -77,7 +77,7 @@ class NumericTransformerTest extends TestCase {
 	#[Test]
 	#[DataProvider( 'provideDifferentMappableValues' )]
 	public function itMapsValuesByEitherSingleNumericOrNumericRange( array $values, ?array $expected ): void {
-		$this->assertSame( $expected, array_map( NumericTransformer::mapExtractedValue( ... ), $values ) );
+		$this->assertSame( $expected, array_map( PaymentCardNumericPropertyTransformer::mapExtractedValue( ... ), $values ) );
 	}
 
 	/** @return mixed[] */
@@ -103,7 +103,7 @@ class NumericTransformerTest extends TestCase {
 			$this->expectExceptionMessage( $expected );
 		}
 
-		$this->assertSame( $expected, ( new NumericTransformer() )->transform( $element, new stdClass() ) );
+		$this->assertSame( $expected, ( new PaymentCardNumericPropertyTransformer() )->transform( $element, new stdClass() ) );
 	}
 
 	/** @return mixed[] */
@@ -113,8 +113,8 @@ class NumericTransformerTest extends TestCase {
 				'[775557777-8688889999, 45, 99, 5-6, [ 12,    13, 14 ], 622126–622925 (China UnionPay co-branded), 6011, 644-649, 65, 60400100–60420099, 353, 356 (RuPay-JCB co-branded)]',
 				[ [ 775557777, 8688889999 ], 45, 99, [ 5, 6 ], [ 12, 13, 14 ], [ 622126, 622925 ], 6011, [ 644, 649 ], 65, [ 60400100, 60420099 ], 353, 356 ],
 			],
-			[ [], sprintf( NumericTransformer::INVALID_ELEMENT, 'array' ) ],
-			[ new DOMElement( 'div' ), sprintf( NumericTransformer::INVALID_ELEMENT, 'DOMElement' ) ],
+			[ [], sprintf( PaymentCardNumericPropertyTransformer::INVALID_ELEMENT, 'array' ) ],
+			[ new DOMElement( 'div' ), sprintf( PaymentCardNumericPropertyTransformer::INVALID_ELEMENT, 'DOMElement' ) ],
 		];
 	}
 }

@@ -11,15 +11,15 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\Scraper\Error\ScraperError;
 use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
-use TheWebSolver\Codegarage\PaymentCard\Transformer\CodeTransformer;
+use TheWebSolver\Codegarage\PaymentCard\Transformer\PaymentCardCodePropertyTransformer;
 
-class CodeTransformerTest extends TestCase {
+class PaymentCardCodePropertyTransformerTest extends TestCase {
 	#[Test]
 	public function itVerifiesRegexPattern(): void {
-		$define   = sprintf( CodeTransformer::PATTERN_DEFINITION, 'name|size' );
+		$define   = sprintf( PaymentCardCodePropertyTransformer::PATTERN_DEFINITION, 'name|size' );
 		$expected = "/{$define}(?<name>(?&properties))(?&separator)(?<value>(?&names)|(?&sizes))/";
 
-		$this->assertSame( $expected, CodeTransformer::getRegexPattern() );
+		$this->assertSame( $expected, PaymentCardCodePropertyTransformer::getRegexPattern() );
 	}
 
 	/**
@@ -34,7 +34,7 @@ class CodeTransformerTest extends TestCase {
 			$this->expectExceptionMessage( $expected );
 		}
 
-		$this->assertSame( $expected, ( new CodeTransformer() )->transform( $element, new stdClass() ) );
+		$this->assertSame( $expected, ( new PaymentCardCodePropertyTransformer() )->transform( $element, new stdClass() ) );
 	}
 
 	public static function provideCodeElements(): array {
@@ -87,7 +87,7 @@ class CodeTransformerTest extends TestCase {
 			],
 			[
 				[ 'key-must-be-named-"value"' => 'name:"CVV" size:4' ],
-				CodeTransformer::INVALID_ELEMENT,
+				PaymentCardCodePropertyTransformer::INVALID_ELEMENT,
 				InvalidSource::class,
 			],
 			[
@@ -97,12 +97,12 @@ class CodeTransformerTest extends TestCase {
 			],
 			[
 				'{names:"CVV", size:3}',
-				sprintf( CodeTransformer::MISSING_PROPERTY, 'name' ),
+				sprintf( PaymentCardCodePropertyTransformer::MISSING_PROPERTY, 'name' ),
 				ScraperError::class,
 			],
 			[
 				'{name:"CVV", sizes:3}',
-				sprintf( CodeTransformer::MISSING_PROPERTY, 'size' ),
+				sprintf( PaymentCardCodePropertyTransformer::MISSING_PROPERTY, 'size' ),
 				ScraperError::class,
 			],
 		];

@@ -9,7 +9,7 @@ use TheWebSolver\Codegarage\Scraper\AssertDOMElement;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 
 /** @template-implements Transformer<object,list<int|list<int>>> */
-class WikiNumericTransformer implements Transformer {
+class WikiPaymentCardNumericPropertyTransformer implements Transformer {
 	/** @param Transformer<object,list<int|list<int>>> $numericTransformer */
 	public function __construct( private Transformer $numericTransformer ) {}
 

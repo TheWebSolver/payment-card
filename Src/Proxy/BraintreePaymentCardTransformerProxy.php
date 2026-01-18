@@ -7,10 +7,10 @@ use DOMElement;
 use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
-use TheWebSolver\Codegarage\PaymentCard\Transformer\CodeTransformer;
-use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
 use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\BraintreePaymentCardTracer;
+use TheWebSolver\Codegarage\PaymentCard\Transformer\PaymentCardCodePropertyTransformer;
+use TheWebSolver\Codegarage\PaymentCard\Transformer\PaymentCardNumericPropertyTransformer;
 
 /** @template-implements Transformer<Indexable,string|list<int|list<int>>|array{name:string,size:int}> */
 final class BraintreePaymentCardTransformerProxy implements Transformer {
@@ -28,8 +28,8 @@ final class BraintreePaymentCardTransformerProxy implements Transformer {
 		return match ( $card ) {
 			Card::Length,
 			Card::Breakpoint,
-			Card::IINRange => ( new NumericTransformer() )->transform( $value, $scope ),
-			Card::Code     => ( new CodeTransformer() )->transform( $value, $scope ),
+			Card::IINRange => ( new PaymentCardNumericPropertyTransformer() )->transform( $value, $scope ),
+			Card::Code     => ( new PaymentCardCodePropertyTransformer() )->transform( $value, $scope ),
 			default        => trim( $value, '"' ),
 		};
 	}

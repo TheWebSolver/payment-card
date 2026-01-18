@@ -9,7 +9,7 @@ use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 
 /** @template-implements Transformer<object,array{name:string,size:int}> */
-class CodeTransformer implements Transformer {
+class PaymentCardCodePropertyTransformer implements Transformer {
 	/** @placeholder `%s:` Card's Code property names. */
 	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<properties>(%s))(?<separator>[\:\" ]+)(?<names>[A-Z]{3})(?<sizes>[\d]{1}))';
 
@@ -65,7 +65,7 @@ class CodeTransformer implements Transformer {
 		if ( 'name' === $propertyName ) {
 			$properties['name'] = $property['value'];
 		} elseif ( 'size' === $propertyName ) {
-			$properties['size'] = NumericTransformer::toDigit( $property['value'] );
+			$properties['size'] = PaymentCardNumericPropertyTransformer::toDigit( $property['value'] );
 		}
 
 		return $properties;

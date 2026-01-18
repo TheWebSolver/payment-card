@@ -8,7 +8,7 @@ use TheWebSolver\Codegarage\Scraper\AssertDOMElement;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 
 /** @template-implements Transformer<object,string> */
-class StatusTransformer implements Transformer {
+class WikiPaymentCardStatusPropertyTransformer implements Transformer {
 	public function transform( string|array|DOMElement $element, object $scope ): string {
 		AssertDOMElement::instance( $element );
 

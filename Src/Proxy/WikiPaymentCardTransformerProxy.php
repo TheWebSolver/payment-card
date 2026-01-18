@@ -8,11 +8,11 @@ use TheWebSolver\Codegarage\Scraper\Enums\Table;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 use TheWebSolver\Codegarage\Scraper\Marshaller\MarshallItem;
-use TheWebSolver\Codegarage\PaymentCard\Transformer\NameTransformer;
-use TheWebSolver\Codegarage\PaymentCard\Transformer\StatusTransformer;
-use TheWebSolver\Codegarage\PaymentCard\Transformer\NumericTransformer;
-use TheWebSolver\Codegarage\PaymentCard\Decorator\WikiNumericTransformer;
 use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
+use TheWebSolver\Codegarage\PaymentCard\Transformer\PaymentCardNumericPropertyTransformer;
+use TheWebSolver\Codegarage\PaymentCard\Transformer\WikiPaymentCardNamePropertyTransformer;
+use TheWebSolver\Codegarage\PaymentCard\Decorator\WikiPaymentCardNumericPropertyTransformer;
+use TheWebSolver\Codegarage\PaymentCard\Transformer\WikiPaymentCardStatusPropertyTransformer;
 
 /** @template-implements Transformer<Indexable,string|list<int|list<int>>> */
 class WikiPaymentCardTransformerProxy implements Transformer {
@@ -24,9 +24,9 @@ class WikiPaymentCardTransformerProxy implements Transformer {
 
 		return ( match ( $property ) {
 			4, Card::Length->value,
-			2, Card::IINRange->value => new WikiNumericTransformer( new NumericTransformer() ),
-			3, Card::Status->value   => new StatusTransformer(),
-			1, Card::Name->value     => new NameTransformer(),
+			2, Card::IINRange->value => new WikiPaymentCardNumericPropertyTransformer( new PaymentCardNumericPropertyTransformer() ),
+			3, Card::Status->value   => new WikiPaymentCardStatusPropertyTransformer(),
+			1, Card::Name->value     => new WikiPaymentCardNamePropertyTransformer(),
 			default                  => $this->base,
 		} )->transform( $element, $scope );
 	}

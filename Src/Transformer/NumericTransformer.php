@@ -9,7 +9,7 @@ use TheWebSolver\Codegarage\Scraper\Error\InvalidSource;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
 
 /** @template-implements Transformer<object,list<int|list<int>>> */
-class NumericTransformer implements Transformer {
+class PaymentCardNumericPropertyTransformer implements Transformer {
 	final public const PATTERN_DEFINITION = '(?(DEFINE)(?<maybeBracketOpen>[\[]? ?)(?<valueSeparator>[,? ?])(?<bracketRange>[\[]+[\d, ]+[\]])(?<dashRange>[\d]+[\-\– ]+[\d]+)(?<digits>[\d]+))';
 
 	/** @placeholder `%s:` Given element type.  */

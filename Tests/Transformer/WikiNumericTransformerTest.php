@@ -7,9 +7,9 @@ use DOMDocument;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Transformer;
-use TheWebSolver\Codegarage\PaymentCard\Decorator\WikiNumericTransformer;
+use TheWebSolver\Codegarage\PaymentCard\Decorator\WikiPaymentCardNumericPropertyTransformer;
 
-class WikiNumericTransformerTest extends TestCase {
+class WikiPaymentCardNumericPropertyTransformerTest extends TestCase {
 	#[Test]
 	public function itTransformsNumericValuesToDigitsFromDOMElementChildren(): void {
 		$transformer = $this->createMock( Transformer::class );
@@ -19,8 +19,8 @@ class WikiNumericTransformerTest extends TestCase {
 		$transformer->expects( $this->once() )
 			->method( 'transform' )
 			->with( '12 - 34, 6, [8, 9] 10' )
-			->willReturn( [ [ 12, 34 ], 6, [ 8, 9 ], 10 ] ); // Expected transformed value from NumericTransformer.
+			->willReturn( [ [ 12, 34 ], 6, [ 8, 9 ], 10 ] );
 
-		( new WikiNumericTransformer( $transformer ) )->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom );
+		( new WikiPaymentCardNumericPropertyTransformer( $transformer ) )->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom );
 	}
 }
