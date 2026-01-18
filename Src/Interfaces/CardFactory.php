@@ -7,11 +7,9 @@ use Closure;
 use Generator;
 use RuntimeException;
 use OutOfBoundsException;
+use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 
-/**
- * @template TCardType of object
- * @template TCardTypeCreatedEvent of object
- */
+/** @template TCardType of object */
 interface CardFactory {
 	public const RESOURCE_PATH = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Resource';
 
@@ -44,7 +42,7 @@ interface CardFactory {
 	/**
 	 * Creates card instances lazily one at a time.
 	 *
-	 * @param null|Closure(TCardTypeCreatedEvent):bool $eventHandler When eventHandler returns false, the yielding process must be stopped.
+	 * @param null|Closure(CardCreated<TCardType>):bool $eventHandler When eventHandler returns false, the yielding process must be stopped.
 	 * @return Generator<array-key,TCardType|null> Generator may yield null when creatable indices array is provided, and
 	 *                                             current payload index does not exist in that array.
 	 * @throws RuntimeException When payload cannot be resolved.

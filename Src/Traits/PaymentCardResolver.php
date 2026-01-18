@@ -4,9 +4,9 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
-use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
-use TheWebSolver\Codegarage\PaymentCard\Event\PaymentCardCreated;
+use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
 
 trait PaymentCardResolver {
 	/** @var Status[] */
@@ -29,7 +29,7 @@ trait PaymentCardResolver {
 	}
 
 	/**
-	 * @param CardFactory<PaymentCard,PaymentCardCreated> $factory
+	 * @param CardFactory<PaymentCard> $factory
 	 * @return ($exitOnResolve is true ? PaymentCard|null : non-empty-list<PaymentCard>|null)
 	 */
 	private function resolve( string|int $cardNumber, CardFactory $factory, bool $exitOnResolve = true ): null|PaymentCard|array {
@@ -47,7 +47,8 @@ trait PaymentCardResolver {
 		return $exitOnResolve ? ( end( $resolvedCards ) ?: null ) : ( $resolvedCards ?: null );
 	}
 
-	private function handleResolvedCard( PaymentCardCreated $event ): bool {
+	/** @param CardCreated<PaymentCard> $event */
+	private function handleResolvedCard( CardCreated $event ): bool {
 		[$cardNumber, $exitOnResolve] = $this->resolveArguments;
 		$status                       = $event->isCreatableCard
 			? ( $event->card?->isNumberValid( $cardNumber ) ? Status::Success : Status::Failure )

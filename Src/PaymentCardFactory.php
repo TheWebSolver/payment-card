@@ -10,11 +10,11 @@ use TypeError;
 use RuntimeException;
 use OutOfBoundsException;
 use InvalidArgumentException;
+use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
-use TheWebSolver\Codegarage\PaymentCard\Event\PaymentCardCreated;
 
-/** @template-implements CardFactory<PaymentCard,PaymentCardCreated> */
+/** @template-implements CardFactory<PaymentCard> */
 class PaymentCardFactory implements CardFactory {
 	public const DEFAULT_CARD_TYPE = 'Credit Card';
 
@@ -119,7 +119,7 @@ class PaymentCardFactory implements CardFactory {
 		foreach ( $this->payload as $index => $args ) {
 			$isCreatable = ! $onlyIndices || in_array( $index, $onlyIndices, strict: true );
 			$card        = $generator->send( $isCreatable );
-			$yieldNext   = $eventHandler ? $eventHandler( new PaymentCardCreated( $card, $index, $args, $isCreatable ) ) : true;
+			$yieldNext   = $eventHandler ? $eventHandler( new CardCreated( $card, $index, $args, $isCreatable ) ) : true;
 
 			yield $index => $card;
 
