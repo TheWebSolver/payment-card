@@ -22,6 +22,13 @@ interface CardFactory {
 	public function getPayload(): array;
 
 	/**
+	 * Gets payload resource path, if provided payload is a file path containing payload data.
+	 *
+	 * @return non-empty-string|null
+	 */
+	public function getResourcePath(): ?string;
+
+	/**
 	 * Gets the payload indices which should only be used to create card instance when lazily loaded.
 	 *
 	 * This method may return an empty array to indicate all payload data must be used to yield the card instances lazily.
@@ -32,13 +39,13 @@ interface CardFactory {
 	public function getCreatableIndices(): array;
 
 	/**
-	 * Creates a card instance from the given payload index.
+	 * Creates a card instance from the provided payload index.
 	 *
 	 * @return TCardType
 	 * @throws RuntimeException When payload cannot be resolved.
 	 * @throws OutOfBoundsException When provided payload index is not defined in resolved payload.
 	 */
-	public function create( string|int $payloadIndex ): object;
+	public function create( string|int $payloadIndex ): CardType;
 
 	/**
 	 * Creates card instances lazily one at a time.

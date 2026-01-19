@@ -76,7 +76,7 @@ class PaymentCardFactory implements CardFactory {
 	}
 
 	/**
-	 * @param string|mixed[]             $payload         The payload resource path or a Single Card Schema array or an array of Card Schemas array.
+	 * @param string|mixed[]             $payload         The payload resource path or an array of Card Schemas array.
 	 * @param list<int|non-empty-string> $indicesToCreate Only payload indices that should create card instance.
 	 */
 	final public function __construct( string|array $payload, private readonly array $indicesToCreate = [] ) {
@@ -85,6 +85,10 @@ class PaymentCardFactory implements CardFactory {
 
 	public function getPayload(): array {
 		return $this->payload;
+	}
+
+	public function getResourcePath(): ?string {
+		return $this->filePath ?? null;
 	}
 
 	public function getCreatableIndices(): array {
