@@ -34,11 +34,8 @@ trait CardResolver {
 	 */
 	private function resolve( string|int $cardNumber, CardFactory $factory, bool $exitOnResolve = true ): null|CardType|array {
 		$this->resolveArguments = [ $cardNumber, $exitOnResolve ];
-		$generator              = $factory->lazyLoad( $this->handleResolvedCard( ... ) );
 
-		while ( $generator->valid() ) {
-			$generator->next();
-		}
+		iterator_to_array( $factory->lazyLoad( $this->handleResolvedCard( ... ) ) );
 
 		$resolvedCards = $this->resolvedCards ?? [];
 
