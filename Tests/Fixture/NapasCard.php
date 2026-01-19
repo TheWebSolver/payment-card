@@ -5,4 +5,4 @@ namespace TheWebSolver\Codegarage\Test\Fixture;
 
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
 
-class NapasCard extends PaymentCardType {}
+class CreditCard extends PaymentCardType {}
