@@ -2,7 +2,7 @@
   {
     "name": "Napas",
     "alias": "napas",
-    "classname": "TheWebSolver\\Codegarage\\Test\\Fixture\\NapasCard",
+    "classname": "TheWebSolver\\Codegarage\\Test\\Fixture\\CreditCard",
     "code": {"name": "CVC", "size": 3},
     "breakpoint": [4, 8, 12],
     "length": [16, 19],

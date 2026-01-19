@@ -1,7 +1,7 @@
 <?php
 declare( strict_types = 1 );
 
-use TheWebSolver\Codegarage\Test\Fixture\NapasCard;
+use TheWebSolver\Codegarage\Test\Fixture\CreditCard;
 
 return new class() {
 	/** @return array<string,mixed[]> */
@@ -18,7 +18,7 @@ return new class() {
 		return [
 			'name'       => 'Napas',
 			'alias'      => 'napas',
-			'classname'  => NapasCard::class,
+			'classname'  => CreditCard::class,
 			'code'       => [
 				'name' => 'CVC',
 				'size' => 3,

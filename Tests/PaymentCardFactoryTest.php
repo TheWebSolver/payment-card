@@ -8,7 +8,7 @@ use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
-use TheWebSolver\Codegarage\Test\Fixture\NapasCard;
+use TheWebSolver\Codegarage\Test\Fixture\CreditCard;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
@@ -16,7 +16,7 @@ use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
 class PaymentCardFactoryTest extends TestCase {
 	#[Test]
 	public function itEnsuresGlobalCardClassSetterResetterWorks(): void {
-		PaymentCardFactory::setGlobalCardClass( NapasCard::class );
+		PaymentCardFactory::setGlobalCardClass( CreditCard::class );
 
 		$payload = [
 			[
@@ -38,7 +38,7 @@ class PaymentCardFactoryTest extends TestCase {
 		];
 
 		foreach ( ( new PaymentCardFactory( $payload ) )->lazyLoad() as $card ) {
-			$this->assertInstanceOf( NapasCard::class, actual: $card );
+			$this->assertInstanceOf( CreditCard::class, actual: $card );
 		}
 
 		PaymentCardFactory::resetGlobalCardClass();
@@ -67,7 +67,7 @@ class PaymentCardFactoryTest extends TestCase {
 			[
 				'name'       => 'Napas',
 				'alias'      => 'napas',
-				'classname'  => NapasCard::class,
+				'classname'  => CreditCard::class,
 				'breakpoint' => [ 4, 8, 12 ],
 				'code'       => [ 'CVC', 3 ],
 				'length'     => [ 16, 19 ],
@@ -103,7 +103,7 @@ class PaymentCardFactoryTest extends TestCase {
 		$loader->next();
 		$this->assertFalse( $loader->valid() );
 
-		$this->assertInstanceOf( NapasCard::class, actual: ( new PaymentCardFactory( $payload ) )->create( 0 ) );
+		$this->assertInstanceOf( CreditCard::class, actual: ( new PaymentCardFactory( $payload ) )->create( 0 ) );
 		$this->assertSame( 'humo', actual: ( $humo = ( new PaymentCardFactory( $payload ) )->create( 2 ) )->getAlias() );
 		$this->assertInstanceOf( PaymentCardType::class, $humo );
 
@@ -186,6 +186,6 @@ class PaymentCardFactoryTest extends TestCase {
 			return;
 		}
 
-		$this->assertInstanceOf( NapasCard::class, actual: $card );
+		$this->assertInstanceOf( CreditCard::class, actual: $card );
 	}
 }

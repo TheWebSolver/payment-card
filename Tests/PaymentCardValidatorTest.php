@@ -6,7 +6,7 @@ namespace TheWebSolver\Codegarage\Test;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
-use TheWebSolver\Codegarage\Test\Fixture\NapasCard;
+use TheWebSolver\Codegarage\Test\Fixture\CreditCard;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
@@ -42,7 +42,7 @@ class PaymentCardValidatorTest extends TestCase {
 				[
 					'name'       => 'MastercardOne',
 					'alias'      => 'mastercard-one',
-					'classname'  => NapasCard::class,
+					'classname'  => CreditCard::class,
 					'code'       => [ 'CVC', 3 ],
 					'breakpoint' => [ 4, 10 ],
 					'length'     => [ 15 ],
@@ -72,7 +72,7 @@ class PaymentCardValidatorTest extends TestCase {
 				[
 					'name'       => 'MastercardFour',
 					'alias'      => 'mastercard-four',
-					'classname'  => NapasCard::class,
+					'classname'  => CreditCard::class,
 					'code'       => [ 'CVC', 3 ],
 					'breakpoint' => [ 4, 10 ],
 					'length'     => [ 15 ],
@@ -102,7 +102,8 @@ class PaymentCardValidatorTest extends TestCase {
 	#[Test]
 	#[DataProvider( 'provideCardNumberAndResolvedIndices' )]
 	public function itValidatesCardTypesFromPayload( string|int $cardNumber, int $expectedCoveredCards, bool $expectedStatus = true ): void {
-		$validator = new PaymentCardValidator( new PaymentCardFactory( self::DOMESTIC_CARDS ), new PaymentCardFactory( self::INTERNATIONAL_CARDS ) );
+		$resources = [ self::DOMESTIC_CARDS, self::INTERNATIONAL_CARDS ];
+		$validator = new PaymentCardValidator( ...array_map( PaymentCardFactory::createFromFile( ... ), $resources ) );
 
 		$this->assertSame( $expectedStatus, $validator->validate( $cardNumber ) );
 		$this->assertCount( $expectedCoveredCards, $validator->getCoveredCardStatus() );

@@ -1,13 +1,13 @@
 <?php
 declare( strict_types = 1 );
 
-use TheWebSolver\Codegarage\Test\Fixture\NapasCard;
+use TheWebSolver\Codegarage\Test\Fixture\CreditCard;
 
 return [
 	[
 		'name'       => 'Napas',
 		'alias'      => 'napas',
-		'classname'  => NapasCard::class,
+		'classname'  => CreditCard::class,
 		'code'       => [
 			'name' => 'CVC',
 			'size' => true,
