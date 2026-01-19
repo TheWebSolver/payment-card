@@ -6,9 +6,8 @@ namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
 
 trait PaymentCardMutator {
-	use BreakpointGetter;
+	use CardTypeMutator, BreakpointGetter;
 
-	private string $name;
 	private string $alias;
 
 	/** @var array{name:string,size:int} */
@@ -21,21 +20,13 @@ trait PaymentCardMutator {
 	private array $idRange;
 
 	public function __construct(
-		private readonly string $type,
-		private readonly bool $checkLuhn = true,
-		private readonly Asserter $asserter = new Asserter()
+		private string $type,
+		private bool $checkLuhn = true,
+		private Asserter $asserter = new Asserter()
 	) {}
 
 	public function needsLuhnCheck(): bool {
 		return $this->checkLuhn;
-	}
-
-	public function getType(): string {
-		return $this->type;
-	}
-
-	public function getName(): string {
-		return $this->name;
 	}
 
 	public function getAlias(): string {
@@ -52,12 +43,6 @@ trait PaymentCardMutator {
 
 	public function getIdRange(): array {
 		return $this->idRange;
-	}
-
-	public function setName( string $name ): static {
-		$this->name = $name;
-
-		return $this;
 	}
 
 	public function setAlias( string $alias ): static {

@@ -5,10 +5,10 @@ namespace TheWebSolver\Codegarage\PaymentCard\Traits;
 
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
-use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
 
-trait PaymentCardResolver {
+trait CardResolver {
 	/** @var Status[] */
 	private array $coveredCards;
 
@@ -18,7 +18,7 @@ trait PaymentCardResolver {
 	| ----------------------------------------------------------------------------
 	*/
 
-	/** @var non-empty-list<PaymentCard> */
+	/** @var non-empty-list<CardType> */
 	private array $resolvedCards;
 	/** @var array{string|int,bool} Card Number & whether should exit on resolve. */
 	private array $resolveArguments;
@@ -29,10 +29,10 @@ trait PaymentCardResolver {
 	}
 
 	/**
-	 * @param CardFactory<PaymentCard> $factory
-	 * @return ($exitOnResolve is true ? PaymentCard|null : non-empty-list<PaymentCard>|null)
+	 * @param CardFactory<CardType> $factory
+	 * @return ($exitOnResolve is true ? CardType|null : non-empty-list<CardType>|null)
 	 */
-	private function resolve( string|int $cardNumber, CardFactory $factory, bool $exitOnResolve = true ): null|PaymentCard|array {
+	private function resolve( string|int $cardNumber, CardFactory $factory, bool $exitOnResolve = true ): null|CardType|array {
 		$this->resolveArguments = [ $cardNumber, $exitOnResolve ];
 		$generator              = $factory->lazyLoad( $this->handleResolvedCard( ... ) );
 
@@ -47,7 +47,7 @@ trait PaymentCardResolver {
 		return $exitOnResolve ? ( end( $resolvedCards ) ?: null ) : ( $resolvedCards ?: null );
 	}
 
-	/** @param CardCreated<PaymentCard> $event */
+	/** @param CardCreated<CardType> $event */
 	private function handleResolvedCard( CardCreated $event ): bool {
 		[$cardNumber, $exitOnResolve] = $this->resolveArguments;
 		$status                       = $event->isCreatableCard

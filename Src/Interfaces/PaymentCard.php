@@ -6,21 +6,11 @@ namespace TheWebSolver\Codegarage\PaymentCard\Interfaces;
 use RuntimeException;
 use InvalidArgumentException;
 
-interface PaymentCard {
+interface PaymentCard extends CardType {
 	public const BREAKPOINT_CHECKSUM        = 12;
 	public const BREAKPOINT_HOLDERS         = '$1 $2 $3';
 	public const BREAKPOINT_DEFAULT_PATTERN = '(\d{4})(\d{4})(\d{4})';
 	public const BREAKPOINT_ALT_PATTERN     = '(\d{4})(\d{6})(\d{%d})';
-
-	/**
-	 * Gets the card type such as Debit Card, Credit Card, etc.
-	 */
-	public function getType(): string;
-
-	/**
-	 * Gets the card human readable nice-name.
-	 */
-	public function getName(): string;
 
 	/**
 	 * Gets the card type/slug/alias.
@@ -54,11 +44,6 @@ interface PaymentCard {
 	 * @return list<int|list<int>>
 	 */
 	public function getIdRange(): array;
-
-	/**
-	 * Sets the card human readable nice-name.
-	 */
-	public function setName( string $name ): self;
 
 	/**
 	 * Sets the card type/slug/alias.
@@ -97,11 +82,6 @@ interface PaymentCard {
 	 * @throws RuntimeException When given Card Number could not be formatted.
 	 */
 	public function format( string|int $cardNumber ): string;
-
-	/**
-	 * Validates the given card number.
-	 */
-	public function isNumberValid( mixed $subject ): bool;
 
 	/**
 	 * Validates the given card security code.

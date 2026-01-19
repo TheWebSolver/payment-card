@@ -8,8 +8,9 @@ use Generator;
 use RuntimeException;
 use OutOfBoundsException;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 
-/** @template TCardType of object */
+/** @template TCardType of CardType */
 interface CardFactory {
 	public const RESOURCE_PATH = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Resource';
 
