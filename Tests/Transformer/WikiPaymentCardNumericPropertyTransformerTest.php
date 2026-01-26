@@ -21,6 +21,6 @@ class WikiPaymentCardNumericPropertyTransformerTest extends TestCase {
 			->with( '12 - 34, 6, [8, 9] 10' )
 			->willReturn( [ [ 12, 34 ], 6, [ 8, 9 ], 10 ] );
 
-		( new WikiPaymentCardNumericPropertyTransformer( $transformer ) )->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom );
+		( new WikiPaymentCardNumericPropertyTransformer( $transformer ) )->transform( $dom->getElementsByTagName( 'td' )->item( 0 ) ?? '', $dom );
 	}
 }

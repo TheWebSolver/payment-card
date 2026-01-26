@@ -14,10 +14,11 @@ use TheWebSolver\Codegarage\Scraper\Traits\ScraperSource;
 use TheWebSolver\Codegarage\Scraper\Interfaces\TableTracer;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreePaymentCardTraced;
+use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 
 /**
  * @template-implements Scrapable<
- *  Iterator<array-key,string|list<int|list<int>>|array{name:string,size:int}>,
+ *  Iterator<array-key,ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>>,
  *  Traceable<mixed,object>
  * >
  */
@@ -27,8 +28,8 @@ class CommonPaymentCardScrapingService implements Scrapable {
 	/**
 	 * @param Scrapable<Iterator<array-key,ArrayObject<array-key,string|list<int|list<int>>>>,TableTracer<string|list<int|list<int>>>> $tableService
 	 * @param Scrapable<
-	 *  Iterator<array-key,string|list<int|list<int>>|array{name:string,size:int}>,
-	 *  Indexable&Traceable<string|list<int|list<int>>|array{name:string,size:int},BraintreePaymentCardTraced>
+	 *  Iterator<array-key,ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>>,
+	 *  Indexable&Traceable<ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,BraintreePaymentCardTraced>
 	 * > $service
 	 */
 	public function __construct( private readonly Scrapable $tableService, private readonly Scrapable $service ) {}

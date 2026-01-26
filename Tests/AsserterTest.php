@@ -21,15 +21,20 @@ class AsserterTest extends TestCase {
 		Asserter::formattingFailed( '123' );
 	}
 
+	/**
+	 * @param mixed[] $expected
+	 * @param mixed[] $value
+	 */
 	#[DataProvider( 'provideResolvingSizes' )]
 	public function testResolveSize( array $expected, array $value, string $type, string $errorMsg = '' ): void {
 		if ( $errorMsg ) {
 			$this->expectExceptionMessage( $errorMsg );
 		}
 
-		$this->assertSame( $expected, actual: ( new Asserter() )->assertSizeWith( $value, $type ) );
+		$this->assertSame( $expected, ( new Asserter() )->assertSizeWith( $value, $type ) );
 	}
 
+	/** @return mixed[] */
 	public static function provideResolvingSizes(): array {
 		return [
 			[ [ 1 ], [ '1' ], 'Test' ],
@@ -49,8 +54,8 @@ class AsserterTest extends TestCase {
 	}
 
 	public function testParseName(): void {
-		$this->assertSame( expected: 'some', actual: Asserter::parsePropNameFrom( 'getSome' ) );
-		$this->assertSame( expected: 'some', actual: Asserter::parsePropNameFrom( 'setSome' ) );
-		$this->assertSame( expected: 'ome', actual: Asserter::parsePropNameFrom( 'doSome' ) );
+		$this->assertSame( 'some', Asserter::parsePropNameFrom( 'getSome' ) );
+		$this->assertSame( 'some', Asserter::parsePropNameFrom( 'setSome' ) );
+		$this->assertSame( 'ome', Asserter::parsePropNameFrom( 'doSome' ) );
 	}
 }

@@ -26,6 +26,7 @@ class BraintreePaymentCardTransformerProxyTest extends TestCase {
 		$this->assertSame( $expected, $proxy->transform( $element, $scope ) );
 	}
 
+	/** @return mixed[] */
 	public static function providePropertyKeyOrIndex(): array {
 		return [
 			[ [ 'value' => '"Visa"' ], Card::Name->value, 'Visa' ],

@@ -3,6 +3,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test\Transformer;
 
+use Throwable;
 use DOMElement;
 use DOMDocument;
 use PHPUnit\Framework\TestCase;
@@ -17,7 +18,7 @@ class WikiPaymentCardStatusPropertyTransformerTest extends TestCase {
 	public function itTransformsStatusOnlyFromDOMElement( string $content, mixed $expected ): void {
 		( $dom = new DOMDocument() )->loadHTML( $content );
 
-		$this->assertSame( $expected, ( new WikiPaymentCardStatusPropertyTransformer() )->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $dom ) );
+		$this->assertSame( $expected, ( new WikiPaymentCardStatusPropertyTransformer() )->transform( $dom->getElementsByTagName( 'td' )->item( 0 ) ?? '', $dom ) );
 	}
 
 	/** @return mixed[] */
@@ -35,7 +36,7 @@ class WikiPaymentCardStatusPropertyTransformerTest extends TestCase {
 
 	/**
 	 * @param string|mixed[]|DOMElement $element
-	 * @param class-string              $exceptionClass
+	 * @param class-string<Throwable>   $exceptionClass
 	 */
 	#[Test]
 	#[DataProvider( 'provideInvalidData' )]

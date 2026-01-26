@@ -12,8 +12,8 @@ use TheWebSolver\Codegarage\Scraper\Service\TableScrapingService;
 use TheWebSolver\Codegarage\PaymentCard\Proxy\WikiPaymentCardTransformerProxy;
 
 /**
- * @template TTracer of TableTracer<string|list<int|int[]>>
- * @template-extends TableScrapingService<string|list<int|int[]>,TTracer>
+ * @template TTracer of TableTracer<string|list<int|list<int>>>
+ * @template-extends TableScrapingService<string|list<int|list<int>>,TTracer>
  */
 #[ScrapeFrom( 'Payment Card Number', 'https://en.wikipedia.org/wiki/Payment_card_number', 'payment-card-number.html' )]
 class WikiPaymentCardScrapingService extends TableScrapingService {

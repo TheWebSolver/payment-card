@@ -31,9 +31,10 @@ class WikiPaymentCardTransformerProxyTest extends TestCase {
 				->willReturn( $propertyOrCount );
 		}
 
-		$this->assertSame( $expected, $proxy->transform( $dom->getElementsByTagName( 'td' )->item( 0 ), $scope ) );
+		$this->assertSame( $expected, $proxy->transform( $dom->getElementsByTagName( 'td' )->item( 0 ) ?? '', $scope ) );
 	}
 
+	/** @return mixed[] */
 	public static function provideElementContent(): array {
 		$name      = '<td rowspan="2"><a href="/wiki/Discover_Card" title="Discover Card">Discover Card</a> <span>Suffix</span></td>';
 		$range     = '<td>6011, 644-649, 65, 16-19<sup id="cite_ref-Discover_2017_Compliance_11-3" class="reference"><a href="#cite_note-Discover_2017_Compliance-11"><span class="cite-bracket">[</span>10<span class="cite-bracket">]</span></a></sup>, 622126-622925 (China UnionPay co-branded)</td>';

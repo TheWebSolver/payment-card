@@ -26,6 +26,7 @@ class PaymentCardNumericPropertyTransformerTest extends TestCase {
 		$this->assertSame( $expected, PaymentCardNumericPropertyTransformer::toDigit( $value ) );
 	}
 
+	/** @return mixed[] */
 	public static function provideNumericStringToDigitValues(): array {
 		return [
 			[ '12345', 12345 ],
@@ -51,6 +52,7 @@ class PaymentCardNumericPropertyTransformerTest extends TestCase {
 		$this->assertSame( PaymentCardNumericPropertyTransformer::extractNumericValues( $source ), $expected );
 	}
 
+	/** @return mixed[] */
 	public static function provideDifferentPatternMatchValues(): array {
 		return [
 			[

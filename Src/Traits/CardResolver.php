@@ -29,8 +29,9 @@ trait CardResolver {
 	}
 
 	/**
-	 * @param CardFactory<CardType> $factory
-	 * @return ($exitOnResolve is true ? CardType|null : non-empty-list<CardType>|null)
+	 * @param CardFactory<TCardType> $factory
+	 * @return ($exitOnResolve is true ? TCardType|null : non-empty-list<TCardType>|null)
+	 * @template TCardType of CardType
 	 */
 	private function resolve( string|int $cardNumber, CardFactory $factory, bool $exitOnResolve = true ): null|CardType|array {
 		$this->resolveArguments = [ $cardNumber, $exitOnResolve ];

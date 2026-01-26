@@ -38,12 +38,13 @@ class PaymentCardFactoryTest extends TestCase {
 		];
 
 		foreach ( ( new PaymentCardFactory( $payload ) )->lazyLoad() as $card ) {
-			$this->assertInstanceOf( CreditCard::class, actual: $card );
+			$this->assertInstanceOf( CreditCard::class, $card );
 		}
 
 		PaymentCardFactory::resetGlobalCardClass();
 	}
 
+	/** @param string|mixed[] $payload */
 	#[Test]
 	#[DataProvider( 'provideNonResolvablePayload' )]
 	public function itThrowsExceptionIfNonResolvablePayloadProvided( string|array $payload ): void {
@@ -53,6 +54,7 @@ class PaymentCardFactoryTest extends TestCase {
 		( new PaymentCardFactory( $payload ) )->create( 0 );
 	}
 
+	/** @return mixed[] */
 	public static function provideNonResolvablePayload(): array {
 		return [
 			[ '' ],
@@ -95,16 +97,16 @@ class PaymentCardFactoryTest extends TestCase {
 		$factory = new PaymentCardFactory( $payload );
 		$loader  = $factory->lazyLoad();
 
-		$this->assertSame( expected: 'napas', actual: $loader->current()->getAlias() );
+		$this->assertSame( 'napas', $loader->current()->getAlias() );
 		$loader->next();
-		$this->assertSame( expected: 'gpn', actual: $loader->current()->getAlias() );
+		$this->assertSame( 'gpn', $loader->current()->getAlias() );
 		$loader->next();
-		$this->assertSame( expected: 'humo', actual: $loader->current()->getAlias() );
+		$this->assertSame( 'humo', $loader->current()->getAlias() );
 		$loader->next();
 		$this->assertFalse( $loader->valid() );
 
-		$this->assertInstanceOf( CreditCard::class, actual: ( new PaymentCardFactory( $payload ) )->create( 0 ) );
-		$this->assertSame( 'humo', actual: ( $humo = ( new PaymentCardFactory( $payload ) )->create( 2 ) )->getAlias() );
+		$this->assertInstanceOf( CreditCard::class, ( new PaymentCardFactory( $payload ) )->create( 0 ) );
+		$this->assertSame( 'humo', ( $humo = ( new PaymentCardFactory( $payload ) )->create( 2 ) )->getAlias() );
 		$this->assertInstanceOf( PaymentCardType::class, $humo );
 
 		$this->expectExceptionMessage( sprintf( PaymentCardFactory::UNDEFINED_PAYLOAD_INDEX, 3 ) );
@@ -119,7 +121,7 @@ class PaymentCardFactoryTest extends TestCase {
 		$cards = PaymentCardFactory::createFromFile( $path )->lazyload();
 
 		while ( $cards->valid() ) {
-			$this->assertSame( expected: $aliases[ $cards->key() ], actual: $cards->current()->getAlias() );
+			$this->assertSame( $aliases[ $cards->key() ], $cards->current()->getAlias() );
 			$cards->next();
 		}
 
@@ -129,6 +131,7 @@ class PaymentCardFactoryTest extends TestCase {
 		PaymentCardFactory::createFromFile( $path )->lazyload()->current();
 	}
 
+	/** @param array<mixed> $aliases */
 	#[Test]
 	#[DataProvider( 'providePhpFiles' )]
 	public function itEnsuresCardsAreCreatedFromPHPFile(
@@ -152,7 +155,9 @@ class PaymentCardFactoryTest extends TestCase {
 			$expectedAlias = $aliases[ $index ];
 			$expectedIndex = $aliasAsKey ? $expectedAlias : $index;
 
-			$this->assertSame( $expectedAlias, actual: $card->getAlias() );
+			assert( ! is_null( $card ) );
+
+			$this->assertSame( $expectedAlias, $card->getAlias() );
 			$this->assertSame( $expectedIndex, $cards->key() );
 			$this->assertRegisteredCardType( $card );
 			$this->assertInstanceIsProvidedOrDefault( $card );
@@ -163,6 +168,7 @@ class PaymentCardFactoryTest extends TestCase {
 		}
 	}
 
+	/** @return mixed[] */
 	public static function providePhpFiles(): array {
 		return [
 			[ [ 'napas' ], 'PhpArray' ],
@@ -186,6 +192,6 @@ class PaymentCardFactoryTest extends TestCase {
 			return;
 		}
 
-		$this->assertInstanceOf( CreditCard::class, actual: $card );
+		$this->assertInstanceOf( CreditCard::class, $card );
 	}
 }

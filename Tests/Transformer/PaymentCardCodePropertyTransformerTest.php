@@ -4,6 +4,7 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\Test\Transformer;
 
 use stdClass;
+use Throwable;
 use DOMElement;
 use DOMDocument;
 use PHPUnit\Framework\TestCase;
@@ -25,10 +26,11 @@ class PaymentCardCodePropertyTransformerTest extends TestCase {
 	/**
 	 * @param string|mixed[]|DOMElement $element
 	 * @param string|mixed[]            $expected
+	 * @param class-string<Throwable>   $throwable
 	 */
 	#[Test]
 	#[DataProvider( 'provideCodeElements' )]
-	public function itTransformsGivenElement( string|array|DOMElement $element, string|array $expected, string $throwable = '' ): void {
+	public function itTransformsGivenElement( string|array|DOMElement $element, string|array $expected, string $throwable = Throwable::class ): void {
 		if ( is_string( $expected ) ) {
 			$this->expectException( $throwable );
 			$this->expectExceptionMessage( $expected );
@@ -37,6 +39,7 @@ class PaymentCardCodePropertyTransformerTest extends TestCase {
 		$this->assertSame( $expected, ( new PaymentCardCodePropertyTransformer() )->transform( $element, new stdClass() ) );
 	}
 
+	/** @return mixed[] */
 	public static function provideCodeElements(): array {
 		$dom = new DOMDocument();
 		$dom->loadHTML( '<td>name:"CVC" size:3</td>' );

@@ -46,6 +46,10 @@ class PaymentCardTypeTest extends TestCase {
 		$this->assertSame( [ 60, [ 45, 50 ], 80 ], $cardType->setIdRange( [ 60, [ 45,50 ], 80 ] )->getIdRange() );
 	}
 
+	/**
+	 * @param mixed[]  $setterValue
+	 * @param ?mixed[] $getterValue
+	*/
 	#[Test]
 	#[DataProvider( 'provideNumericValuesForValidation' )]
 	public function itEnsuresCardLengthAndIdRangeAreValidatedWithAsserter(
@@ -63,6 +67,7 @@ class PaymentCardTypeTest extends TestCase {
 		$this->assertSame( $getterValue ?? $setterValue, $cardType->{$setter}( $setterValue )->{$getter}() );
 	}
 
+	/** @return mixed[] */
 	public static function provideNumericValuesForValidation(): array {
 		return [
 			[ [ 12, [ 16, 19 ], 20 ], 'Length', false ],
@@ -76,6 +81,7 @@ class PaymentCardTypeTest extends TestCase {
 		];
 	}
 
+	/** @param list<string|int> $breakpoints */
 	#[Test]
 	#[DataProviderExternal( Formatter::class, 'provideCardNumberWithBreakpoints' )]
 	public function itFormatsCardNumberBasedOnBreakpoint( array $breakpoints, string|int $cardNumber, string $expected ): void {

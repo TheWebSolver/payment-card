@@ -16,9 +16,10 @@ class PaymentCardValidator {
 	private array $factories;
 
 	/**
-	 * @param CardFactory<CardType> $factory
-	 * @param CardFactory<CardType> ...$factories
+	 * @param CardFactory<TCardType> $factory
+	 * @param CardFactory<TCardType> ...$factories
 	 * @no-named-arguments
+	 * @template TCardType of CardType
 	 */
 	public function __construct( CardFactory $factory, CardFactory ...$factories ) {
 		$this->factories = [ $factory, ...$factories ];

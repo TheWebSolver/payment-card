@@ -102,8 +102,7 @@ class BraintreePaymentCardTracer implements Traceable, Indexable, Validatable {
 		return self::CARD_PROPERTIES[ $property ] ?? throw ScraperError::trigger(
 			self::INVALID_CARD_PROPERTIES,
 			self::getPropNames( separator: '", "' ),
-			( $source ? '' : ". \"{$property}\" is not a valid property" ) .
-			( $source ? ". Property extraction source is :- {$source}" : '' )
+			( $source ? ". Property extraction source is :- {$source}" : ". \"{$property}\" is not a valid property" )
 		);
 	}
 
