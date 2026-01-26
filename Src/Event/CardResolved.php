@@ -13,18 +13,18 @@ readonly class CardResolved {
 	public const CURRENT_CARD_ERROR = 'Impossible to get current card created when factory #%s is not creating cards';
 	public const CHECK_NEXT_INFO    = 'Checking against next card...';
 
-	/** @placeholder `%s`: Current factory number */
-	public const RESOURCE_ERROR = 'Could not resolve payload resource path from factory #%s';
-	/** @placeholder `%s`: Current factory number */
-	public const PAYLOAD_ERROR = 'Could not resolve Card name against payload from factory #%s';
-	/** @placeholder: `%s`: Realpath of Payload resource */
+	/** @placeholder `%d`: Current factory number */
+	public const RESOURCE_ERROR = 'Could not resolve payload resource path from factory #%d';
+	/** @placeholder `%d`: Current factory number */
+	public const PAYLOAD_ERROR = 'Could not resolve Card name against payload from factory #%d';
+	/** @placeholder: `%s`: Payload resource realpath  */
 	public const RESOURCE_INFO = 'Payload resource path: %s';
 	/** @placeholder: `1:` Factory started or finished, `2:` Current factory number */
 	public const FACTORY_STATUS_INFO = '%1$s resolving card number "%2$s" against payload from Factory #%3$d';
-	/** @placeholder `1:` Prefix, `2:` Card resolved or not, `3:` Current factory number */
-	public const FACTORY_RESOLVED_INFO = '%1$s%2$s Card against payload from Factory #%3$d';
-	/** @placeholder `1:` Prefix, `2:` Card instance created or not, `3:` Card name */
-	public const CARD_RESOLVED_INFO = '%1$s%2$s card number as "%3$s" card';
+	/** @placeholder `1:` Factory resolved or not, `2:` Current factory number */
+	public const FACTORY_RESOLVED_INFO = '%1$s Card against payload from Factory #%2$d';
+	/** @placeholder `1:` Card resolved or not, `2:` Card name */
+	public const CARD_RESOLVED_INFO = '%1$s card number as "%2$s" card';
 
 	/**
 	 * @param CardFactory<CardType>  $factory
@@ -101,13 +101,13 @@ readonly class CardResolved {
 
 	/** @throws LogicException When this method is invoked when factory is not creating card. */
 	public function cardResolvedInfo( Status $status ): string {
-		return sprintf( self::CARD_RESOLVED_INFO, '', $this->resolvedToString( $status ), $this->currentCardName() );
+		return sprintf( self::CARD_RESOLVED_INFO, $this->resolvedToString( $status ), $this->currentCardName() );
 	}
 
 	public function factoryResolvedInfo(): string {
 		$args = $this->isSuccess() ? $this->resolvedToString( Status::Success ) : $this->resolvedToString( Status::Failure );
 
-		return sprintf( self::FACTORY_RESOLVED_INFO, '', $args, $this->factoryNumber );
+		return sprintf( self::FACTORY_RESOLVED_INFO, $args, $this->factoryNumber );
 	}
 
 	private function throwPayloadError(): never {

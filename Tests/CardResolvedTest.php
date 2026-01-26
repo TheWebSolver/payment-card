@@ -203,7 +203,7 @@ class CardResolvedTest extends TestCase {
 			$isResolved = Status::Success === $status ? 'Resolved' : 'Could not resolve';
 
 			$this->assertSame(
-				sprintf( CardResolved::FACTORY_RESOLVED_INFO, '', $isResolved, 0 ),
+				sprintf( CardResolved::FACTORY_RESOLVED_INFO, $isResolved, 0 ),
 				( new CardResolved( $factory, 0, '1', $status ) )->factoryResolvedInfo()
 			);
 		}
@@ -226,7 +226,7 @@ class CardResolvedTest extends TestCase {
 
 		foreach ( $info as $status => $case ) {
 			$this->assertSame(
-				sprintf( CardResolved::CARD_RESOLVED_INFO, '', $status, 'Test Card' ),
+				sprintf( CardResolved::CARD_RESOLVED_INFO, $status, 'Test Card' ),
 				$event->cardResolvedInfo( $case )
 			);
 		}
