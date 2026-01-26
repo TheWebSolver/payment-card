@@ -63,8 +63,7 @@ class BraintreePaymentCardTracerTest extends TestCase {
 		$expectedMsg = sprintf(
 			BraintreePaymentCardTracer::INVALID_CARD_PROPERTIES,
 			'niceType", "type", "patterns", "gaps", "lengths", "code',
-			$source ? '' : ". \"{$propertyName}\" is not a valid property",
-			$source ? '. Property extraction source is :- this is a, test source' : ''
+			$source ? '. Property extraction source is :- this is a, test source' : ". \"{$propertyName}\" is not a valid property"
 		);
 
 		$this->expectException( ScraperError::class );
@@ -118,7 +117,7 @@ class BraintreePaymentCardTracerTest extends TestCase {
 		$this->expectExceptionMessage( $errorMsg );
 		$tracer->inferFrom( $source, normalize: false );
 
-		$afterIteration && $tracer->getData()->current();
+		$afterIteration && $tracer->getData()->valid();
 	}
 
 	/** @return mixed[] */
@@ -170,7 +169,10 @@ class BraintreePaymentCardTracerTest extends TestCase {
 		$tracer->getData()->current();
 	}
 
-	/** @param array{0,int,1:string,2:string} $expected */
+	/**
+	 * @param array{0:int,1:string,2:string} $expected
+	 * @param mixed[]                        $actual
+	 */
 	public static function assertCurrentIterationProperty( BraintreePaymentCardTracer $scope, array $expected, array $actual ): string {
 		[ $count, $name, $value ] = $expected;
 
@@ -198,7 +200,7 @@ class BraintreePaymentCardTracerTest extends TestCase {
       } as BuiltInCreditCardType,
 	  }';
 
-		$tracer->addTransformer( new PaymentCardPropertyValidatorProxy( new BraintreePaymentCardTransformerProxy() ) );
+		$tracer->addTransformer( new PaymentCardPropertyValidatorProxy( new BraintreePaymentCardTransformerProxy() ) ); // @phpstan-ignore-line
 		$tracer->inferFrom( $cardObject, normalize: true );
 
 		$iterator = $tracer->getData();
@@ -215,12 +217,15 @@ class BraintreePaymentCardTracerTest extends TestCase {
 /** @template-implements Transformer<BraintreePaymentCardTracer,mixed> */
 class IterationAssertionTransformer implements Transformer {
 	public function transform( string|array|DOMElement $element, object $scope ): mixed {
+		assert( is_array( $element ) );
+
 		// These assertions are made 6 times, for each Card property iteration.
-		BraintreePaymentCardTracerTest::assertInstanceOf( Card::class, $card = Card::from( $scope->getCurrentItemIndex() ) );
+		BraintreePaymentCardTracerTest::assertInstanceOf( Card::class, $card = Card::from( $scope->getCurrentItemIndex() ?? '' ) );
 		BraintreePaymentCardTracerTest::assertArrayHasKey( 'property', $element );
 		BraintreePaymentCardTracerTest::assertArrayHasKey( 'value', $element );
 
 		return match ( $card ) {
+			default          => null,
 			Card::Name       => BraintreePaymentCardTracerTest::assertCurrentIterationProperty( $scope, [ 1,  'niceType', '"Maestro"' ], $element ),
 			Card::Alias      => BraintreePaymentCardTracerTest::assertCurrentIterationProperty( $scope, [ 2, 'type', '"maestro"' ], $element ),
 			Card::Breakpoint => BraintreePaymentCardTracerTest::assertCurrentIterationProperty( $scope, [ 4, 'gaps', '[4, 8, 12]' ], $element ),

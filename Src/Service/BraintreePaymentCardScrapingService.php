@@ -4,23 +4,25 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Service;
 
 use Iterator;
+use ArrayObject;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
 use TheWebSolver\Codegarage\Scraper\Interfaces\Traceable;
 use TheWebSolver\Codegarage\Scraper\Attributes\ScrapeFrom;
 use TheWebSolver\Codegarage\Scraper\Service\ScrapingService;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Event\BraintreePaymentCardTraced;
+use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 use TheWebSolver\Codegarage\PaymentCard\Proxy\BraintreePaymentCardTransformerProxy;
 
 /**
  * @template-extends ScrapingService<
- *  Iterator<array-key,string|list<int|list<int>|array{name:string,size:int}>>,
- *  Indexable&Traceable<string|list<int|list<int>|array{name:string,size:int}>,BraintreePaymentCardTraced>
+ *  Iterator<array-key,ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>>,
+ *  Indexable&Traceable<ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,BraintreePaymentCardTraced>
  * >
  */
 #[ScrapeFrom( 'Braintree GitHub', 'https://raw.githubusercontent.com/braintree/credit-card-type/refs/heads/main/src/lib/card-types.ts', 'cards.ts' )]
 class BraintreePaymentCardScrapingService extends ScrapingService {
-	/** @param Indexable&Traceable<string|list<int|list<int>|array{name:string,size:int}>,BraintreePaymentCardTraced> $tracer */
+	/** @param Indexable&Traceable<ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,BraintreePaymentCardTraced> $tracer */
 	public function __construct( Traceable $tracer, ?ScrapeFrom $scrapeFrom = null ) {
 		parent::__construct( $tracer->addEventListener( $this->hydrateWithDefaultTransformers( ... ) ), $scrapeFrom );
 	}

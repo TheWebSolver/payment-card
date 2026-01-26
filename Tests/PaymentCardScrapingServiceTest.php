@@ -3,8 +3,12 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test;
 
+use Iterator;
+use ArrayObject;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use TheWebSolver\Codegarage\Scraper\Interfaces\Indexable;
+use TheWebSolver\Codegarage\Scraper\Interfaces\Traceable;
 use TheWebSolver\Codegarage\Scraper\Attributes\CollectUsing;
 use TheWebSolver\Codegarage\Scraper\Service\ScrapingService;
 use TheWebSolver\Codegarage\PaymentCard\Tracer\WikiPaymentCardTracer;
@@ -24,8 +28,9 @@ class PaymentCardScrapingServiceTest extends TestCase {
 	public function itParsesScrapedPaymentCardDetailsFromWikiSite(): void {
 		$iterator = ( new WikiPaymentCardScrapingService( new class() extends WikiPaymentCardTracer {} ) )->parse();
 
-		foreach ( require_once self::WIKI_CARDS as $expectedCard ) {
-			$this->assertSame( $expectedCard, $iterator->current()->getArrayCopy(), 'Indexed card: ' . $expectedCard[0] );
+		/** @var non-empty-array<string|int> $expectedCard */
+		foreach ( require_once self::WIKI_CARDS as $expectedCard ) { // @phpstan-ignore-line -- file returns indexed array.
+			$this->assertSame( $expectedCard, $iterator->current()->getArrayCopy(), 'Indexed card: ' . ( $expectedCard[0] ) );
 
 			$iterator->next();
 		}
@@ -35,9 +40,9 @@ class PaymentCardScrapingServiceTest extends TestCase {
 		unset( $iterator, $expectedCard );
 
 		$iterator = ( new WikiPaymentCardScrapingService( new WikiPaymentCardTracer() ) )->parse();
-		$cards    = require_once self::WIKI_CARDS_INDEXED;
 
-		foreach ( $cards as $expectedCard ) {
+		/** @var non-empty-array<string|int> $expectedCard */
+		foreach ( require_once self::WIKI_CARDS_INDEXED as $expectedCard ) { // @phpstan-ignore-line - file return assoc array.
 			// Remove ignored status column.
 			unset( $expectedCard['status'] );
 
@@ -82,7 +87,7 @@ class PaymentCardScrapingServiceTest extends TestCase {
 	#[Test]
 	public function itScrapesCommonCardTypesFromWikiAndBraintree(): void {
 		$iterator = ( new CommonPaymentCardScrapingService(
-			new WikiPaymentCardScrapingService( new WikiPaymentCardTracer() ),
+			new WikiPaymentCardScrapingService( new WikiPaymentCardTracer() ), // @phpstan-ignore-line
 			new BraintreePaymentCardScrapingService( new BraintreePaymentCardTracer() )
 		) )->parse();
 
@@ -99,7 +104,7 @@ class PaymentCardScrapingServiceTest extends TestCase {
 					'size' => 4,
 				],
 			],
-			$iterator->current()
+			$iterator->current()->getArrayCopy()
 		);
 	}
 
@@ -118,13 +123,20 @@ class PaymentCardScrapingServiceTest extends TestCase {
 		$this->assertCount( 2, $mastercard );
 	}
 
+	/**
+	 * @param ScrapingService<
+	 *  Iterator<array-key,ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>>,
+	 *  Indexable&Traceable<ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,BraintreePaymentCardTraced>
+	 * > $scraper
+	 * @return mixed[]
+	 */
 	private function getBraintreeMastercard( ScrapingService $scraper ): array {
 		if ( $scraper->withCachePath( self::RESOURCE_DIRECTORY, 'cards.ts' )->hasCache() ) {
-			$iterator = $scraper->parse( $scraper->fromCache() );
+			$iterator = $scraper->parse();
 		} else {
 			$scraper->toCache( $scraper->scrape() );
 
-			$iterator = $scraper->parse( $scraper->fromCache() );
+			$iterator = $scraper->parse();
 		}
 
 		$mastercard = null;
@@ -139,6 +151,6 @@ class PaymentCardScrapingServiceTest extends TestCase {
 			$iterator->next();
 		}
 
-		return $mastercard;
+		return $mastercard ?? [];
 	}
 }

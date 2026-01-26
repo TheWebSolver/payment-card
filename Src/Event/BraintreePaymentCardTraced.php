@@ -4,6 +4,7 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Event;
 
 use Iterator;
+use ArrayObject;
 use LogicException;
 use TheWebSolver\Codegarage\Scraper\Enums\EventAt;
 use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
@@ -27,13 +28,13 @@ final class BraintreePaymentCardTraced {
 		return $this->eventAt === $event;
 	}
 
-	/** @param Iterator<array-key,array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>> $iterator */
+	/** @param Iterator<array-key,ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>> $iterator */
 	public function setInferredCards( Iterator $iterator ): void {
 		$this->inferredCards = $iterator;
 	}
 
 	/**
-	 * @return Iterator<array-key,array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>>
+	 * @return Iterator<array-key,ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>>
 	 * @throws LogicException When this method is invoked before iterator is set.
 	 */
 	public function getInferredCards(): Iterator {

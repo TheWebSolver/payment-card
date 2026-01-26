@@ -6,6 +6,7 @@ namespace TheWebSolver\Codegarage\PaymentCard\Tracer;
 use Iterator;
 use BackedEnum;
 use DOMElement;
+use ArrayObject;
 use LogicException;
 use TheWebSolver\Codegarage\Scraper\Enums\EventAt;
 use TheWebSolver\Codegarage\Scraper\Helper\Normalize;
@@ -22,7 +23,7 @@ use TheWebSolver\Codegarage\PaymentCard\Enums\PaymentCardProperty as Card;
 
 /**
  * @template-implements Traceable<
- *   array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,
+ *   ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>,
  *   BraintreePaymentCardTraced
  * >
  */
@@ -56,7 +57,7 @@ class BraintreePaymentCardTracer implements Traceable, Indexable, Validatable {
 	/** @placeholder `1:` Value type being used as an iterator key. */
 	final public const INVALID_INDEX_VALUE = 'Value used as an index key can only be of string type. "%s" type given';
 
-	/** @var Iterator<array-key,array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>> */
+	/** @var Iterator<array-key,ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>> */
 	private Iterator $cardsGenerator;
 	private CollectUsing $collectedUsing;
 	/** @var ?Transformer<contravariant static,string|list<int|list<int>>|array{name:string,size:int}> */
@@ -188,7 +189,7 @@ class BraintreePaymentCardTracer implements Traceable, Indexable, Validatable {
 	}
 
 	/**
-	 * @return Iterator<array-key,array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>>
+	 * @return Iterator<array-key,ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}>>
 	 * @throws ScraperError When index key for Card collection is not of string type.
 	 */
 	private function createCardsGenerator( string $source ): Iterator {
@@ -218,8 +219,8 @@ class BraintreePaymentCardTracer implements Traceable, Indexable, Validatable {
 			: ScraperError::patternMismatch( 'Braintree GitHub Card Type', $pattern, $source );
 	}
 
-	/** @return array<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}> */
-	private function infer( string $cardObject ): array {
+	/** @return ArrayObject<int|value-of<Card>,string|list<int|list<int>>|array{name:string,size:int}> */
+	private function infer( string $cardObject ): ArrayObject {
 		$this->rawCardObject = $cardObject;
 
 		$details = preg_match_all( $pattern = $this->getRegexPattern(), $cardObject, $matched, PREG_SET_ORDER )
@@ -228,7 +229,9 @@ class BraintreePaymentCardTracer implements Traceable, Indexable, Validatable {
 
 		unset( $this->currentItemIndex, $this->currentIterationCount, $this->rawCardObject );
 
-		return $details ?: ScraperError::patternMismatch( 'Braintree GitHub Card\'s JS Object', $pattern, $cardObject );
+		return $details
+			? new ArrayObject( $details )
+			: ScraperError::patternMismatch( 'Braintree GitHub Card\'s JS Object', $pattern, $cardObject );
 	}
 
 	/**
