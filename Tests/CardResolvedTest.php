@@ -7,7 +7,6 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\Stub;
-use TheWebSolver\Codegarage\Cli\Enums\Symbol;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
@@ -137,19 +136,16 @@ class CardResolvedTest extends TestCase {
 
 	#[Test]
 	#[DataProvider( 'provideStatusBasedStringInfo' )]
-	public function itVerifiesInfoToString( string $methodName, Status $status, string $expectedString ): void {
-		$this->assertSame( $expectedString, CardResolved::{$methodName}( $status ) );
+	public function itVerifiesResolvedToString( Status $status, string $expectedString ): void {
+		$this->assertSame( $expectedString, CardResolved::resolvedToString( $status ) );
 	}
 
-	/** @return array<array{string,Status,string}> */
+	/** @return array<array{Status,string}> */
 	public static function provideStatusBasedStringInfo(): array {
 		return [
-			[ 'resolvedToString', Status::Success, 'Resolved' ],
-			[ 'resolvedToString', Status::Failure, 'Could not resolve' ],
-			[ 'resolvedToString', Status::Omitted, 'Skipped resolving' ],
-			[ 'symbolToString', Status::Success, Symbol::Green->value ],
-			[ 'symbolToString', Status::Failure, Symbol::Red->value ],
-			[ 'symbolToString', Status::Omitted, Symbol::NotAllowed->value ],
+			[ Status::Success, 'Resolved' ],
+			[ Status::Failure, 'Could not resolve' ],
+			[ Status::Omitted, 'Skipped resolving' ],
 		];
 	}
 
@@ -205,10 +201,9 @@ class CardResolvedTest extends TestCase {
 
 		foreach ( [ null, ...Status::cases() ] as $status ) {
 			$isResolved = Status::Success === $status ? 'Resolved' : 'Could not resolve';
-			$symbol     = Status::Success === $status ? Symbol::Tick : Symbol::Cross;
 
 			$this->assertSame(
-				sprintf( CardResolved::FACTORY_RESOLVED_INFO, $symbol->value, $isResolved, 0 ),
+				sprintf( CardResolved::FACTORY_RESOLVED_INFO, '', $isResolved, 0 ),
 				( new CardResolved( $factory, 0, '1', $status ) )->factoryResolvedInfo()
 			);
 		}
@@ -224,14 +219,14 @@ class CardResolvedTest extends TestCase {
 		// @phpstan-ignore-next-line
 		$event = new CardResolved( $factory, 0, '0', current: new CardCreated( $card, 0, [], true ) );
 		$info  = [
-			'Resolved'          => [ Symbol::Green, Status::Success ],
-			'Could not resolve' => [ Symbol::Red, Status::Failure ],
-			'Skipped resolving' => [ Symbol::NotAllowed, Status::Omitted ],
+			'Resolved'          => Status::Success,
+			'Could not resolve' => Status::Failure,
+			'Skipped resolving' => Status::Omitted,
 		];
 
-		foreach ( $info as $status => [$symbol, $case] ) {
+		foreach ( $info as $status => $case ) {
 			$this->assertSame(
-				sprintf( CardResolved::CARD_RESOLVED_INFO, $symbol->value, $status, 'Test Card' ),
+				sprintf( CardResolved::CARD_RESOLVED_INFO, '', $status, 'Test Card' ),
 				$event->cardResolvedInfo( $case )
 			);
 		}

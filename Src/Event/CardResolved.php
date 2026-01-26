@@ -4,13 +4,12 @@ declare( strict_types = 1 );
 namespace TheWebSolver\Codegarage\PaymentCard\Event;
 
 use LogicException;
-use TheWebSolver\Codegarage\Cli\Enums\Symbol;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 
-final readonly class CardResolved {
+readonly class CardResolved {
 	public const CURRENT_CARD_ERROR = 'Impossible to get current card created when factory #%s is not creating cards';
 	public const CHECK_NEXT_INFO    = 'Checking against next card...';
 
@@ -22,10 +21,10 @@ final readonly class CardResolved {
 	public const RESOURCE_INFO = 'Payload resource path: %s';
 	/** @placeholder: `1:` Factory started or finished, `2:` Current factory number */
 	public const FACTORY_STATUS_INFO = '%1$s resolving card number "%2$s" against payload from Factory #%3$d';
-	/** @placeholder `1:` Symbol, `2:` Card resolved or not, `3:` Current factory number */
-	public const FACTORY_RESOLVED_INFO = '%1$s %2$s Card against payload from Factory #%3$d';
-	/** @placeholder `1:` Symbol, `2:` Card instance created or not, `3:` Card name */
-	public const CARD_RESOLVED_INFO = '%1$s %2$s card number as "%3$s" card';
+	/** @placeholder `1:` Prefix, `2:` Card resolved or not, `3:` Current factory number */
+	public const FACTORY_RESOLVED_INFO = '%1$s%2$s Card against payload from Factory #%3$d';
+	/** @placeholder `1:` Prefix, `2:` Card instance created or not, `3:` Card name */
+	public const CARD_RESOLVED_INFO = '%1$s%2$s card number as "%3$s" card';
 
 	/**
 	 * @param CardFactory<CardType>  $factory
@@ -86,14 +85,6 @@ final readonly class CardResolved {
 		};
 	}
 
-	public static function symbolToString( Status $status ): string {
-		return match ( $status ) {
-			Status::Success => Symbol::Green->value,
-			Status::Failure => Symbol::Red->value,
-			Status::Omitted => Symbol::NotAllowed->value,
-		};
-	}
-
 	/** @throws LogicException When cannot retrieve resource path from factory. */
 	public function resourceInfo(): string {
 		return sprintf(
@@ -110,15 +101,13 @@ final readonly class CardResolved {
 
 	/** @throws LogicException When this method is invoked when factory is not creating card. */
 	public function cardResolvedInfo( Status $status ): string {
-		return sprintf( self::CARD_RESOLVED_INFO, $this->symbolToString( $status ), $this->resolvedToString( $status ), $this->currentCardName() );
+		return sprintf( self::CARD_RESOLVED_INFO, '', $this->resolvedToString( $status ), $this->currentCardName() );
 	}
 
 	public function factoryResolvedInfo(): string {
-		$args = $this->isSuccess()
-			? [ Symbol::Tick->value, $this->resolvedToString( Status::Success ) ]
-			: [ Symbol::Cross->value, $this->resolvedToString( Status::Failure ) ];
+		$args = $this->isSuccess() ? $this->resolvedToString( Status::Success ) : $this->resolvedToString( Status::Failure );
 
-		return sprintf( self::FACTORY_RESOLVED_INFO, ...[ ...$args, $this->factoryNumber ] );
+		return sprintf( self::FACTORY_RESOLVED_INFO, '', $args, $this->factoryNumber );
 	}
 
 	private function throwPayloadError(): never {
