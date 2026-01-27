@@ -33,7 +33,7 @@ readonly class CardResolved {
 	public function __construct(
 		public CardFactory $factory,
 		public int $factoryNumber,
-		public string $cardNumber,
+		public string|int $cardNumber,
 		private ?Status $status = null,
 		private ?CardCreated $current = null
 	) {}

@@ -14,18 +14,18 @@ use TheWebSolver\Codegarage\PaymentCard\Traits\CardResolver as ResolverTrait;
 
 class CardResolver implements ResolvesCard {
 	use ResolverTrait {
-		ResolverTrait::handleResolvedCard as handlePaymentCardCreated;
+		ResolverTrait::handleResolvedCard as handleResolvedCardFrom;
 		ResolverTrait::resolve as resolveUsing;
 	}
 
 	/** @var non-empty-list<CardFactory<CardType>> */
 	private array $factories;
-	/** @var array{CardFactory<CardType>,int} Current factory, & its index. */
+	/** @var array{CardFactory<CardType>,int} Current factory and its iteration count (index + 1). */
 	private array $currentFactory;
-	private string $cardNumber;
+	private string|int $cardNumber;
 	private ?ResolvedAction $handler = null;
 
-	public function for( string $cardNumber ): ResolvesCard {
+	public function for( string|int $cardNumber ): ResolvesCard {
 		$this->cardNumber ??= $cardNumber;
 
 		return $this;
@@ -73,7 +73,7 @@ class CardResolver implements ResolvesCard {
 	/** @param CardCreated<CardType> $current */
 	private function handleResolvedCard( CardCreated $current ): bool {
 		[$factory, $factoryNumber] = $this->currentFactory;
-		$status                    = $this->handlePaymentCardCreated( $current );
+		$status                    = $this->handleResolvedCardFrom( $current );
 
 		$this->handler?->handle( new CardResolved( $factory, $factoryNumber, $this->cardNumber, Status::Omitted, $current ) );
 
