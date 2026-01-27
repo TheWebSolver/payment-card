@@ -127,7 +127,7 @@ class CardResolvedTest extends TestCase {
 
 		return [
 			[ null, CardResolved::CURRENT_CARD_ERROR ],
-			[ new CardCreated( null /* Not created even though it is set as creatable */, '', [], true ) ],
+			[ new CardCreated( null /* cannot be null when is creatable is true */, '', [], true ), CardCreated::NOT ],
 			[ new CardCreated( $card, 'card-key', 'payload data must be an array', false ) ],
 			[ new CardCreated( $card, 'card-key', [ 'no-"name"-key' => 'Card Name' ], false ) ],
 			[ new CardCreated( $card, 'card-key', [ 'name' => 123 /* Payload's "name" key must have a string value */ ], false ) ],

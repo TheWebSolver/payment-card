@@ -66,15 +66,10 @@ readonly class CardResolved {
 
 	/** @throws LogicException When cannot retrieve Card name from either created Card instance or payload data. */
 	public function currentCardName(): string {
-		if ( $this->current()->isCreatableCard ) {
-			// Card is never null when it is a creatable card. Safeguard just in case...
-			return $this->current()->card?->getName() ?? $this->throwPayloadError();
-		}
-
-		$data = $this->current()->payloadValue;
-
-		// The "name" key/value pair always exists if payload data follows Card Schema. Safeguard just in case...
-		return is_array( $data ) && is_string( $data['name'] ?? null ) ? $data['name'] : $this->throwPayloadError();
+		return $this->current()->isCreatableCard ? $this->current()->card()->getName() : (
+			// The "name" key/value pair always exists if payload data follows Card Schema. Safeguard just in case...
+			is_array( $v = $this->current()->payloadValue ) && is_string( $v['name'] ?? null ) ? $v['name'] : $this->throwPayloadError()
+		);
 	}
 
 	public static function resolvedToString( Status $status ): string {

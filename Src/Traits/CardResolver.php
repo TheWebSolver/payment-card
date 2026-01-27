@@ -49,13 +49,13 @@ trait CardResolver {
 	private function handleResolvedCard( CardCreated $event ): bool {
 		[$cardNumber, $exitOnResolve] = $this->resolveArguments;
 		$status                       = $event->isCreatableCard
-			? ( $event->card?->isNumberValid( $cardNumber ) ? Status::Success : Status::Failure )
+			? ( $event->card()->isNumberValid( $cardNumber ) ? Status::Success : Status::Failure )
 			: Status::Omitted;
 
 		$this->coveredCards[ $event->payloadIndex ] = $status;
 
-		if ( $event->card && Status::Success === $status ) {
-			$this->resolvedCards[] = $event->card;
+		if ( Status::Success === $status ) {
+			$this->resolvedCards[] = $event->card();
 
 			return ! $exitOnResolve;
 		}
