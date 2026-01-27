@@ -14,5 +14,5 @@ interface ResolvedAction {
 	/**
 	 * Handles resolved cord type.
 	 */
-	public function handle( CardResolved $event ): mixed;
+	public function handle( CardResolved $event ): void;
 }
