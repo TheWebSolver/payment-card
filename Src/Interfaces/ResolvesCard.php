@@ -10,14 +10,14 @@ interface ResolvesCard {
 	/**
 	 * Sets card number that resolves the card type.
 	 *
-	 * This must be implemented as an immutable method such that resolver state does not change on subsequent invocation.
+	 * This must be implemented as an immutable method in a way that resolver state does not change on subsequent invocation.
 	 */
-	public function for( string $cardNumber ): self;
+	public function for( string|int $cardNumber ): self;
 
 	/**
 	 * Sets card factories to resolve the card type.
 	 *
-	 * This must be implemented as an immutable method such that resolver state does not change on subsequent invocation.
+	 * This must be implemented as an immutable method in a way that resolver state does not change on subsequent invocation.
 	 *
 	 * @param CardFactory<TCardType> $factory
 	 * @param CardFactory<TCardType> ...$factories
@@ -29,7 +29,7 @@ interface ResolvesCard {
 	/**
 	 * Sets handler that handles card type during resolving process.
 	 *
-	 * This must be implemented as an immutable method such that resolver state does not change on subsequent invocation.
+	 * This must be implemented as an immutable method in a way that resolver state does not change on subsequent invocation.
 	 */
 	public function handleWith( ResolvedAction $handler ): self;
 
