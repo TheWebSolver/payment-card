@@ -6,9 +6,9 @@ namespace TheWebSolver\Codegarage\Test;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 use TheWebSolver\Codegarage\Test\Fixture\CreditCard;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 use TheWebSolver\Codegarage\Test\Fixture\PaymentCardValidator;
 
@@ -18,7 +18,7 @@ class PaymentCardValidatorTest extends TestCase {
 
 	#[Test]
 	public function itValidatesWithMockedLuhnAlgorithm(): void {
-		$americanExpressCard = ( new class( 'Test' ) extends PaymentCardType {
+		$americanExpressCard = ( new class( 'Test' ) extends PaymentCard {
 			public static function matchesLuhnAlgorithm( string $value, bool $shouldRun = true ): bool {
 				return true;
 			}
@@ -26,7 +26,7 @@ class PaymentCardValidatorTest extends TestCase {
 
 		$this->assertTrue( $americanExpressCard->isNumberValid( 378282246310005 ) );
 
-		$americanExpressCard = ( new class( 'Test' ) extends PaymentCardType {
+		$americanExpressCard = ( new class( 'Test' ) extends PaymentCard {
 			public static function matchesLuhnAlgorithm( string $value, bool $shouldRun = true ): bool {
 				return false;
 			}

@@ -9,18 +9,18 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Asserter;
 use TheWebSolver\Codegarage\Test\Fixture\Formatter;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
 
 class PaymentCardTypeTest extends TestCase {
 	#[Test]
 	public function itEnsuresSetterGetterWorks(): void {
-		$cardType = new PaymentCardType( 'Test Card', false, $this->createStub( Asserter::class ) );
+		$cardType = new PaymentCard( 'Test Card', false, $this->createStub( Asserter::class ) );
 
 		$this->assertSame( 'Test Card', $cardType->getType() );
 		$this->assertFalse( $cardType->needsLuhnCheck() );
 
-		$cardType = new PaymentCardType( type: 'Debit Card', asserter: $asserter = $this->createMock( Asserter::class ) );
+		$cardType = new PaymentCard( type: 'Debit Card', asserter: $asserter = $this->createMock( Asserter::class ) );
 
 		$asserter->expects( $this->exactly( 2 ) )->method( 'setType' )->with( 'Debit Card' )->willReturnSelf();
 
@@ -58,7 +58,7 @@ class PaymentCardTypeTest extends TestCase {
 		bool $throws = true,
 		?array $getterValue = null
 	): void {
-		$cardType = new PaymentCardType( 'Test' );
+		$cardType = new PaymentCard( 'Test' );
 		$setter   = "set{$type}";
 		$getter   = "get{$type}";
 
@@ -85,6 +85,6 @@ class PaymentCardTypeTest extends TestCase {
 	#[Test]
 	#[DataProviderExternal( Formatter::class, 'provideCardNumberWithBreakpoints' )]
 	public function itFormatsCardNumberBasedOnBreakpoint( array $breakpoints, string|int $cardNumber, string $expected ): void {
-		$this->assertSame( $expected, ( new PaymentCardType( 'Test' ) )->setBreakpoint( ...$breakpoints )->format( $cardNumber ) );
+		$this->assertSame( $expected, ( new PaymentCard( 'Test' ) )->setBreakpoint( ...$breakpoints )->format( $cardNumber ) );
 	}
 }

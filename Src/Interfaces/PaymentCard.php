@@ -6,7 +6,7 @@ namespace TheWebSolver\Codegarage\PaymentCard\Interfaces;
 use RuntimeException;
 use InvalidArgumentException;
 
-interface PaymentCard extends CardType {
+interface PaymentCardType extends CardType {
 	public const BREAKPOINT_CHECKSUM        = 12;
 	public const BREAKPOINT_HOLDERS         = '$1 $2 $3';
 	public const BREAKPOINT_DEFAULT_PATTERN = '(\d{4})(\d{4})(\d{4})';

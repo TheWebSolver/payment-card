@@ -12,9 +12,9 @@ use OutOfBoundsException;
 use InvalidArgumentException;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
-use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCardType;
 
-/** @template-implements CardFactory<PaymentCard> */
+/** @template-implements CardFactory<PaymentCardType> */
 class PaymentCardFactory implements CardFactory {
 	public const DEFAULT_CARD_TYPE = 'Credit Card';
 
@@ -27,7 +27,7 @@ class PaymentCardFactory implements CardFactory {
 	 */
 	public const CARD_SCHEMA = [
 		'type?'      => 'string',
-		'classname?' => 'class-string<' . PaymentCard::class . '>',
+		'classname?' => 'class-string<' . PaymentCardType::class . '>',
 		'checkLuhn?' => 'bool',
 		'name'       => 'string',
 		'alias'      => 'string',
@@ -51,10 +51,10 @@ class PaymentCardFactory implements CardFactory {
 	private string $filePath;
 	private string $fileType = '';
 
-	/** @var ?class-string<PaymentCard> */
+	/** @var ?class-string<PaymentCardType> */
 	private static ?string $defaultCardClass;
 
-	/** @param class-string<PaymentCard> $classname */
+	/** @param class-string<PaymentCardType> $classname */
 	public static function setGlobalCardClass( string $classname ): void {
 		self::$defaultCardClass ??= $classname;
 	}
@@ -95,7 +95,7 @@ class PaymentCardFactory implements CardFactory {
 		return $this->indicesToCreate;
 	}
 
-	public function create( string|int $payloadIndex ): PaymentCard {
+	public function create( string|int $payloadIndex ): PaymentCardType {
 		$this->resolvePayloadContent();
 
 		$args = $this->payload[ $payloadIndex ]
@@ -136,7 +136,7 @@ class PaymentCardFactory implements CardFactory {
 	/**
 	 * Creates Card instance lazily based on payload index sent and matching it with the current index before yield.
 	 *
-	 * @return Generator<array-key,?PaymentCard> Returns Card instance or null based on sent value.
+	 * @return Generator<array-key,?PaymentCardType> Returns Card instance or null based on sent value.
 	 * @throws RuntimeException When payload cannot be resolved.
 	 * @see CardFactory::lazyload()
 	 */
@@ -156,7 +156,7 @@ class PaymentCardFactory implements CardFactory {
 		}
 	}
 
-	private function maybeCreateForIndex( mixed $sent, string|int $index ): ?PaymentCard {
+	private function maybeCreateForIndex( mixed $sent, string|int $index ): ?PaymentCardType {
 		return match ( true ) {
 			is_string( $sent ), is_int( $sent ) => $sent === $index ? $this->create( $index ) : null,
 			is_bool( $sent )                    => $sent ? $this->create( $index ) : null,
@@ -182,7 +182,7 @@ class PaymentCardFactory implements CardFactory {
 	}
 
 	/** @param array<string,mixed> $args */
-	private function getCardInstance( array $args ): PaymentCard {
+	private function getCardInstance( array $args ): PaymentCardType {
 		[ $type, $classname, $checkLuhn ] = $this->polyfill( $args );
 
 		return new $classname( $type, $checkLuhn );
@@ -190,15 +190,15 @@ class PaymentCardFactory implements CardFactory {
 
 	/**
 	 * @param array<string,mixed> $args
-	 * @return array{string,class-string<PaymentCard>,bool}
+	 * @return array{string,class-string<PaymentCardType>,bool}
 	 */
 	private function polyfill( array $args ): array {
 		$class   = $args['classname'] ?? null;
-		$default = self::$defaultCardClass ?? PaymentCardType::class;
+		$default = self::$defaultCardClass ?? PaymentCard::class;
 
 		return [
 			is_string( $card = ( $args['type'] ?? null ) ) ? $card : self::DEFAULT_CARD_TYPE,
-			is_string( $class ) && is_a( $class, PaymentCard::class, allow_string: true ) ? $class : $default,
+			is_string( $class ) && is_a( $class, PaymentCardType::class, allow_string: true ) ? $class : $default,
 			is_bool( $luhn = ( $args['checkLuhn'] ?? null ) ) ? $luhn : true,
 		];
 	}

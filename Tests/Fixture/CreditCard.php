@@ -3,6 +3,6 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\Test\Fixture;
 
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 
-class CreditCard extends PaymentCardType {}
+class CreditCard extends PaymentCard {}

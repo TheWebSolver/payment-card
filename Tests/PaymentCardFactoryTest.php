@@ -8,10 +8,10 @@ use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
+use TheWebSolver\Codegarage\PaymentCard\PaymentCard;
 use TheWebSolver\Codegarage\Test\Fixture\CreditCard;
-use TheWebSolver\Codegarage\PaymentCard\PaymentCardType;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
-use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCard;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCardType;
 
 class PaymentCardFactoryTest extends TestCase {
 	#[Test]
@@ -178,16 +178,16 @@ class PaymentCardFactoryTest extends TestCase {
 		];
 	}
 
-	private function assertRegisteredCardType( PaymentCard $card ): void {
+	private function assertRegisteredCardType( PaymentCardType $card ): void {
 		$this->assertSame(
 			( 'gpn' === $card->getAlias() ? 'Debit' : 'Credit' ) . ' Card',
 			$card->getType()
 		);
 	}
 
-	private function assertInstanceIsProvidedOrDefault( PaymentCard $card ): void {
+	private function assertInstanceIsProvidedOrDefault( PaymentCardType $card ): void {
 		if ( 'napas' !== $card->getAlias() ) {
-			$this->assertInstanceOf( PaymentCardType::class, $card );
+			$this->assertInstanceOf( PaymentCard::class, $card );
 
 			return;
 		}
