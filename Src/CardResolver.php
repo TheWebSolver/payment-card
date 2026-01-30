@@ -3,6 +3,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
 
+use LogicException;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardResolved;
@@ -10,23 +11,45 @@ use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvesCard;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvedAction;
-use TheWebSolver\Codegarage\PaymentCard\Traits\CardResolver as ResolverTrait;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvingAction;
 
 class CardResolver implements ResolvesCard {
-	use ResolverTrait {
-		ResolverTrait::handleResolvedCard as handleResolvedCardFrom;
-		ResolverTrait::resolve as resolveUsing;
-	}
+	final public const RESOLVING_ACTION_NOT_DEFINED = 'Impossible to validate created card without resolving action.';
 
 	/** @var non-empty-list<CardFactory<CardType>> */
 	private array $factories;
-	/** @var array{CardFactory<CardType>,int} Current factory and its iteration count (index + 1). */
-	private array $currentFactory;
+	/** @var Status[] */
+	private array $coveredCards;
+	private bool $exitOnResolve;
 	private string|int $cardNumber;
-	private ?ResolvedAction $handler = null;
+	private int $currentFactoryIndex;
+	private ResolvingAction $resolvingHandler;
+	private ?ResolvedAction $resolvedHandler = null;
 
-	public function for( string|int $cardNumber ): ResolvesCard {
-		$this->cardNumber ??= $cardNumber;
+	/*
+	| ----------------------------------------------------------------------------
+	| Artifacts when resolving a Card. Must be cleared once resolve is complete.
+	| ----------------------------------------------------------------------------
+	*/
+
+	/** @var non-empty-list<CardType> */
+	private array $resolvedCards;
+
+	public function shouldExitOnResolve(): bool {
+		return $this->exitOnResolve ?? true;
+	}
+
+	public function getCardNumber(): string|int {
+		return $this->cardNumber;
+	}
+
+	public function getCoveredCardStatus(): array {
+		return $this->coveredCards;
+	}
+
+	public function when( string|int $cardNumber, bool $exitOnResolve = true ): ResolvesCard {
+		$this->cardNumber    ??= $cardNumber;
+		$this->exitOnResolve ??= $exitOnResolve;
 
 		return $this;
 	}
@@ -37,46 +60,70 @@ class CardResolver implements ResolvesCard {
 		return $this;
 	}
 
-	public function handleWith( ResolvedAction $handler ): ResolvesCard {
-		$this->handler ??= $handler->resolvedWith( $this );
+	public function with( ResolvingAction $resolvingHandler, ?ResolvedAction $resolvedHandler = null ): ResolvesCard {
+		$this->resolvingHandler ??= $resolvingHandler->with( $this );
+		$this->resolvedHandler  ??= $resolvedHandler?->with( $this );
 
 		return $this;
 	}
 
-	public function resolve( bool $exitOnResolve ): CardType|array|null {
+	public function getCurrentFactory(): array {
+		return [ $this->factories[ $this->currentFactoryIndex ], $this->currentFactoryIndex + 1 ];
+	}
+
+	public function resolve(): CardType|array|null {
 		$resolved = [];
 
 		foreach ( $this->factories as $index => $factory ) {
-			$this->currentFactory = [ $factory, $factoryNumber = $index + 1 ];
+			if ( $validCards = $this->validatedCardsCreatedByCurrentFactory( $this->currentFactoryIndex = $index ) ) {
+				if ( $this->shouldExitOnResolve() ) {
+					return end( $validCards );
+				}
 
-			$this->handler?->handle( new CardResolved( $factory, $factoryNumber, $this->cardNumber ) );
-
-			$resolvedCards = $this->resolveUsing( $this->cardNumber, $factory, $exitOnResolve );
-			$status        = ( $hasNoCards = null === $resolvedCards ) ? Status::Failure : Status::Success;
-
-			$this->handler?->handle( new CardResolved( $factory, $factoryNumber, $this->cardNumber, $status ) );
-
-			if ( $hasNoCards ) {
-				continue;
+				$resolved[ $index ] = $validCards;
 			}
-
-			if ( $exitOnResolve ) {
-				return $resolvedCards instanceof CardType ? $resolvedCards : end( $resolvedCards );
-			}
-
-			$resolved[ $index ] = $resolvedCards;
 		}
 
 		return $resolved ? $resolved : null;
 	}
 
-	/** @param CardCreated<CardType> $current */
-	private function handleResolvedCard( CardCreated $current ): bool {
-		[$factory, $factoryNumber] = $this->currentFactory;
-		$status                    = $this->handleResolvedCardFrom( $current );
+	public function handleCreated( CardCreated $event ): Status {
+		$status = ! $event->isCreatableCard ? Status::Omitted : (
+			$event->card()->isNumberValid( $this->getCardNumber() ) ? Status::Success : Status::Failure
+		);
 
-		$this->handler?->handle( new CardResolved( $factory, $factoryNumber, $this->cardNumber, Status::Omitted, $current ) );
+		$this->coveredCards[ $event->payloadIndex ] = $status;
+
+		Status::Success === $status && $event->isCreatableCard && ( $this->resolvedCards[] = $event->card() );
 
 		return $status;
+	}
+
+	public function handleResolved( CardResolved $event ): void {
+		$this->resolvedHandler?->handle( $event );
+	}
+
+	/**
+	 * @return ?non-empty-list<CardType>
+	 * @throws LogicException When resolving action is not provided.
+	 */
+	protected function validatedCardsCreatedByCurrentFactory( int $index ): ?array {
+		$factory = $this->factories[ $index ];
+
+		$this->resolvedHandler?->handle( new CardResolved( $factory, $index + 1, $this->getCardNumber() ) );
+
+			iterator_to_array(
+				$factory->lazyLoad( $this->resolvingHandler ?? throw new LogicException( self::RESOLVING_ACTION_NOT_DEFINED ) )
+			);
+
+			$resolvedCards = $this->resolvedCards ?? null;
+
+			unset( $this->resolvedCards );
+
+			$status = null === $resolvedCards ? Status::Failure : Status::Success;
+
+			$this->resolvedHandler?->handle( new CardResolved( $factory, $index + 1, $this->getCardNumber(), $status ) );
+
+			return $resolvedCards;
 	}
 }
