@@ -21,15 +21,14 @@ parameters:
 			identifier: argument.unpackNonIterable
 			path: Src/PaymentCardFactory.php
 			count: 2
-		- # Always returns array of non-empty-list of resolved cards when exit on resolve is false.
-			identifier: return.type
-			messages:
-				- '#^Method .*?resolve\(\) should return non-empty-array.*?$#'
-				- '#^Method .*?resolve\(\) should return non-empty-list.*?$#'
-				- '#^Method .*?resolveUsing\(\) should return non-empty-list.*?$#'
+		- # Ignore $event always exists error. It so does not when handler is not provided.
+			identifier: isset.variable
+			path: Src/PaymentCardFactory.php
+			count: 1
+			message: '#^Variable \$event in isset\(\) always exists and is not nullable.$#'
 		- # Regex validated array instead of mixed.
-			path: Src/Tracer/BraintreePaymentCardTracer.php
 			identifier: return.type
+			path: Src/Tracer/BraintreePaymentCardTracer.php
 			count: 1
 		- # Allow Mocked Card Type in test files.
 			identifier: argument.type
