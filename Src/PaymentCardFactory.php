@@ -3,7 +3,6 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
 
-use Closure;
 use Generator;
 use Throwable;
 use TypeError;
@@ -12,6 +11,7 @@ use OutOfBoundsException;
 use InvalidArgumentException;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CreatingAction;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCardType;
 
 /** @template-implements CardFactory<PaymentCardType> */
@@ -114,7 +114,7 @@ class PaymentCardFactory implements CardFactory {
 		}
 	}
 
-	public function lazyload( ?Closure $eventHandler = null ): Generator {
+	public function lazyload( ?CreatingAction $handler = null ): Generator {
 		$this->resolvePayloadContent();
 
 		$onlyIndices = $this->getCreatableIndices();
@@ -123,11 +123,12 @@ class PaymentCardFactory implements CardFactory {
 		foreach ( $this->payload as $index => $args ) {
 			$isCreatable = ! $onlyIndices || in_array( $index, $onlyIndices, strict: true );
 			$card        = $generator->send( $isCreatable );
-			$yieldNext   = $eventHandler ? $eventHandler( new CardCreated( $card, $index, $args, $isCreatable ) ) : true;
+
+			$handler?->handle( $event = new CardCreated( $card, $index, $args, $isCreatable ) );
 
 			yield $index => $card;
 
-			if ( ! $yieldNext ) {
+			if ( isset( $event ) && $event->shouldStopPropagation() ) {
 				return;
 			}
 		}

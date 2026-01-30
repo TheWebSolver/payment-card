@@ -3,11 +3,9 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Interfaces;
 
-use Closure;
 use Generator;
 use RuntimeException;
 use OutOfBoundsException;
-use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 
 /** @template TCardType of CardType */
@@ -50,10 +48,9 @@ interface CardFactory {
 	/**
 	 * Creates card instances lazily one at a time.
 	 *
-	 * @param null|Closure(CardCreated<TCardType>):bool $eventHandler When eventHandler returns false, the yielding process must be stopped.
 	 * @return Generator<array-key,TCardType|null> Generator may yield null when creatable indices array is provided, and
 	 *                                             current payload index does not exist in that array.
 	 * @throws RuntimeException When payload cannot be resolved.
 	 */
-	public function lazyload( ?Closure $eventHandler = null ): Generator;
+	public function lazyload( ?CreatingAction $handler = null ): Generator;
 }
