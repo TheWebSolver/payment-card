@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\CardResolver;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
+use TheWebSolver\Codegarage\PaymentCard\ResolvingCardHandler;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvesCard;
 
 class CardResolverTest extends TestCase {
@@ -42,7 +43,10 @@ class CardResolverTest extends TestCase {
 	#[Test]
 	#[DataProvider( 'provideNumbersForExit' )]
 	public function itResolvesEitherCardOrNullWhenExitStatusIsTrue( string $number, ?string $expectedName = null ): void {
-		$this->assertSame( $expectedName, $this->resolver->for( $number )->resolve( true )?->getName() );
+		$resolvedCard = $this->resolver->when( $number )->with( new ResolvingCardHandler() )->resolve();
+
+		$this->assertIsNotArray( $resolvedCard );
+		$this->assertSame( $expectedName, $resolvedCard?->getName() );
 	}
 
 	/** @return list<list<string>> */
@@ -58,14 +62,11 @@ class CardResolverTest extends TestCase {
 
 	#[Test]
 	public function itResolvesEitherCardOrNullWhenExitStatusIsFalse(): void {
-		$resolvedCards = $this->resolver->for( '6460435912011101' )->resolve( false );
+		$resolvedCards = $this->resolver->when( '6460435912011101', exitOnResolve: false )->with( new ResolvingCardHandler() )->resolve();
 
-		$this->assertCount( 2, $resolvedCards ?? [], 'Ues both factories payload to resolve card.' );
-
-		// @phpstan-ignore-next-line
+		$this->assertIsArray( $resolvedCards, 'Uses both factories payload to resolve card.' );
 		$this->assertSame( 'Dummy Nepal Card', $resolvedCards[0][0]->getName(), 'Matches "64" from Dummy payload' );
 		$this->assertFalse( isset( $resolvedCards[0][1] ) );
-		// @phpstan-ignore-next-line
 		$this->assertSame( 'Discover', $resolvedCards[1][0]->getName(), 'Matches "64" from Discover payload' );
 		$this->assertFalse( isset( $resolvedCards[1][1] ) );
 	}
