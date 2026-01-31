@@ -62,14 +62,6 @@ readonly class CardResolved {
 		return $this->current ?? throw new LogicException( sprintf( self::CURRENT_CARD_ERROR, $this->factoryNumber ) );
 	}
 
-	public static function resolvedToString( Status $status ): string {
-		return match ( $status ) {
-			Status::Success => 'Resolved',
-			Status::Failure => 'Could not resolve',
-			Status::Omitted => 'Skipped resolving',
-		};
-	}
-
 	/** @throws LogicException When cannot retrieve resource path from factory. */
 	public function resourceInfo(): string {
 		return sprintf(
@@ -90,14 +82,14 @@ readonly class CardResolved {
 	 */
 	public function cardResolvedInfo( Status $status ): string {
 		try {
-			return sprintf( self::CARD_RESOLVED_INFO, $this->resolvedToString( $status ), $this->current()->cardName() );
+			return sprintf( self::CARD_RESOLVED_INFO, $status->resolvedState(), $this->current()->cardName() );
 		} catch ( LogicException $e ) {
 			throw new LogicException( trim( $e->getMessage(), '.' ) . " from factory #{$this->factoryNumber}." );
 		}
 	}
 
 	public function factoryResolvedInfo(): string {
-		$args = $this->isSuccess() ? $this->resolvedToString( Status::Success ) : $this->resolvedToString( Status::Failure );
+		$args = ( $this->isSuccess() ? Status::Success : Status::Failure )->resolvedState();
 
 		return sprintf( self::FACTORY_RESOLVED_INFO, $args, $this->factoryNumber );
 	}

@@ -87,21 +87,6 @@ class CardResolvedTest extends TestCase {
 	}
 
 	#[Test]
-	#[DataProvider( 'provideStatusBasedStringInfo' )]
-	public function itVerifiesResolvedToString( Status $status, string $expectedString ): void {
-		$this->assertSame( $expectedString, CardResolved::resolvedToString( $status ) );
-	}
-
-	/** @return array<array{Status,string}> */
-	public static function provideStatusBasedStringInfo(): array {
-		return [
-			[ Status::Success, 'Resolved' ],
-			[ Status::Failure, 'Could not resolve' ],
-			[ Status::Omitted, 'Skipped resolving' ],
-		];
-	}
-
-	#[Test]
 	#[DataProvider( 'provideResourcePathForFactory' )]
 	public function itGetsInfoAboutResourcePathFromFactory( ?string $resourcePath, bool $expectedValidPath ): void {
 		$factory = $this->createMock( CardFactory::class );
