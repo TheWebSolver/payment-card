@@ -8,7 +8,9 @@ use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 
 /** @template TCardType of CardType */
 final class CardCreated {
-	public const NOT = 'Card not instantiated using given payload value. Verify using "' . __CLASS__ . '::$isCreatableCard" if it a creatable card?';
+	public const NOT = 'Card not instantiated. Verify using "' . __CLASS__ . '::$isCreatableCard" if it a creatable card?';
+	/** @placeholder `%s:` Payload index */
+	public const NO_NAME = 'Payload data does not follow card schema. "name" not found for payload index "%s".';
 
 	private bool $stopPropagation = false;
 
@@ -28,6 +30,17 @@ final class CardCreated {
 	 */
 	public function card(): CardType {
 		return $this->card ?? throw new LogicException( self::NOT );
+	}
+
+	/** @throws LogicException When payload data does not follow Card Schema. */
+	public function cardName(): string {
+		try {
+			return $this->card()->getName();
+		} catch ( LogicException ) {
+			return is_array( $data = $this->payloadValue ) && is_string( $name = $data['name'] ?? null )
+				? $name
+				: throw new LogicException( sprintf( self::NO_NAME, $this->payloadIndex ) );
+		}
 	}
 
 	public function stopPropagation( bool $stop = true ): void {
