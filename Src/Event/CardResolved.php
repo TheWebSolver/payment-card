@@ -15,8 +15,6 @@ readonly class CardResolved {
 
 	/** @placeholder `%d`: Current factory number */
 	public const RESOURCE_ERROR = 'Could not resolve payload resource path from factory #%d';
-	/** @placeholder `%d`: Current factory number */
-	public const PAYLOAD_ERROR = 'Could not resolve Card name against payload from factory #%d';
 	/** @placeholder: `%s`: Payload resource realpath  */
 	public const RESOURCE_INFO = 'Payload resource path: %s';
 	/** @placeholder: `1:` Factory started or finished, `2:` Current factory number */
@@ -64,14 +62,6 @@ readonly class CardResolved {
 		return $this->current ?? throw new LogicException( sprintf( self::CURRENT_CARD_ERROR, $this->factoryNumber ) );
 	}
 
-	/** @throws LogicException When cannot retrieve Card name from either created Card instance or payload data. */
-	public function currentCardName(): string {
-		return $this->current()->isCreatableCard ? $this->current()->card()->getName() : (
-			// The "name" key/value pair always exists if payload data follows Card Schema. Safeguard just in case...
-			is_array( $v = $this->current()->payloadValue ) && is_string( $v['name'] ?? null ) ? $v['name'] : $this->throwPayloadError()
-		);
-	}
-
 	public static function resolvedToString( Status $status ): string {
 		return match ( $status ) {
 			Status::Success => 'Resolved',
@@ -94,19 +84,22 @@ readonly class CardResolved {
 		return sprintf( self::FACTORY_STATUS_INFO, $status, $this->cardNumber, $this->factoryNumber );
 	}
 
-	/** @throws LogicException When this method is invoked when factory is not creating card. */
+	/**
+	 * @throws LogicException When this method is invoked when factory is not creating card.
+	 * @throws LogicException When payload data does not follow Card Schema.
+	 */
 	public function cardResolvedInfo( Status $status ): string {
-		return sprintf( self::CARD_RESOLVED_INFO, $this->resolvedToString( $status ), $this->currentCardName() );
+		try {
+			return sprintf( self::CARD_RESOLVED_INFO, $this->resolvedToString( $status ), $this->current()->cardName() );
+		} catch ( LogicException $e ) {
+			throw new LogicException( trim( $e->getMessage(), '.' ) . " from factory #{$this->factoryNumber}." );
+		}
 	}
 
 	public function factoryResolvedInfo(): string {
 		$args = $this->isSuccess() ? $this->resolvedToString( Status::Success ) : $this->resolvedToString( Status::Failure );
 
 		return sprintf( self::FACTORY_RESOLVED_INFO, $args, $this->factoryNumber );
-	}
-
-	private function throwPayloadError(): never {
-		throw new LogicException( sprintf( self::PAYLOAD_ERROR, $this->factoryNumber ) );
 	}
 
 	private function throwResourceError(): never {

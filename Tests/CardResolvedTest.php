@@ -82,55 +82,7 @@ class CardResolvedTest extends TestCase {
 	public static function provideThrowableMethodNames(): array {
 		return [
 			[ 'current', CardResolved::CURRENT_CARD_ERROR ],
-			[ 'currentCardName', CardResolved::CURRENT_CARD_ERROR ],
 			[ 'resourceInfo', CardResolved::RESOURCE_ERROR ],
-		];
-	}
-
-	#[Test]
-	public function itGetsCurrentCardNameEitherFromCardInstanceOrPayloadData(): void {
-		$factory = $this->createStub( CardFactory::class );
-		$card    = $this->createMock( CardType::class );
-
-		$card->expects( $this->once() )->method( 'getName' )->willReturn( 'Created Card' );
-
-		$cardCreated = new CardCreated( $card, 0, [], true );
-		$createEvent = new CardResolved( $factory, 0, '0', Status::Success, $cardCreated );
-
-		$this->assertSame( 'Created Card', $createEvent->currentCardName(), 'From $cardCreated->card->getName()' );
-
-		$cardNotCreated = new CardCreated( $card, 0, [ 'name' => 'Payload Card' ], false );
-		$nonCreateEvent = new CardResolved( $factory, 0, '0', Status::Failure, $cardNotCreated );
-
-		$this->assertSame( 'Payload Card', $nonCreateEvent->currentCardName(), 'From $cardNotCreated->payloadValue' );
-	}
-
-	/** @param ?CardCreated<CardType> $current */
-	#[Test]
-	#[DataProvider( 'provideInvalidEventForCurrentCardName' )]
-	public function itThrowsExceptionForCurrentCardNameWhenNoEventOrEventPropertiesMismatch(
-		?CardCreated $current,
-		string $expectedMsg = CardResolved::PAYLOAD_ERROR
-	): void {
-		$factory      = $this->createStub( CardFactory::class );
-		$resolveEvent = new CardResolved( $factory, 0, '0', Status::Success, $current );
-
-		$this->expectException( LogicException::class );
-		$this->expectExceptionMessage( sprintf( $expectedMsg, 0 ) );
-
-		$resolveEvent->currentCardName();
-	}
-
-	/** @return mixed[] */
-	public static function provideInvalidEventForCurrentCardName(): array {
-		$card = self::createStub( CardType::class );
-
-		return [
-			[ null, CardResolved::CURRENT_CARD_ERROR ],
-			[ new CardCreated( null /* cannot be null when is creatable is true */, '', [], true ), CardCreated::NOT ],
-			[ new CardCreated( $card, 'card-key', 'payload data must be an array', false ) ],
-			[ new CardCreated( $card, 'card-key', [ 'no-"name"-key' => 'Card Name' ], false ) ],
-			[ new CardCreated( $card, 'card-key', [ 'name' => 123 /* Payload's "name" key must have a string value */ ], false ) ],
 		];
 	}
 
