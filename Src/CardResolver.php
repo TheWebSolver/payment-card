@@ -14,7 +14,8 @@ use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvedAction;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvingAction;
 
 class CardResolver implements ResolvesCard {
-	final public const RESOLVING_ACTION_NOT_DEFINED = 'Impossible to validate created card without resolving action.';
+	/** @placeholder: `1:` Payload index, `2:` Card name */
+	final public const PAYLOAD_INDEX_ALREADY_COVERED = 'Duplicate payload index found "%1$s" for card "%2$s" already created by factory.';
 
 	/** @var non-empty-list<CardFactory<CardType>> */
 	private array $factories;
@@ -87,14 +88,16 @@ class CardResolver implements ResolvesCard {
 		return $resolved ? $resolved : null;
 	}
 
-	public function validate( CardCreated $event ): Status {
-		$status = ! $event->isCreatableCard ? Status::Omitted : (
-			$event->card()->isNumberValid( $this->getCardNumber() ) ? Status::Success : Status::Failure
-		);
+	public function validate( CardCreated $current ): Status {
+		if ( isset( $this->coveredCards[ $index = $current->payloadIndex ] ) ) {
+			throw new LogicException( sprintf( self::PAYLOAD_INDEX_ALREADY_COVERED, $index, $current->cardName() ) );
+		}
 
-		$this->coveredCards[ $event->payloadIndex ] = $status;
+		$this->coveredCards[ $index ] = $status = ! $current->isCreatableCard
+			? Status::Omitted
+			: ( $current->card()->isNumberValid( $this->getCardNumber() ) ? Status::Success : Status::Failure );
 
-		Status::Success === $status && $event->isCreatableCard && ( $this->resolvedCards[] = $event->card() );
+		Status::Success === $status && $current->isCreatableCard && ( $this->resolvedCards[] = $current->card() );
 
 		return $status;
 	}
@@ -103,18 +106,13 @@ class CardResolver implements ResolvesCard {
 		$this->resolvedHandler?->handle( $event );
 	}
 
-	/**
-	 * @return ?non-empty-list<CardType>
-	 * @throws LogicException When resolving action is not provided.
-	 */
+	/** @return ?non-empty-list<CardType> */
 	protected function validatedCardsCreatedByCurrentFactory( int $index ): ?array {
 		$factory = $this->factories[ $index ];
 
 		$this->resolvedHandler?->handle( new CardResolved( $factory, $index + 1, $this->getCardNumber() ) );
 
-			iterator_to_array(
-				$factory->lazyLoad( $this->resolvingHandler ?? throw new LogicException( self::RESOLVING_ACTION_NOT_DEFINED ) )
-			);
+			iterator_to_array( $factory->lazyLoad( $this->resolvingHandler ?? ( new ResolvingCardHandler() )->with( $this ) ) );
 
 			$resolvedCards = $this->resolvedCards ?? null;
 

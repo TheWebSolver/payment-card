@@ -51,9 +51,11 @@ interface ResolvesCard {
 	 *
 	 * This may be implemented as a mutable method to register covered cards, resolved status, etc. to change the resolver state.
 	 *
-	 * @param CardCreated<CardType> $event
+	 * @param CardCreated<CardType> $current
+	 * @throws LogicException When card type with same payload index is already validated.
+	 * @throws LogicException When payload data does not follow card schema.
 	 */
-	public function validate( CardCreated $event ): Status;
+	public function validate( CardCreated $current ): Status;
 
 	/**
 	 * Handles created card type's resolved state for the current factory.

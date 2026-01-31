@@ -8,7 +8,6 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\CardResolver;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
-use TheWebSolver\Codegarage\PaymentCard\ResolvingCardHandler;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvesCard;
 
 class CardResolverTest extends TestCase {
@@ -43,7 +42,7 @@ class CardResolverTest extends TestCase {
 	#[Test]
 	#[DataProvider( 'provideNumbersForExit' )]
 	public function itResolvesEitherCardOrNullWhenExitStatusIsTrue( string $number, ?string $expectedName = null ): void {
-		$resolvedCard = $this->resolver->when( $number )->with( new ResolvingCardHandler() )->resolve();
+		$resolvedCard = $this->resolver->when( $number )->resolve();
 
 		$this->assertIsNotArray( $resolvedCard );
 		$this->assertSame( $expectedName, $resolvedCard?->getName() );
@@ -62,7 +61,7 @@ class CardResolverTest extends TestCase {
 
 	#[Test]
 	public function itResolvesEitherCardOrNullWhenExitStatusIsFalse(): void {
-		$resolvedCards = $this->resolver->when( '6460435912011101', exitOnResolve: false )->with( new ResolvingCardHandler() )->resolve();
+		$resolvedCards = $this->resolver->when( '6460435912011101', exitOnResolve: false )->resolve();
 
 		$this->assertIsArray( $resolvedCards, 'Uses both factories payload to resolve card.' );
 		$this->assertSame( 'Dummy Nepal Card', $resolvedCards[0][0]->getName(), 'Matches "64" from Dummy payload' );
