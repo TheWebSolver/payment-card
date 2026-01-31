@@ -47,13 +47,13 @@ interface ResolvesCard {
 	public function resolve(): CardType|array|null;
 
 	/**
-	 * Handles card type created by the current factory.
+	 * Validates card type created by the current factory and returns its status.
 	 *
 	 * This may be implemented as a mutable method to register covered cards, resolved status, etc. to change the resolver state.
 	 *
 	 * @param CardCreated<CardType> $event
 	 */
-	public function handleCreated( CardCreated $event ): Status;
+	public function validate( CardCreated $event ): Status;
 
 	/**
 	 * Handles created card type's resolved state for the current factory.

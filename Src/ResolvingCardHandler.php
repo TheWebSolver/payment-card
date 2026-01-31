@@ -21,7 +21,7 @@ class ResolvingCardHandler implements ResolvingAction {
 
 	/** @param CardCreated<CardType> $event */
 	public function handle( CardCreated $event ): void {
-		$status                    = $this->resolver->handleCreated( $event );
+		$status                    = $this->resolver->validate( $event );
 		[$factory, $factoryNumber] = $this->resolver->getCurrentFactory();
 
 		$this->resolver->handleResolved(

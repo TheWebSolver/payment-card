@@ -87,7 +87,7 @@ class CardResolver implements ResolvesCard {
 		return $resolved ? $resolved : null;
 	}
 
-	public function handleCreated( CardCreated $event ): Status {
+	public function validate( CardCreated $event ): Status {
 		$status = ! $event->isCreatableCard ? Status::Omitted : (
 			$event->card()->isNumberValid( $this->getCardNumber() ) ? Status::Success : Status::Failure
 		);
