@@ -21,10 +21,10 @@ class CardResolver implements ResolvesCard {
 	private array $factories;
 	/** @var Status[] */
 	private array $coveredCards;
-	private bool $exitOnResolve;
-	private string|int $cardNumber;
+	/** @var int<0,max> */
 	private int $currentFactoryIndex;
-	private ResolvingAction $resolvingHandler;
+	private string|int $cardNumber;
+	private bool $exitOnResolve;
 	private ?ResolvedAction $resolvedHandler = null;
 
 	/*
@@ -34,15 +34,7 @@ class CardResolver implements ResolvesCard {
 	*/
 
 	/** @var non-empty-list<CardType> */
-	private array $resolvedCards;
-
-	public function shouldExitOnResolve(): bool {
-		return $this->exitOnResolve ?? true;
-	}
-
-	public function getCardNumber(): string|int {
-		return $this->cardNumber;
-	}
+	private array $validCards;
 
 	public function getCoveredCardStatus(): array {
 		return $this->coveredCards;
@@ -61,23 +53,22 @@ class CardResolver implements ResolvesCard {
 		return $this;
 	}
 
-	public function with( ResolvingAction $resolvingHandler, ?ResolvedAction $resolvedHandler = null ): ResolvesCard {
-		$this->resolvingHandler ??= $resolvingHandler->with( $this );
-		$this->resolvedHandler  ??= $resolvedHandler?->with( $this );
+	public function with( ResolvedAction $handler ): ResolvesCard {
+		$this->resolvedHandler ??= $handler->with( $this );
 
 		return $this;
 	}
 
-	public function getCurrentFactory(): array {
-		return [ $this->factories[ $this->currentFactoryIndex ], $this->currentFactoryIndex + 1 ];
-	}
+	public function resolve( ResolvingAction $handler = new ResolvingCardHandler() ): CardType|array|null {
+		$handler->with( $this );
 
-	public function resolve(): CardType|array|null {
 		$resolved = [];
 
 		foreach ( $this->factories as $index => $factory ) {
-			if ( $validCards = $this->validatedCardsCreatedByCurrentFactory( $this->currentFactoryIndex = $index ) ) {
-				if ( $this->shouldExitOnResolve() ) {
+			$this->currentFactoryIndex = $index;
+
+			if ( $validCards = $this->getValidCardsCreatedByCurrentFactory( $handler ) ) {
+				if ( $this->exitOnResolve ) {
 					return end( $validCards );
 				}
 
@@ -88,40 +79,63 @@ class CardResolver implements ResolvesCard {
 		return $resolved ? $resolved : null;
 	}
 
-	public function validate( CardCreated $current ): Status {
-		if ( isset( $this->coveredCards[ $index = $current->payloadIndex ] ) ) {
-			throw new LogicException( sprintf( self::PAYLOAD_INDEX_ALREADY_COVERED, $index, $current->cardName() ) );
-		}
+	public function validate( CardCreated $current ): void {
+		$this->validateAndRegisterValidCardFrom( $current );
 
-		$this->coveredCards[ $index ] = $status = ! $current->isCreatableCard
-			? Status::Omitted
-			: ( $current->card()->isNumberValid( $this->getCardNumber() ) ? Status::Success : Status::Failure );
+		[$factory, $number] = $this->getCurrentFactory();
 
-		Status::Success === $status && $current->isCreatableCard && ( $this->resolvedCards[] = $current->card() );
-
-		return $status;
-	}
-
-	public function handleResolved( CardResolved $event ): void {
-		$this->resolvedHandler?->handle( $event );
+		$this->resolvedHandler?->handle(
+			new CardResolved( $factory, $number, $this->cardNumber, Status::Omitted, $current )
+		);
 	}
 
 	/** @return ?non-empty-list<CardType> */
-	protected function validatedCardsCreatedByCurrentFactory( int $index ): ?array {
-		$factory = $this->factories[ $index ];
+	protected function getValidCardsCreatedByCurrentFactory( ResolvingAction $handler ): ?array {
+		$factory = $this->factories[ $index = $this->currentFactoryIndex ];
 
-		$this->resolvedHandler?->handle( new CardResolved( $factory, $index + 1, $this->getCardNumber() ) );
+		$this->resolvedHandler?->handle( new CardResolved( $factory, $index + 1, $this->cardNumber ) );
 
-			iterator_to_array( $factory->lazyLoad( $this->resolvingHandler ?? ( new ResolvingCardHandler() )->with( $this ) ) );
+		iterator_to_array( $factory->lazyLoad( $handler ) );
 
-			$resolvedCards = $this->resolvedCards ?? null;
+		$validCards = $this->validCards ?? null;
+		$status     = null === $validCards ? Status::Failure : Status::Success;
 
-			unset( $this->resolvedCards );
+		$this->resolvedHandler?->handle( new CardResolved( $factory, $index + 1, $this->cardNumber, $status ) );
 
-			$status = null === $resolvedCards ? Status::Failure : Status::Success;
+		unset( $this->validCards );
 
-			$this->resolvedHandler?->handle( new CardResolved( $factory, $index + 1, $this->getCardNumber(), $status ) );
+		return $validCards;
+	}
 
-			return $resolvedCards;
+	/** @return array{CardFactory<CardType>,positive-int} */
+	private function getCurrentFactory(): array {
+		return [ $this->factories[ $this->currentFactoryIndex ], $this->currentFactoryIndex + 1 ];
+	}
+
+	/**
+	 * @param CardCreated<CardType> $current
+	 * @throws LogicException When card with same payload index is already validated.
+	 */
+	private function ensureCurrentCardIsNotValidatedBefore( CardCreated $current ): void {
+		isset( $this->coveredCards[ $index = $current->payloadIndex ] )
+			&& throw new LogicException( sprintf( self::PAYLOAD_INDEX_ALREADY_COVERED, $index, $current->cardName() ) );
+	}
+
+	/** @param CardCreated<CardType> $current */
+	private function validateAndRegisterStatusFrom( CardCreated $current ): Status {
+		return $this->coveredCards[ $current->payloadIndex ] = ! $current->isCreatableCard
+			? Status::Omitted
+			: ( $current->card()->isNumberValid( $this->cardNumber ) ? Status::Success : Status::Failure );
+	}
+
+	/** @param CardCreated<CardType> $current */
+	private function validateAndRegisterValidCardFrom( CardCreated $current ): void {
+		$this->ensureCurrentCardIsNotValidatedBefore( $current );
+
+		Status::Success === ( $status = $this->validateAndRegisterStatusFrom( $current ) )
+			&& $current->isCreatableCard
+			&& ( $this->validCards[] = $current->card() );
+
+		$current->stopPropagation( Status::Success === $status && $this->exitOnResolve );
 	}
 }

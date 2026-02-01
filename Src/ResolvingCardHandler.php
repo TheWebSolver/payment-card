@@ -3,9 +3,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard;
 
-use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
-use TheWebSolver\Codegarage\PaymentCard\Event\CardResolved;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvesCard;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvingAction;
@@ -21,13 +19,6 @@ class ResolvingCardHandler implements ResolvingAction {
 
 	/** @param CardCreated<CardType> $event */
 	public function handle( CardCreated $event ): void {
-		$status                    = $this->resolver->validate( $event );
-		[$factory, $factoryNumber] = $this->resolver->getCurrentFactory();
-
-		$this->resolver->handleResolved(
-			new CardResolved( $factory, $factoryNumber, $this->resolver->getCardNumber(), Status::Omitted, $event )
-		);
-
-		$event->stopPropagation( Status::Success === $status && $this->resolver->shouldExitOnResolve() );
+		$this->resolver->validate( $event );
 	}
 }
