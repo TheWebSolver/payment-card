@@ -14,12 +14,12 @@ use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvedAction;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvingAction;
 
 class CardResolver implements ResolvesCard {
-	/** @placeholder: `1:` Payload index, `2:` Card name */
-	final public const PAYLOAD_INDEX_ALREADY_COVERED = 'Duplicate payload index found "%1$s" for card "%2$s" already created by factory.';
+	/** @placeholder: `1:` Payload index, `2:` Current card name, `3:` Previously covered card name */
+	final public const PAYLOAD_ALREADY_COVERED = 'Duplicate payload index found "%1$s" for card "%2$s" already covered as "%3$s" card.';
 
 	/** @var non-empty-list<CardFactory<CardType>> */
 	private array $factories;
-	/** @var Status[] */
+	/** @var array<array{status:Status,name:string}> */
 	private array $coveredCards;
 	/** @var int<0,max> */
 	private int $currentFactoryIndex;
@@ -36,7 +36,7 @@ class CardResolver implements ResolvesCard {
 	/** @var non-empty-list<CardType> */
 	private array $validCards;
 
-	public function getCoveredCardStatus(): array {
+	public function getCoveredCards(): array {
 		return $this->coveredCards;
 	}
 
@@ -112,22 +112,27 @@ class CardResolver implements ResolvesCard {
 		return [ $this->factories[ $this->currentFactoryIndex ], $this->currentFactoryIndex + 1 ];
 	}
 
-	private function ensureCurrentCardIsNotValidatedBefore( CardCreated $current ): void {
-		isset( $this->coveredCards[ $index = $current->payloadIndex ] )
-			&& throw new LogicException( sprintf( self::PAYLOAD_INDEX_ALREADY_COVERED, $index, $current->cardName() ) );
+	private function throwIfPayloadIndexAlreadyCovered( CardCreated $current ): void {
+		( $coveredCard = ( $this->coveredCards[ $index = $current->payloadIndex ] ?? false ) )
+			&& throw new LogicException( sprintf( self::PAYLOAD_ALREADY_COVERED, $index, $current->cardName(), $coveredCard['name'] ) );
 	}
 
-	private function validateAndRegisterStatusFrom( CardCreated $current ): Status {
+	private function setCoveredCardFrom( CardCreated $current ): Status {
+		$this->throwIfPayloadIndexAlreadyCovered( $current );
+
 		/** @disregard P1006 Expected type 'object'. Found 'TCardType|null' */
-		return $this->coveredCards[ $current->payloadIndex ] = $current->isSkipped()
-			? Status::Omitted
-			: ( $current->card->isNumberValid( $this->cardNumber ) ? Status::Success : Status::Failure );
+		$this->coveredCards[ $current->payloadIndex ] = [
+			'name'   => $current->cardName(),
+			'status' => $status = $current->isSkipped()
+				? Status::Omitted
+				: ( $current->card->isNumberValid( $this->cardNumber ) ? Status::Success : Status::Failure ),
+		];
+
+		return $status;
 	}
 
 	private function validateAndRegisterValidCardFrom( CardCreated $current ): void {
-		$this->ensureCurrentCardIsNotValidatedBefore( $current );
-
-		Status::Success === ( $status = $this->validateAndRegisterStatusFrom( $current ) )
+		Status::Success === ( $status = $this->setCoveredCardFrom( $current ) )
 			&& ! $current->isSkipped()
 			&& ( $this->validCards[] = $current->card );
 

@@ -60,9 +60,9 @@ interface ResolvesCard {
 	public function validate( CardCreated $current ): void;
 
 	/**
-	 * Gets all card status that are covered when resolving card type.
+	 * Gets all covered cards' name and status when resolving card type.
 	 *
-	 * @return Status[]
+	 * @return array<array{status:Status,name:string}>
 	 */
-	public function getCoveredCardStatus(): array;
+	public function getCoveredCards(): array;
 }
