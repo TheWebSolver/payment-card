@@ -24,10 +24,7 @@ readonly class CardResolved {
 	/** @placeholder `1:` Card resolved or not, `2:` Card name */
 	public const CARD_RESOLVED_INFO = '%1$s card number as "%2$s" card';
 
-	/**
-	 * @param CardFactory<CardType>  $factory
-	 * @param ?CardCreated<CardType> $current
-	 */
+	/** @param CardFactory<CardType> $factory */
 	public function __construct(
 		public CardFactory $factory,
 		public int $factoryNumber,
@@ -40,7 +37,7 @@ readonly class CardResolved {
 		return null !== $this->status;
 	}
 
-	/** @phpstan-assert-if-true =CardCreated<CardType> $this->current */
+	/** @phpstan-assert-if-true =CardCreated $this->current */
 	public function isCreating(): bool {
 		return Status::Omitted === $this->status && null !== $this->current;
 	}
@@ -54,7 +51,6 @@ readonly class CardResolved {
 	}
 
 	/**
-	 * @return CardCreated<CardType>
 	 * @throws LogicException When this method is invoked when factory is not creating cards.
 	 * @see self::isCreating() Returns true when card created event is registered. Always check.
 	 */

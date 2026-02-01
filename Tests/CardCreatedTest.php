@@ -13,7 +13,7 @@ use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 class CardCreatedTest extends TestCase {
 	#[Test]
 	public function itEnsuresPropagationSetterGetterWorks(): void {
-		$event = ( new CardCreated( $this->createStub( CardType::class ), 0, null, false ) );
+		$event = ( new CardCreated( $this->createStub( CardType::class ), 0, null ) );
 
 		$event->stopPropagation( true );
 
@@ -28,25 +28,16 @@ class CardCreatedTest extends TestCase {
 	public function itGetsCardNameEitherFromCardInstanceOrPayload(): void {
 		$card = $this->createMock( CardType::class );
 
-		$card->expects( $count = $this->exactly( 2 ) )->method( 'getName' )->willReturnCallback(
-			// Simulate exception thrown when getting name from instance second time.
-			fn () => 1 === $count->numberOfInvocations() ? 'From Instance' : throw new LogicException( '' )
-		);
+		$card->expects( $this->once() )->method( 'getName' )->willReturn( 'From Instance' );
 
-		$event = new CardCreated( $card, 0, null, true );
+		$event = new CardCreated( $card, 0, null );
 
-		$this->assertSame( $card, $event->card() );
+		$this->assertSame( $card, $event->card );
 		$this->assertSame( 'From Instance', $event->cardName() );
 
-		$event = new CardCreated( $card, 0, [ 'name' => 'From Payload' ], false );
+		$event = new CardCreated( null, 0, [ 'name' => 'From Payload' ] );
 
 		$this->assertSame( 'From Payload', $event->cardName() );
-
-		$this->expectException( LogicException::class );
-		$this->expectExceptionMessage( CardCreated::NOT );
-
-		// Accessing card instance passed as null irrespective of isCreatedCard value throws exception.
-		( new CardCreated( null, 0, null, true ) )->card();
 	}
 
 	#[Test]
@@ -55,7 +46,7 @@ class CardCreatedTest extends TestCase {
 		$this->expectException( LogicException::class );
 		$this->expectExceptionMessage( sprintf( CardCreated::NO_OR_INVALID_NAME, 'key' ) );
 
-		( new CardCreated( null, 'key', $value, true ) )->cardName();
+		( new CardCreated( null, 'key', $value ) )->cardName();
 	}
 
 	/** @return mixed[] */

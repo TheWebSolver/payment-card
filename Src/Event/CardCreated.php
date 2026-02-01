@@ -6,39 +6,31 @@ namespace TheWebSolver\Codegarage\PaymentCard\Event;
 use LogicException;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 
-/** @template TCardType of CardType */
 final class CardCreated {
-	public const NOT = 'Card not instantiated. Verify using "' . __CLASS__ . '::$isCreatableCard" if it a creatable card?';
+	public const NOT = 'Card not instantiated. Verify using "' . __CLASS__ . '::isSkipped()" method if card creation is skipped?';
 	/** @placeholder `%s:` Payload index */
 	public const NO_OR_INVALID_NAME = 'Payload data does not follow card schema. No "name" key or value is not of string type for payload index "%s".';
 
 	private bool $stopPropagation = false;
 
-	/** @param TCardType|null $card The card instance created. null if is not a creatable card. */
+	/**
+	 * @param TCardType|null $card The card instance created. null if card creation is skipped.
+	 * @template TCardType of CardType
+	 */
 	public function __construct(
-		private readonly ?CardType $card,
+		public readonly ?CardType $card,
 		public readonly string|int $payloadIndex,
-		public readonly mixed $payloadValue,
-		public readonly bool $isCreatableCard
+		public readonly mixed $payloadValue
 	) {}
 
-	/**
-	 * Gets the created card type instance.
-	 *
-	 * @throws LogicException When card type is not creatable.
-	 * @see self::$isCreatableCard To check if card type is creatable or not.
-	 */
-	public function card(): CardType {
-		return $this->card ?? throw new LogicException( self::NOT );
+	/** @phpstan-assert-if-true null $this->card */
+	public function isSkipped(): bool {
+		return null === $this->card;
 	}
 
 	/** @throws LogicException When payload data does not follow Card Schema. */
 	public function cardName(): string {
-		try {
-			return $this->card()->getName();
-		} catch ( LogicException ) {
-			return $this->getNameFromPayload();
-		}
+		return $this->card?->getName() ?? $this->getNameFromPayload();
 	}
 
 	public function stopPropagation( bool $stop = true ): void {

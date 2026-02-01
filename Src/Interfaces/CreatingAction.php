@@ -7,8 +7,7 @@ use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 
 interface CreatingAction {
 	/**
-	 * @param CardCreated<TCardType> $event
-	 * @template TCardType of CardType
+	 * Handles created card.
 	 */
 	public function handle( CardCreated $event ): void;
 }

@@ -43,7 +43,7 @@ class CardResolvedTest extends TestCase {
 		$this->assertFalse( $nonCreatingEvent->isCreating() );
 		$this->assertFalse( $nonCreatingEvent->finished() );
 
-		$current = new CardCreated( $this->createStub( CardType::class ), 2, 'Test Card', true );
+		$current = new CardCreated( $this->createStub( CardType::class ), 2, 'Test Card' );
 
 		$factory->expects( $invokeMocker = $this->exactly( 2 ) )
 			->method( 'getPayload' )

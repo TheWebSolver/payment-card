@@ -54,7 +54,6 @@ interface ResolvesCard {
 	 * - covered cards,
 	 * - validated card(s), etc.
 	 *
-	 * @param CardCreated<CardType> $current
 	 * @throws LogicException When card type with the same payload index is already validated.
 	 * @throws LogicException When payload data does not follow card schema.
 	 */

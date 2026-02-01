@@ -30,7 +30,3 @@ parameters:
 			identifier: return.type
 			path: Src/Tracer/BraintreePaymentCardTracer.php
 			count: 1
-		- # Allow Mocked Card Type in test files.
-			identifier: argument.type
-			messages:
-			- '#^Parameter \#5 \$current of class.*?CardResolved constructor.*?$#'

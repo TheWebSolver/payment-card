@@ -117,16 +117,14 @@ class PaymentCardFactory implements CardFactory {
 	public function lazyload( ?CreatingAction $handler = null ): Generator {
 		$this->resolvePayloadContent();
 
-		$onlyIndices = $this->getCreatableIndices();
-		$generator   = $this->lazyloadSentPayloadIndexOnly();
+		$generator = $this->lazyloadSentPayloadIndexOnly();
 
-		foreach ( $this->payload as $index => $args ) {
-			$isCreatable = ! $onlyIndices || in_array( $index, $onlyIndices, strict: true );
-			$card        = $generator->send( $isCreatable );
+		foreach ( $this->payload as $payloadIndex => $payloadValue ) {
+			$card = $generator->send( $this->isCreatable( $payloadIndex ) );
 
-			$handler?->handle( $event = new CardCreated( $card, $index, $args, $isCreatable ) );
+			$handler?->handle( $event = new CardCreated( $card, $payloadIndex, $payloadValue ) );
 
-			yield $index => $card;
+			yield $payloadIndex => $card;
 
 			if ( isset( $event ) && $event->shouldStopPropagation() ) {
 				return;
@@ -146,15 +144,19 @@ class PaymentCardFactory implements CardFactory {
 
 		$card = null;
 
-		foreach ( $this->payload as $index => $args ) {
-			$sent = ( yield $index => $card );
-			$card = ! isset( $sent ) ? $card : $this->maybeCreateForIndex( $sent, $index );
+		foreach ( $this->payload as $payloadIndex => $payloadValue ) {
+			$sent = ( yield $payloadIndex => $card );
+			$card = ! isset( $sent ) ? $card : $this->maybeCreateForIndex( $sent, $payloadIndex );
 		}
 
 		// The last one is never yielded, so we handle it here.
 		if ( isset( $sent ) && $sent ) {
-			yield $index => $this->maybeCreateForIndex( $sent, $index );
+			yield $payloadIndex => $this->maybeCreateForIndex( $sent, $payloadIndex );
 		}
+	}
+
+	private function isCreatable( string|int $payloadIndex ): bool {
+		return ! ( $indices = $this->getCreatableIndices() ) || in_array( $payloadIndex, $indices, strict: true );
 	}
 
 	private function maybeCreateForIndex( mixed $sent, string|int $index ): ?PaymentCardType {

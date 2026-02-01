@@ -112,29 +112,24 @@ class CardResolver implements ResolvesCard {
 		return [ $this->factories[ $this->currentFactoryIndex ], $this->currentFactoryIndex + 1 ];
 	}
 
-	/**
-	 * @param CardCreated<CardType> $current
-	 * @throws LogicException When card with same payload index is already validated.
-	 */
 	private function ensureCurrentCardIsNotValidatedBefore( CardCreated $current ): void {
 		isset( $this->coveredCards[ $index = $current->payloadIndex ] )
 			&& throw new LogicException( sprintf( self::PAYLOAD_INDEX_ALREADY_COVERED, $index, $current->cardName() ) );
 	}
 
-	/** @param CardCreated<CardType> $current */
 	private function validateAndRegisterStatusFrom( CardCreated $current ): Status {
-		return $this->coveredCards[ $current->payloadIndex ] = ! $current->isCreatableCard
+		/** @disregard P1006 Expected type 'object'. Found 'TCardType|null' */
+		return $this->coveredCards[ $current->payloadIndex ] = $current->isSkipped()
 			? Status::Omitted
-			: ( $current->card()->isNumberValid( $this->cardNumber ) ? Status::Success : Status::Failure );
+			: ( $current->card->isNumberValid( $this->cardNumber ) ? Status::Success : Status::Failure );
 	}
 
-	/** @param CardCreated<CardType> $current */
 	private function validateAndRegisterValidCardFrom( CardCreated $current ): void {
 		$this->ensureCurrentCardIsNotValidatedBefore( $current );
 
 		Status::Success === ( $status = $this->validateAndRegisterStatusFrom( $current ) )
-			&& $current->isCreatableCard
-			&& ( $this->validCards[] = $current->card() );
+			&& ! $current->isSkipped()
+			&& ( $this->validCards[] = $current->card );
 
 		$current->stopPropagation( Status::Success === $status && $this->exitOnResolve );
 	}
