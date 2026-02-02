@@ -36,7 +36,7 @@ interface ResolvesCard {
 	 *
 	 * This must be implemented as an immutable method in a way that resolver state does not change on subsequent invocation.
 	 */
-	public function with( ResolvingAction $handler ): self;
+	public function with( CardResolvingAction $handler ): self;
 
 	/**
 	 * Resolves card type instance after validating with the provided card number.
@@ -45,7 +45,7 @@ interface ResolvesCard {
 	 * @throws LogicException When validation fails.
 	 * @see self::validate() Which handles validation process.
 	 */
-	public function resolve( ResolvedAction $handler ): CardType|array|null;
+	public function resolve( CardValidationAction $handler ): CardType|array|null;
 
 	/**
 	 * Validates card type created by the current factory.

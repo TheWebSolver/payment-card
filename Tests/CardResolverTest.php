@@ -11,7 +11,7 @@ use TheWebSolver\Codegarage\PaymentCard\CardResolver;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 use TheWebSolver\Codegarage\PaymentCard\PaymentCardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvesCard;
-use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvedAction;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardValidationAction;
 
 class CardResolverTest extends TestCase {
 	public const DOMESTIC_CARDS = [
@@ -30,10 +30,10 @@ class CardResolverTest extends TestCase {
 	];
 
 	private ResolvesCard $resolver;
-	private ResolvedAction&MockObject $handler;
+	private CardValidationAction&MockObject $handler;
 
 	public function setUp(): void {
-		$this->handler  = $this->createMock( ResolvedAction::class );
+		$this->handler  = $this->createMock( CardValidationAction::class );
 		$this->resolver = ( new CardResolver() )->using(
 			new PaymentCardFactory( self::DOMESTIC_CARDS ),
 			new PaymentCardFactory( PaymentCardFactory::RESOURCE_PATH . DIRECTORY_SEPARATOR . 'paymentCards.json' )

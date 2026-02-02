@@ -10,8 +10,8 @@ use TheWebSolver\Codegarage\PaymentCard\Event\CardResolving;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvesCard;
-use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvedAction;
-use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvingAction;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardResolvingAction;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardValidationAction;
 
 class CardResolver implements ResolvesCard {
 	/** @placeholder: `1:` Payload index, `2:` Current card name, `3:` Previously covered card name */
@@ -25,7 +25,7 @@ class CardResolver implements ResolvesCard {
 	private int $currentFactoryIndex;
 	private string|int $cardNumber;
 	private bool $exitOnResolve;
-	private ?ResolvingAction $resolvingHandler = null;
+	private ?CardResolvingAction $resolvingHandler = null;
 
 	/*
 	| ----------------------------------------------------------------------------
@@ -53,13 +53,13 @@ class CardResolver implements ResolvesCard {
 		return $this;
 	}
 
-	public function with( ResolvingAction $handler ): ResolvesCard {
+	public function with( CardResolvingAction $handler ): ResolvesCard {
 		$this->resolvingHandler ??= $handler->with( $this );
 
 		return $this;
 	}
 
-	public function resolve( ResolvedAction $handler = new ResolvingCardHandler() ): CardType|array|null {
+	public function resolve( CardValidationAction $handler = new CreatedCardValidationHandler() ): CardType|array|null {
 		$handler->with( $this );
 
 		$resolved = [];
@@ -88,7 +88,7 @@ class CardResolver implements ResolvesCard {
 	}
 
 	/** @return ?non-empty-list<CardType> */
-	protected function getValidCardsCreatedByCurrentFactory( ResolvedAction $handler ): ?array {
+	protected function getValidCardsCreatedByCurrentFactory( CardValidationAction $handler ): ?array {
 		$factory = $this->factories[ $index = $this->currentFactoryIndex ];
 
 		$this->resolvingHandler?->handle( new CardResolving( $factory, $index + 1, $this->cardNumber, null ) );

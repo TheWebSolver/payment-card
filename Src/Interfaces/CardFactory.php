@@ -52,5 +52,5 @@ interface CardFactory {
 	 *                                             current payload index does not exist in that array.
 	 * @throws RuntimeException When payload cannot be resolved.
 	 */
-	public function lazyload( ?CreatingAction $handler = null ): Generator;
+	public function lazyload( ?CardCreatingAction $handler = null ): Generator;
 }

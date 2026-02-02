@@ -11,8 +11,8 @@ use OutOfBoundsException;
 use InvalidArgumentException;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
-use TheWebSolver\Codegarage\PaymentCard\Interfaces\CreatingAction;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\PaymentCardType;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardCreatingAction;
 
 /** @template-implements CardFactory<PaymentCardType> */
 class PaymentCardFactory implements CardFactory {
@@ -114,7 +114,7 @@ class PaymentCardFactory implements CardFactory {
 		}
 	}
 
-	public function lazyload( ?CreatingAction $handler = null ): Generator {
+	public function lazyload( ?CardCreatingAction $handler = null ): Generator {
 		$this->resolvePayloadContent();
 
 		$generator = $this->lazyloadSentPayloadIndexOnly();

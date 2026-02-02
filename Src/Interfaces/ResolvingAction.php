@@ -5,7 +5,7 @@ namespace TheWebSolver\Codegarage\PaymentCard\Interfaces;
 
 use TheWebSolver\Codegarage\PaymentCard\Event\CardResolving;
 
-interface ResolvingAction {
+interface CardResolvingAction {
 	/**
 	 * Provides resolver being used to resolve the card type when factory is creating card.
 	 */

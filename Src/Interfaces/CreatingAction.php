@@ -5,7 +5,7 @@ namespace TheWebSolver\Codegarage\PaymentCard\Interfaces;
 
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 
-interface CreatingAction {
+interface CardCreatingAction {
 	/**
 	 * Handles created card.
 	 */

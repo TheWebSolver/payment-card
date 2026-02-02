@@ -3,7 +3,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Interfaces;
 
-interface ResolvedAction extends CreatingAction {
+interface CardValidationAction extends CardCreatingAction {
 	/**
 	 * Sets card resolver that resolves card number.
 	 */
