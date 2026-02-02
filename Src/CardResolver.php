@@ -25,7 +25,7 @@ class CardResolver implements ResolvesCard {
 	private int $currentFactoryIndex;
 	private string|int $cardNumber;
 	private bool $exitOnResolve;
-	private ?ResolvedAction $resolvedHandler = null;
+	private ?ResolvingAction $resolvingHandler = null;
 
 	/*
 	| ----------------------------------------------------------------------------
@@ -53,13 +53,13 @@ class CardResolver implements ResolvesCard {
 		return $this;
 	}
 
-	public function with( ResolvedAction $handler ): ResolvesCard {
-		$this->resolvedHandler ??= $handler->with( $this );
+	public function with( ResolvingAction $handler ): ResolvesCard {
+		$this->resolvingHandler ??= $handler->with( $this );
 
 		return $this;
 	}
 
-	public function resolve( ResolvingAction $handler = new ResolvingCardHandler() ): CardType|array|null {
+	public function resolve( ResolvedAction $handler = new ResolvingCardHandler() ): CardType|array|null {
 		$handler->with( $this );
 
 		$resolved = [];
@@ -84,23 +84,21 @@ class CardResolver implements ResolvesCard {
 
 		[$factory, $number] = $this->getCurrentFactory();
 
-		$this->resolvedHandler?->handle(
-			new CardResolving( $factory, $number, $this->cardNumber, $current )
-		);
+		$this->resolvingHandler?->handle( new CardResolving( $factory, $number, $this->cardNumber, $current ) );
 	}
 
 	/** @return ?non-empty-list<CardType> */
-	protected function getValidCardsCreatedByCurrentFactory( ResolvingAction $handler ): ?array {
+	protected function getValidCardsCreatedByCurrentFactory( ResolvedAction $handler ): ?array {
 		$factory = $this->factories[ $index = $this->currentFactoryIndex ];
 
-		$this->resolvedHandler?->handle( new CardResolving( $factory, $index + 1, $this->cardNumber, null ) );
+		$this->resolvingHandler?->handle( new CardResolving( $factory, $index + 1, $this->cardNumber, null ) );
 
 		iterator_to_array( $factory->lazyLoad( $handler ) );
 
 		$validCards = $this->validCards ?? null;
 		$status     = null === $validCards ? Status::Failure : Status::Success;
 
-		$this->resolvedHandler?->handle( new CardResolving( $factory, $index + 1, $this->cardNumber, $status ) );
+		$this->resolvingHandler?->handle( new CardResolving( $factory, $index + 1, $this->cardNumber, $status ) );
 
 		unset( $this->validCards );
 

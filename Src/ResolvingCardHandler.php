@@ -5,12 +5,12 @@ namespace TheWebSolver\Codegarage\PaymentCard;
 
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvesCard;
-use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvingAction;
+use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvedAction;
 
-class ResolvingCardHandler implements ResolvingAction {
+class ResolvingCardHandler implements ResolvedAction {
 	private ResolvesCard $resolver;
 
-	public function with( ResolvesCard $resolver ): ResolvingAction {
+	public function with( ResolvesCard $resolver ): ResolvedAction {
 		$this->resolver = $resolver;
 
 		return $this;
