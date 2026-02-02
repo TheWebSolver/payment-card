@@ -3,7 +3,7 @@ declare( strict_types = 1 );
 
 namespace TheWebSolver\Codegarage\PaymentCard\Interfaces;
 
-use TheWebSolver\Codegarage\PaymentCard\Event\CardResolved;
+use TheWebSolver\Codegarage\PaymentCard\Event\CardResolving;
 
 interface ResolvedAction {
 	/**
@@ -14,5 +14,5 @@ interface ResolvedAction {
 	/**
 	 * Handles resolved card type.
 	 */
-	public function handle( CardResolved $event ): void;
+	public function handle( CardResolving $event ): void;
 }

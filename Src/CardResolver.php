@@ -6,7 +6,7 @@ namespace TheWebSolver\Codegarage\PaymentCard;
 use LogicException;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
-use TheWebSolver\Codegarage\PaymentCard\Event\CardResolved;
+use TheWebSolver\Codegarage\PaymentCard\Event\CardResolving;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\ResolvesCard;
@@ -85,7 +85,7 @@ class CardResolver implements ResolvesCard {
 		[$factory, $number] = $this->getCurrentFactory();
 
 		$this->resolvedHandler?->handle(
-			new CardResolved( $factory, $number, $this->cardNumber, Status::Omitted, $current )
+			new CardResolving( $factory, $number, $this->cardNumber, $current )
 		);
 	}
 
@@ -93,14 +93,14 @@ class CardResolver implements ResolvesCard {
 	protected function getValidCardsCreatedByCurrentFactory( ResolvingAction $handler ): ?array {
 		$factory = $this->factories[ $index = $this->currentFactoryIndex ];
 
-		$this->resolvedHandler?->handle( new CardResolved( $factory, $index + 1, $this->cardNumber ) );
+		$this->resolvedHandler?->handle( new CardResolving( $factory, $index + 1, $this->cardNumber, null ) );
 
 		iterator_to_array( $factory->lazyLoad( $handler ) );
 
 		$validCards = $this->validCards ?? null;
 		$status     = null === $validCards ? Status::Failure : Status::Success;
 
-		$this->resolvedHandler?->handle( new CardResolved( $factory, $index + 1, $this->cardNumber, $status ) );
+		$this->resolvedHandler?->handle( new CardResolving( $factory, $index + 1, $this->cardNumber, $status ) );
 
 		unset( $this->validCards );
 

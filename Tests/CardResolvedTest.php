@@ -10,68 +10,63 @@ use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TheWebSolver\Codegarage\PaymentCard\Enums\Status;
 use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
-use TheWebSolver\Codegarage\PaymentCard\Event\CardResolved;
+use TheWebSolver\Codegarage\PaymentCard\Event\CardResolving;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 
-class CardResolvedTest extends TestCase {
+class CardResolvingTest extends TestCase {
 	#[Test]
 	public function itVerifiesPropertiesSet(): void {
-		$resolveEvent = new CardResolved(
+		$resolveEvent = new CardResolving(
 			factory: $this->createStub( CardFactory::class ),
 			factoryNumber: 1,
 			cardNumber: '0',
-			status: null,
-			current: new CardCreated( $this->createStub( CardType::class ), 0, 0, false ) // @phpstan-ignore-line
+			state: new CardCreated( $this->createStub( CardType::class ), 0, 0, false ) // @phpstan-ignore-line
 		);
 
 		$this->assertInstanceOf( Stub::class, $resolveEvent->factory );
 		$this->assertSame( 1, $resolveEvent->factoryNumber );
 		$this->assertSame( '0', $resolveEvent->cardNumber );
-		$this->assertFalse( $resolveEvent->started() );
-		$this->assertFalse( $resolveEvent->isCreating() );
+		$this->assertTrue( $resolveEvent->started() );
+		$this->assertTrue( $resolveEvent->processing() );
 		$this->assertFalse( $resolveEvent->finished() );
 		$this->assertFalse( $resolveEvent->isSuccess() );
 		$this->assertInstanceOf( CardCreated::class, $resolveEvent->current() );
 	}
 
 	#[Test]
-	public function itEnsuresActionIsSuccessfulBasedOnStatus(): void {
-		$factory          = $this->createMock( CardFactory::class );
-		$nonCreatingEvent = new CardResolved( $factory, 0, '0', Status::Omitted, null );
+	public function itEnsuresActionIsSuccessfulBasedOnCurrent(): void {
+		$factory = $this->createMock( CardFactory::class );
+		$event   = new CardResolving( $factory, 0, '0', null );
 
-		$this->assertFalse( $nonCreatingEvent->isCreating() );
-		$this->assertFalse( $nonCreatingEvent->finished() );
+		$this->assertFalse( $event->started() );
+		$this->assertFalse( $event->processing() );
+		$this->assertFalse( $event->finished() );
 
-		$current = new CardCreated( $this->createStub( CardType::class ), 2, 'Test Card' );
+		$factory->expects( $invokeMocker = $this->exactly( 4 ) )
+		->method( 'getPayload' )
+		->willReturnCallback( fn () => [ $invokeMocker->numberOfInvocations() => [ 'name' => 'Test Card' ] ] );
 
-		$factory->expects( $invokeMocker = $this->exactly( 2 ) )
-			->method( 'getPayload' )
-			->willReturnCallback( fn () => [ $invokeMocker->numberOfInvocations() => 'Test Card' ] );
+		$state = new CardCreated( $this->createStub( CardType::class ), 4 /* Last payload index */, 'Test Card' );
+		$event = new CardResolving( $factory, 0, '123', $state );
 
-		$creatingEvent = new CardResolved( $factory, 0, '123', Status::Omitted, $current );
-
-		$this->assertTrue( $creatingEvent->isCreating() );
-		$this->assertFalse( $creatingEvent->finished() ); // Invoked "getPayload" #1.
+		$this->assertTrue( $event->started() );
+		$this->assertTrue( $event->processing() );
 
 		foreach ( Status::cases() as $status ) {
-			$resolveEvent = new CardResolved( $factory, 0, '456', $status, $current );
-
-			$this->assertTrue( $resolveEvent->started() );
-			$this->assertSame( Status::Omitted === $status ? true : false, $resolveEvent->isCreating() );
-			$this->assertSame( Status::Success === $status ? true : false, $resolveEvent->isSuccess() );
-			$this->assertSame(
-				Status::Omitted === $status ? true : false,
-				$resolveEvent->finished(),
-				"Finished resolving when in omitted status and factory's last payload index matches created card's payload index"
-			); // Invoked "getPayload" #2.
+			$this->assertFalse( $event->isSuccess(), "Success when status given. Always false for Status::{$status->name}" );
 		}
+
+		$this->assertFalse( $event->finished(), 'Invoked "getPayload" #1' );
+		$this->assertFalse( $event->finished(), 'Invoked "getPayload" #2' );
+		$this->assertFalse( $event->finished(), 'Invoked "getPayload" #3' );
+		$this->assertTrue( $event->finished(), 'Invoked "getPayload" #4' );
 	}
 
 	#[Test]
 	#[DataProvider( 'provideThrowableMethodNames' )]
 	public function itThrowsExceptionOnDirectMethodInvocation( string $methodName, string $expectedMsg ): void {
-		$resolveEvent = new CardResolved( $this->createStub( CardFactory::class ), 0, '0' );
+		$resolveEvent = new CardResolving( $this->createStub( CardFactory::class ), 0, '0', null );
 
 		$this->expectException( LogicException::class );
 		$this->expectExceptionMessage( sprintf( $expectedMsg, 0 ) );
@@ -81,8 +76,8 @@ class CardResolvedTest extends TestCase {
 	/** @return string[][] */
 	public static function provideThrowableMethodNames(): array {
 		return [
-			[ 'current', CardResolved::CURRENT_CARD_ERROR ],
-			[ 'resourceInfo', CardResolved::RESOURCE_ERROR ],
+			[ 'current', CardResolving::CURRENT_CARD_ERROR ],
+			[ 'resourceInfo', CardResolving::RESOURCE_ERROR ],
 		];
 	}
 
@@ -95,12 +90,12 @@ class CardResolvedTest extends TestCase {
 
 		if ( ! $expectedValidPath ) {
 			$this->expectException( LogicException::class );
-			$this->expectExceptionMessage( sprintf( CardResolved::RESOURCE_ERROR, 1 ) );
+			$this->expectExceptionMessage( sprintf( CardResolving::RESOURCE_ERROR, 1 ) );
 		}
 
 		$this->assertSame(
-			sprintf( CardResolved::RESOURCE_INFO, $resourcePath ?? '' ),
-			( new CardResolved( $factory, 1, '0' ) )->resourceInfo()
+			sprintf( CardResolving::RESOURCE_INFO, $resourcePath ?? '' ),
+			( new CardResolving( $factory, 1, '0', null ) )->resourceInfo()
 		);
 	}
 
@@ -119,14 +114,14 @@ class CardResolvedTest extends TestCase {
 		$factory = $this->createStub( CardFactory::class );
 
 		$this->assertSame(
-			sprintf( CardResolved::FACTORY_STATUS_INFO, 'Started', '12345', 0 ),
-			( new CardResolved( $factory, 0, '12345', null ) )->factoryStatusInfo()
+			sprintf( CardResolving::FACTORY_STATUS_INFO, 'Started', '12345', 0 ),
+			( new CardResolving( $factory, 0, '12345', null ) )->factoryStatusInfo()
 		);
 
 		foreach ( Status::cases() as $status ) {
 			$this->assertSame(
-				sprintf( CardResolved::FACTORY_STATUS_INFO, 'Finished', '6789', 1 ),
-				( new CardResolved( $factory, 1, '6789', $status ) )->factoryStatusInfo(),
+				sprintf( CardResolving::FACTORY_STATUS_INFO, 'Finished', '6789', 1 ),
+				( new CardResolving( $factory, 1, '6789', $status ) )->factoryStatusInfo(),
 				'Always returns "Finished" info when status is not null'
 			);
 		}
@@ -140,8 +135,8 @@ class CardResolvedTest extends TestCase {
 			$isResolved = Status::Success === $status ? 'Resolved' : 'Could not resolve';
 
 			$this->assertSame(
-				sprintf( CardResolved::FACTORY_RESOLVED_INFO, $isResolved, 0 ),
-				( new CardResolved( $factory, 0, '1', $status ) )->factoryResolvedInfo()
+				sprintf( CardResolving::FACTORY_RESOLVED_INFO, $isResolved, 0 ),
+				( new CardResolving( $factory, 0, '1', $status ) )->factoryResolvedInfo()
 			);
 		}
 	}
@@ -154,7 +149,7 @@ class CardResolvedTest extends TestCase {
 		$card->expects( $this->exactly( 3 ) )->method( 'getName' )->willReturn( 'Test Card' );
 
 		// @phpstan-ignore-next-line
-		$event = new CardResolved( $factory, 0, '0', current: new CardCreated( $card, 0, [], true ) );
+		$event = new CardResolving( $factory, 0, '0', state: new CardCreated( $card, 0, [], true ) );
 		$info  = [
 			'Resolved'          => Status::Success,
 			'Could not resolve' => Status::Failure,
@@ -163,7 +158,7 @@ class CardResolvedTest extends TestCase {
 
 		foreach ( $info as $status => $case ) {
 			$this->assertSame(
-				sprintf( CardResolved::CARD_RESOLVED_INFO, $status, 'Test Card' ),
+				sprintf( CardResolving::CARD_RESOLVED_INFO, $status, 'Test Card' ),
 				$event->cardResolvedInfo( $case )
 			);
 		}

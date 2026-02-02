@@ -9,7 +9,7 @@ use TheWebSolver\Codegarage\PaymentCard\Event\CardCreated;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardType;
 use TheWebSolver\Codegarage\PaymentCard\Interfaces\CardFactory;
 
-readonly class CardResolved {
+final class CardResolving {
 	public const CURRENT_CARD_ERROR = 'Impossible to get current card created when factory #%s is not creating cards';
 	public const CHECK_NEXT_INFO    = 'Checking against next card...';
 
@@ -24,38 +24,41 @@ readonly class CardResolved {
 	/** @placeholder `1:` Card resolved or not, `2:` Card name */
 	public const CARD_RESOLVED_INFO = '%1$s card number as "%2$s" card';
 
+	private bool $isProcessing;
+
 	/** @param CardFactory<CardType> $factory */
 	public function __construct(
-		public CardFactory $factory,
-		public int $factoryNumber,
-		public string|int $cardNumber,
-		private ?Status $status = null,
-		private ?CardCreated $current = null
-	) {}
-
-	public function started(): bool {
-		return null !== $this->status;
+		public readonly CardFactory $factory,
+		public readonly int $factoryNumber,
+		public readonly string|int $cardNumber,
+		private readonly Status|CardCreated|null $state
+	) {
+		$this->isProcessing = $state instanceof CardCreated;
 	}
 
-	/** @phpstan-assert-if-true =CardCreated $this->current */
-	public function isCreating(): bool {
-		return Status::Omitted === $this->status && null !== $this->current;
+	public function started(): bool {
+		return null !== $this->state;
+	}
+
+	/** @phpstan-assert-if-true =CardCreated $this->state */
+	public function processing(): bool {
+		return $this->isProcessing;
 	}
 
 	public function finished(): bool {
-		return $this->isCreating() && array_key_last( $this->factory->getPayload() ) === $this->current->payloadIndex;
+		return $this->processing() && array_key_last( $this->factory->getPayload() ) === $this->state->payloadIndex;
 	}
 
 	public function isSuccess(): bool {
-		return Status::Success === $this->status;
+		return Status::Success === $this->state;
 	}
 
 	/**
 	 * @throws LogicException When this method is invoked when factory is not creating cards.
-	 * @see self::isCreating() Returns true when card created event is registered. Always check.
+	 * @see self::processing() Returns true when card created event is registered. Always check.
 	 */
 	public function current(): CardCreated {
-		return $this->current ?? throw new LogicException( sprintf( self::CURRENT_CARD_ERROR, $this->factoryNumber ) );
+		return $this->processing() ? $this->state : throw new LogicException( sprintf( self::CURRENT_CARD_ERROR, $this->factoryNumber ) );
 	}
 
 	/** @throws LogicException When cannot retrieve resource path from factory. */
